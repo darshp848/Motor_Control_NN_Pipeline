@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Local / machine-specific
+.DS_Store
+Thumbs.db
+LOCAL_APPDATA_FONTCONFIG_CACHE/
+
+# AEDT runtime (large, regenerable)
+aedt_mcp/tmp/
+aedt_mcp/out/
+aedt_mcp/batch.log
+aedt_mcp/.pytest_cache/
+aedt_mcp/.ruff_cache/
+
+# Optional: keep trained artifacts out of git if desired
+# out/models/
+# out/predictions/

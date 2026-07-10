@@ -1,0 +1,173 @@
+{
+  "rated_probe_json": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\aedt_mcp\\tmp\\aedt_jobs\\pull_motor_params_sanity\\rated_probe.json",
+  "project": "ipm_1",
+  "rs_ohm": 2.15938,
+  "poles": 4,
+  "sanity_probe_failure": null,
+  "vdc_v": 311,
+  "poststate": {
+    "validate_after": {
+      "value": true,
+      "ok": true
+    },
+    "messages_after": {
+      "global_errors": {
+        "value": [
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'R1' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Rs' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RsOhm' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'StatorResistance' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RatedVoltage' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Vrated' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'VRated' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Poles' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'R1' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Rs' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RsOhm' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'StatorResistance' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RatedVoltage' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Vrated' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'VRated' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Poles' does not exist. (03:35:19 PM  Jul 09, 2026)\r\n"
+        ],
+        "ok": true
+      },
+      "1": {
+        "value": [],
+        "ok": true
+      },
+      "0": {
+        "value": [
+          "Project: ipm_1, Design: Maxwell2DDesign4, [info] With the geometry kernel migration to Parasolid, 2D designs no longer support the Mesh Method setting. All 2D meshes will be generated using the TAU mesher. (03:35:19 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: Maxwell2DDesign4, [info] User Defined Primitive: LapCoil - SegAngle is modified from 10 to 7.5 (03:35:22 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: Maxwell2DDesign4, [info] User Defined Primitive: LapCoil - SegAngle is modified from 10 to 7.5 (03:35:22 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: Maxwell2DDesign4, [info] User Defined Primitive: IPMCore - InfoCore is modified from -1 to 3 (03:35:22 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: Maxwell2DDesign4, [info] Normal completion of simulation on server: Local Machine. (03:35:24 PM  Jul 09, 2026)\r\n"
+        ],
+        "ok": true
+      },
+      "3": {
+        "value": [],
+        "ok": true
+      },
+      "2": {
+        "value": [],
+        "ok": true
+      }
+    }
+  },
+  "flux_scale_explanation": "Computed via: T_implied = (3/2) * P * (Phi_d * Iq_peak - Phi_q * Id_peak) at the (Id=0, Iq=I_rated_peak) sanity operating point, with Phi_d, Phi_q from FEM-verified AEDT solve. flux_scale = T_rated_RMexprt / T_implied. Multiply FEM flux linkages by this factor before plugging into T(Id, Iq) in mtpa_field_weakening.py.",
+  "pole_pairs": 2,
+  "rated_probe_abc_csv": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\aedt_mcp\\tmp\\aedt_jobs\\pull_motor_params_sanity\\rated_probe_abc.csv",
+  "mesh_setup_recipe": {
+    "edit_setup": {
+      "value": null,
+      "ok": true
+    },
+    "delete_ops": {
+      "SurfApprox_Mag": {
+        "value": "already_absent",
+        "ok": true
+      },
+      "SurfApprox_Main": {
+        "value": "already_absent",
+        "ok": true
+      },
+      "CylindricalGap1": {
+        "value": "already_absent",
+        "ok": true
+      }
+    },
+    "existing_ops_probe": {
+      "value": [],
+      "ok": true
+    },
+    "initial_mesh": {
+      "value": null,
+      "ok": true
+    }
+  },
+  "rated_current_rms_a": 2.83481,
+  "i_max_peak_a": 6.0,
+  "rs_source": {
+    "attempt_reason": "exception:GetVariableValue(string varArg) -> string(StatorResistance) - call failed. Logs or message window might have more details",
+    "fallback_value": 2.15938,
+    "rmx_design_probed": "RMxprtDesign1"
+  },
+  "status": "ok",
+  "t_rated_nm": 2.89531,
+  "vdc_source": "default sqrt(2)*220 EV-bus",
+  "flux_scale": 11.861254825070445,
+  "i_rated_peak_a": 4.009026748750874,
+  "omega_mech_base_rpm": 1800.0,
+  "rated_voltage_v": null,
+  "rmxprt_design": "RMxprtDesign1",
+  "omega_mech_max_rpm": null,
+  "design": "Maxwell2DDesign4",
+  "prestate": {
+    "messages_before": {
+      "global_errors": {
+        "value": [
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: *Global - Messages, [error] Error in command execution\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'R1' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Rs' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RsOhm' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'StatorResistance' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'RatedVoltage' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Vrated' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'VRated' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n",
+          "Project: ipm_1, Design: RMxprtDesign1 (Generic Rotating Machines), [error] Script macro error: Variable 'Poles' does not exist. (03:30:00 PM  Jul 09, 2026)\r\n"
+        ],
+        "ok": true
+      },
+      "1": {
+        "value": [],
+        "ok": true
+      },
+      "0": {
+        "value": [],
+        "ok": true
+      },
+      "3": {
+        "value": [],
+        "ok": true
+      },
+      "2": {
+        "value": [],
+        "ok": true
+      }
+    },
+    "solution_type": {
+      "value": "Magnetostatic",
+      "ok": true
+    },
+    "validate_before": {
+      "value": true,
+      "ok": true
+    }
+  },
+  "rated_current_peak_a": 4.009026748750874
+}

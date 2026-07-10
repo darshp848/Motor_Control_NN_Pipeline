@@ -1,0 +1,14 @@
+{
+  "poles": 4,
+  "pole_pairs": 2,
+  "rs_ohm": 2.15938,
+  "vdc_v": 311.0,
+  "vmax_phase_peak_v": 179.55593371797363,
+  "i_max_peak_a": 6.0,
+  "i_rated_peak_a": 4.009026748750874,
+  "t_rated_nm": 2.89531,
+  "flux_scale": 11.861254825070445,
+  "omega_mech_base_rpm": 1800.0,
+  "omega_mech_max_rpm": 6000.0,
+  "inference_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\inference_flux_map.py"
+}

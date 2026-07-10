@@ -1,0 +1,30 @@
+{
+  "environment": {
+    "aedt_version": "2025.2SV",
+    "student_version": true,
+    "codex_can_write_c_temp": false,
+    "project_temp_writable": true,
+    "project_directory_writable": true,
+    "aedt_temp_config_fixed": true,
+    "aedt_project_directory_fixed": true,
+    "aedt_grpc_port_50052_listening": true,
+    "scriptenv_attach_confirmed": true,
+    "scriptenv_attached_version": "2025.2.0",
+    "pyaedt_attach_confirmed_unsafe": true
+  },
+  "limits": {
+    "launch_aedt_from_codex": "unreliable",
+    "attach_pyaedt_from_codex": "blocked_confirmed_attempts_launch",
+    "attach_scriptenv_from_user_powershell": "confirmed_working",
+    "modify_windows_permissions": "user_run_required",
+    "kill_aedt_processes": "user_run_required",
+    "firewall_changes": "user_run_required",
+    "program_files_changes": "user_run_required",
+    "onedrive_ansoft_config_changes": "user_run_required"
+  },
+  "preferred_paths": {
+    "aedt_temp": "tmp/aedt_temp",
+    "aedt_projects": "tmp/aedt_projects",
+    "aedt_jobs": "tmp/aedt_jobs"
+  }
+}

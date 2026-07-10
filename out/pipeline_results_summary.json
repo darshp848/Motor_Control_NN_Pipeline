@@ -1,0 +1,62 @@
+{
+  "completed_utc_local": "2026-07-09",
+  "phase1": {
+    "status": "ok",
+    "rows": 1600,
+    "csv": "aedt_mcp/data/flux_map_fem.csv",
+    "sha256": "1ae4ba8c46633914dc34a8fab71e19e4ecd651dc06f1bad9b1d8c7dddf17f87a",
+    "Id_range_A": [-300.0, 0.0],
+    "Iq_range_A": [0.0, 300.0],
+    "method": "method_minimal_ewg",
+    "started_count_final_invocation": 434
+  },
+  "phase2": {
+    "models_trained": 12,
+    "models_failed": 0,
+    "in_grid_winner": "gaussian_process",
+    "in_grid_winner_test_rmse_mean": 0.0002552312073575031,
+    "in_grid_winner_test_r2_mean": 0.9998571551444081,
+    "metrics_csv": "out/logs/metrics_summary.csv"
+  },
+  "phase3": {
+    "status": "ok",
+    "n_points": 20,
+    "script_version": "2026-07-09-newline-fix",
+    "truth_csv": "aedt_mcp/tmp/aedt_jobs/off_grid_validation/off_grid_fem_results.csv",
+    "note": "Off-grid Id spans negative and positive; training Id only [-300,0]"
+  },
+  "phase4": {
+    "off_grid_winner": "random_forest",
+    "off_grid_winner_rmse_mean": 0.012164498497706414,
+    "ranking_json": "out/validation/off_grid_ranking.json",
+    "inference_deployed": "random_forest (prefer off-grid winner)"
+  },
+  "phase5": {
+    "status": "ok",
+    "flux_scale": 11.861254825070445,
+    "poles": 4,
+    "pole_pairs": 2,
+    "rs_ohm": 2.15938,
+    "vdc_v": 311,
+    "i_max_peak_a": 6.0,
+    "i_rated_peak_a": 4.009026748750874,
+    "t_rated_nm": 2.89531,
+    "params_json": "aedt_mcp/out/motor_params.json"
+  },
+  "phase6": {
+    "torque_sanity": "OK",
+    "T_implied_nm": 3.008057,
+    "T_rated_nm": 2.89531,
+    "mtpa_curve_rows": 50,
+    "fw_envelope_rows": 60,
+    "reference_lookup_rows": 3000,
+    "lut_status_counts": {
+      "mtpa": 688,
+      "infeasible": 2266,
+      "fw_search_failed": 46
+    },
+    "out_dir": "out/mtpa",
+    "grid_n": 400,
+    "wall_seconds_approx": 242
+  }
+}
