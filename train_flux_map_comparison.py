@@ -660,6 +660,19 @@ def main(args):
     np.save(os.path.join(dirs["models"], "Y_all.npy"), Y_all)
 
     candidates = build_candidates(Xtr)
+    if not _HAS_SKLEARN or not _HAS_TORCH:
+        missing = []
+        if not _HAS_SKLEARN:
+            missing.append("scikit-learn")
+        if not _HAS_TORCH:
+            missing.append("torch")
+        print(
+            "[warn] optional packages missing: "
+            + ", ".join(missing)
+            + f" — only {len(candidates)} classical models will train. "
+            "Use the project venv (Python 3.11 + requirements.txt) for the "
+            "official Stage 0 reference."
+        )
     results = []
 
     for model in candidates:

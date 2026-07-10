@@ -1,0 +1,88 @@
+{
+  "schema_version": "stage1-eesm-0.1",
+  "experiment_id": "synthetic_eesm_harness_stage1",
+  "description": "Synthetic EESM truth map + copper-loss scheduler scaffold before real Maxwell",
+  "status": "synthetic_scaffold",
+  "machine": {
+    "type": "EESM_synthetic",
+    "pole_pairs": 2,
+    "rs_ohm": 0.05,
+    "rf_ohm": 8.0,
+    "vdc_v": 400.0,
+    "i_s_max_peak_a": 120.0,
+    "i_f_min_a": 0.0,
+    "i_f_max_a": 15.0,
+    "omega_mech_base_rpm": 3000.0,
+    "omega_mech_max_rpm": 9000.0,
+    "t_rated_nm": 80.0
+  },
+  "map_domain": {
+    "id_min_a": -120.0,
+    "id_max_a": 0.0,
+    "iq_min_a": 0.0,
+    "iq_max_a": 120.0,
+    "if_min_a": 0.0,
+    "if_max_a": 15.0,
+    "units": {
+      "current": "A_peak_dq_and_field_DC",
+      "flux": "Wb",
+      "torque": "N.m",
+      "voltage": "V",
+      "speed": "rpm_mech or rad/s electrical as noted"
+    }
+  },
+  "synthetic_map_coefficients": {
+    "Ld0": 0.0012,
+    "Lq0": 0.0020,
+    "Mdf0": 0.018,
+    "L_cross_dq": 0.00015,
+    "L_cross_qf": 0.00008,
+    "sat_d": 8.0e-6,
+    "sat_q": 6.0e-6,
+    "sat_f": 4.0e-3,
+    "lambda_d_offset": 0.0,
+    "lambda_q_offset": 0.0
+  },
+  "scheduler": {
+    "torque_tolerance_nm": 0.5,
+    "n_grid_id": 25,
+    "n_grid_iq": 25,
+    "n_grid_if": 12,
+    "n_random_refine": 200,
+    "seed": 0
+  },
+  "sampling": {
+    "seed": 0,
+    "n_random": 500,
+    "n_lhs": 500,
+    "tensor": {
+      "n_id": 8,
+      "n_iq": 8,
+      "n_if": 5
+    }
+  },
+  "seeds": {
+    "map_eval": 0,
+    "sampling": 0,
+    "scheduler": 0
+  },
+  "paths": {
+    "outputs": "eesm/outputs",
+    "oracle_csv": "eesm/outputs/oracle_dense_map.csv",
+    "samples_csv": "eesm/outputs/sample_designs.csv"
+  },
+  "conventions": {
+    "map": "(id, iq, if) -> (lambda_d, lambda_q)",
+    "optional_later": "(id, iq, if) -> (lambda_d, lambda_q, lambda_f)",
+    "scheduler": "(omega, T_ref) -> (id_ref, iq_ref, if_ref)",
+    "torque": "T = (3/2) * pole_pairs * (lambda_d * iq - lambda_q * id)",
+    "voltage": "vd = Rs*id - omega_e*lambda_q; vq = Rs*iq + omega_e*lambda_d",
+    "copper_loss": "P_cu = (3/2)*Rs*(id^2 + iq^2) + Rf*if^2",
+    "omega_e": "omega_e = omega_mech_rad_s * pole_pairs",
+    "v_max": "V_max_phase_peak = Vdc / sqrt(3)"
+  },
+  "notes": [
+    "This is synthetic truth for pipeline testing, not a real EESM FEM map.",
+    "Real Maxwell/AEDT EESM sweeps remain blocked until synthetic gates pass."
+  ]
+}

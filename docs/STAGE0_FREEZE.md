@@ -53,6 +53,8 @@ After promote, MTPA must run in the same full chain so `out/mtpa` matches `infer
 | Shared physics/domain | `pipeline/` |
 | Units | `docs/UNITS_AND_CONVENTIONS.md` |
 | Limitations | `docs/KNOWN_LIMITATIONS.md` |
+| Final verification report | `docs/STAGE0_FINAL_VERIFICATION.md` |
+| Manual FEM LUT audit runbook | `docs/AEDT_LUT_AUDIT_RUNBOOK.md` |
 
 ## Seeds (frozen defaults)
 

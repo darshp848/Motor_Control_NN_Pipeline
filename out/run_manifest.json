@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-07-10T07:46:35.836446+00:00",
+  "created_utc": "2026-07-10T08:05:27.540436+00:00",
   "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
   "platform": "Windows-10-10.0.26200-SP0",
   "package_versions": {
@@ -27,8 +27,8 @@
     "train_csv": "1ae4ba8c46633914dc34a8fab71e19e4ecd651dc06f1bad9b1d8c7dddf17f87a",
     "off_grid_csv": "8e674ef8afc9e4b53837ae0ea368c884a0b3cebc144ccdaa87a7ccf89ab5d27f",
     "motor_params_clean": "ad46dbb4db6409bd760f02987233e3b42132951b7597bd300e070579c7e82e2d",
-    "metrics_summary": "5451c0c6fb8b4f6fb32e7cbb100eaa1010e006065920682e154c6750d2d6253c",
-    "off_grid_ranking": "7d89bbb3c0575186e4e0ce53c773d8f0916c106f0168b6cdf537a539cb823e92",
+    "metrics_summary": "eb6ded8b97f6df25b70d894ab9c1d9b7ae4dd6211482ccac9f6664d740e62639",
+    "off_grid_ranking": "29d2d02a188918e8ca7340e49372215aef83c0c5231bea477d9dc38abcc56a77",
     "reference_lookup": "5e8f914b1034ff995c0668af9a1bea28691e5566e4eb2a50bedc108ee3890d0a",
     "lut_audit_commands": "02112c9618a6423bc5babc8f2cdde9510020702c2c4ce4c8b732ca86e7fcbe7e",
     "inference_flux_map": "6bbd86a15f46e55b32e292b81162fc8039904df98c05e5e9967c2dacef7595c4",
