@@ -12,8 +12,8 @@ Subject to torque tolerance, Is limit, if min/max, voltage limit, map domain.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -91,6 +91,42 @@ class SchedulerResult:
     v_mag_v: Optional[float]
     status: str
     message: str = ""
+    # Explicit constraint flags for the returned solution (or conservative
+    # False when no solution / search failed).
+    torque_ok: bool = False
+    voltage_ok: bool = False
+    stator_current_ok: bool = False
+    field_current_ok: bool = False
+    domain_ok: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+def _failed_result(
+    omega_rpm: float,
+    t_ref_nm: float,
+    status: str,
+    message: str,
+) -> SchedulerResult:
+    """No current refs; all constraint flags False (conservative)."""
+    return SchedulerResult(
+        omega_rpm=float(omega_rpm),
+        t_ref_nm=float(t_ref_nm),
+        id_ref_a=None,
+        iq_ref_a=None,
+        if_ref_a=None,
+        torque_nm=None,
+        p_cu_w=None,
+        v_mag_v=None,
+        status=status,
+        message=message,
+        torque_ok=False,
+        voltage_ok=False,
+        stator_current_ok=False,
+        field_current_ok=False,
+        domain_ok=False,
+    )
 
 
 class CopperLossScheduler:
@@ -114,10 +150,11 @@ class CopperLossScheduler:
         self.n_random_refine = int(n_random_refine)
         self.seed = int(seed)
 
-    def _candidate_pool(self, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _candidate_pool(
+        self, rng: np.random.Generator
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         d = self.map.domain
         lim = self.limits
-        # Restrict stator currents to map domain ∩ Is disk
         id_vals = np.linspace(d.id_min_a, d.id_max_a, self.n_grid_id)
         iq_vals = np.linspace(d.iq_min_a, d.iq_max_a, self.n_grid_iq)
         if_vals = np.linspace(
@@ -130,7 +167,6 @@ class CopperLossScheduler:
         iq_g = IQ.ravel()
         if_g = IF.ravel()
 
-        # Random refine inside domain box
         n_r = self.n_random_refine
         if n_r > 0:
             u = rng.random((n_r, 3))
@@ -146,6 +182,29 @@ class CopperLossScheduler:
             id_a, iq_a, if_a = id_g, iq_g, if_g
         return id_a, iq_a, if_a
 
+    def _point_flags(
+        self,
+        id_v: float,
+        iq_v: float,
+        if_v: float,
+        torque_nm: float,
+        v_mag_v: float,
+        t_ref: float,
+        tol: float,
+        v_max: float,
+    ) -> Dict[str, bool]:
+        lim = self.limits
+        is_mag = math.sqrt(id_v * id_v + iq_v * iq_v)
+        return {
+            "torque_ok": abs(torque_nm - t_ref) <= tol + 1e-9,
+            "voltage_ok": v_mag_v <= v_max + 1e-9,
+            "stator_current_ok": is_mag <= lim.i_s_max_peak_a + 1e-9,
+            "field_current_ok": (
+                lim.i_f_min_a - 1e-9 <= if_v <= lim.i_f_max_a + 1e-9
+            ),
+            "domain_ok": bool(self.map.is_in_domain(id_v, iq_v, if_v)),
+        }
+
     def schedule(
         self,
         omega_rpm: float,
@@ -153,64 +212,39 @@ class CopperLossScheduler:
     ) -> SchedulerResult:
         """Constrained min copper-loss search for one (speed, torque) command."""
         lim = self.limits
-        d = self.map.domain
         t_ref = float(t_ref_nm)
         omega_e = rpm_mech_to_we(omega_rpm, lim.pole_pairs)
         v_max = lim.v_max_phase_peak
         tol = float(lim.torque_tolerance_nm)
 
-        # Impossible torque magnitude with empty domain
         if t_ref < 0:
-            return SchedulerResult(
-                omega_rpm=float(omega_rpm),
-                t_ref_nm=t_ref,
-                id_ref_a=None,
-                iq_ref_a=None,
-                if_ref_a=None,
-                torque_nm=None,
-                p_cu_w=None,
-                v_mag_v=None,
-                status="infeasible",
-                message="negative torque not supported in Stage 1 scaffold",
+            return _failed_result(
+                omega_rpm,
+                t_ref,
+                "infeasible",
+                "negative torque not supported in Stage 1 scaffold",
             )
 
         rng = np.random.default_rng(self.seed)
         try:
             id_a, iq_a, if_a = self._candidate_pool(rng)
         except Exception as exc:  # pragma: no cover
-            return SchedulerResult(
-                omega_rpm=float(omega_rpm),
-                t_ref_nm=t_ref,
-                id_ref_a=None,
-                iq_ref_a=None,
-                if_ref_a=None,
-                torque_nm=None,
-                p_cu_w=None,
-                v_mag_v=None,
-                status="search_failed",
-                message=str(exc),
+            return _failed_result(
+                omega_rpm, t_ref, "search_failed", str(exc)
             )
 
-        # Domain
         in_dom = self.map.is_in_domain(id_a, iq_a, if_a)
-        # Stator current limit
         is_mag = np.sqrt(id_a * id_a + iq_a * iq_a)
         ok_is = is_mag <= lim.i_s_max_peak_a + 1e-9
         ok_if = (if_a >= lim.i_f_min_a - 1e-9) & (if_a <= lim.i_f_max_a + 1e-9)
 
         ld, lq = self.map.flux(id_a, iq_a, if_a)
         if not (np.all(np.isfinite(ld)) and np.all(np.isfinite(lq))):
-            return SchedulerResult(
-                omega_rpm=float(omega_rpm),
-                t_ref_nm=t_ref,
-                id_ref_a=None,
-                iq_ref_a=None,
-                if_ref_a=None,
-                torque_nm=None,
-                p_cu_w=None,
-                v_mag_v=None,
-                status="search_failed",
-                message="non-finite flux from map",
+            return _failed_result(
+                omega_rpm,
+                t_ref,
+                "search_failed",
+                "non-finite flux from map",
             )
 
         t_em = electromagnetic_torque_eesm(id_a, iq_a, ld, lq, lim.pole_pairs)
@@ -225,72 +259,72 @@ class CopperLossScheduler:
         feasible = in_dom & ok_is & ok_if & ok_v & ok_t
         if np.any(feasible):
             idx_pool = np.flatnonzero(feasible)
-            best_local = idx_pool[np.argmin(pcu[idx_pool])]
+            best_local = int(idx_pool[np.argmin(pcu[idx_pool])])
+            id_v = float(id_a[best_local])
+            iq_v = float(iq_a[best_local])
+            if_v = float(if_a[best_local])
+            t_v = float(t_em[best_local])
+            v_v = float(vmag[best_local])
+            flags = self._point_flags(
+                id_v, iq_v, if_v, t_v, v_v, t_ref, tol, v_max
+            )
             return SchedulerResult(
                 omega_rpm=float(omega_rpm),
                 t_ref_nm=t_ref,
-                id_ref_a=float(id_a[best_local]),
-                iq_ref_a=float(iq_a[best_local]),
-                if_ref_a=float(if_a[best_local]),
-                torque_nm=float(t_em[best_local]),
+                id_ref_a=id_v,
+                iq_ref_a=iq_v,
+                if_ref_a=if_v,
+                torque_nm=t_v,
                 p_cu_w=float(pcu[best_local]),
-                v_mag_v=float(vmag[best_local]),
+                v_mag_v=v_v,
                 status="feasible",
                 message="min copper loss among feasible candidates",
+                **flags,
             )
 
-        # Soft boundary: meet torque + domain + current, allow voltage soft?
-        # Prefer torque-feasible points inside domain and current limits.
         soft = in_dom & ok_is & ok_if & ok_t
         if np.any(soft):
             idx_pool = np.flatnonzero(soft)
-            # Among torque-ok points, prefer lowest voltage violation then Pcu
             v_viol = np.maximum(0.0, vmag[idx_pool] - v_max)
             order = np.lexsort((pcu[idx_pool], v_viol))
-            best_local = idx_pool[order[0]]
+            best_local = int(idx_pool[order[0]])
+            id_v = float(id_a[best_local])
+            iq_v = float(iq_a[best_local])
+            if_v = float(if_a[best_local])
+            t_v = float(t_em[best_local])
+            v_v = float(vmag[best_local])
+            flags = self._point_flags(
+                id_v, iq_v, if_v, t_v, v_v, t_ref, tol, v_max
+            )
             return SchedulerResult(
                 omega_rpm=float(omega_rpm),
                 t_ref_nm=t_ref,
-                id_ref_a=float(id_a[best_local]),
-                iq_ref_a=float(iq_a[best_local]),
-                if_ref_a=float(if_a[best_local]),
-                torque_nm=float(t_em[best_local]),
+                id_ref_a=id_v,
+                iq_ref_a=iq_v,
+                if_ref_a=if_v,
+                torque_nm=t_v,
                 p_cu_w=float(pcu[best_local]),
-                v_mag_v=float(vmag[best_local]),
+                v_mag_v=v_v,
                 status="saturated_to_boundary",
                 message="torque met; voltage or other limit on boundary",
+                **flags,
             )
 
-        # No torque match: report infeasible (do not invent fake refs)
-        # Check if domain is empty of any valid current points
         basic = in_dom & ok_is & ok_if
         if not np.any(basic):
-            return SchedulerResult(
-                omega_rpm=float(omega_rpm),
-                t_ref_nm=t_ref,
-                id_ref_a=None,
-                iq_ref_a=None,
-                if_ref_a=None,
-                torque_nm=None,
-                p_cu_w=None,
-                v_mag_v=None,
-                status="out_of_domain",
-                message="no candidates inside map domain and current limits",
+            return _failed_result(
+                omega_rpm,
+                t_ref,
+                "out_of_domain",
+                "no candidates inside map domain and current limits",
             )
 
-        # Max achievable |T| under limits (for message only)
         t_max = float(np.max(np.abs(t_em[basic]))) if np.any(basic) else 0.0
-        return SchedulerResult(
-            omega_rpm=float(omega_rpm),
-            t_ref_nm=t_ref,
-            id_ref_a=None,
-            iq_ref_a=None,
-            if_ref_a=None,
-            torque_nm=None,
-            p_cu_w=None,
-            v_mag_v=None,
-            status="infeasible",
-            message=(
+        return _failed_result(
+            omega_rpm,
+            t_ref,
+            "infeasible",
+            (
                 f"no candidate within torque tolerance {tol} N.m; "
                 f"approx max |T| under limits ~ {t_max:.3f} N.m"
             ),

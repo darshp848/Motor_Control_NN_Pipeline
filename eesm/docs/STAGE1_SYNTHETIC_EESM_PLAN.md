@@ -136,6 +136,7 @@ Stage 1 is the **offline EESM dry-run** of that story. Stage 0 IPM remains the f
 
 ```text
 eesm/
+  run_synthetic_stage1.py          # one-command offline runner
   configs/synthetic_eesm_manifest.json
   src/
     synthetic/synthetic_map.py
@@ -144,18 +145,41 @@ eesm/
     scheduler/copper_loss_scheduler.py
     validation/synthetic_validation.py
   tests/
-  outputs/               # generated CSVs (local)
+  outputs/               # generated CSVs + stage1_synthetic_summary.json
   docs/STAGE1_SYNTHETIC_EESM_PLAN.md
 ```
 
 ## Commands
 
-```pwsh
-# From repo root, with project venv:
-.\.venv\Scripts\python -m pytest eesm/tests -q
+From the **repo root**:
 
-# Optional smoke report:
-.\.venv\Scripts\python -c "from pathlib import Path; import sys; sys.path.insert(0, 'eesm/src'); from validation.synthetic_validation import run_smoke_validation; import json; print(json.dumps(run_smoke_validation('eesm/configs/synthetic_eesm_manifest.json'), indent=2))"
+```pwsh
+# One-command Stage 1 synthetic harness (oracle + samples + smoke + scheduler demo)
+python eesm/run_synthetic_stage1.py
+
+# Or with the project venv:
+.\.venv\Scripts\python eesm/run_synthetic_stage1.py
+
+# Tests
+.\.venv\Scripts\python -m pytest tests -q
+.\.venv\Scripts\python -m pytest eesm/tests -q
+```
+
+Artifacts land under `eesm/outputs/`:
+
+| File | Content |
+|------|---------|
+| `oracle_dense_map.csv` | Dense synthetic truth grid |
+| `samples_tensor_grid.csv` | Tensor product design |
+| `samples_random.csv` | Seeded random design |
+| `samples_latin_hypercube.csv` | Space-filling LHS design |
+| `samples_sequential_placeholder.csv` | Active-learning placeholder |
+| `stage1_synthetic_summary.json` | Machine-readable Stage 1 summary |
+
+Optional overrides:
+
+```pwsh
+python eesm/run_synthetic_stage1.py --out path\to\temp_out --oracle-n-id 11
 ```
 
 ## What is intentionally out of scope (this pass)

@@ -89,6 +89,13 @@ def test_scheduler_finds_feasible_modest_torque(scheduler: CopperLossScheduler):
     is_mag = (res.id_ref_a**2 + res.iq_ref_a**2) ** 0.5
     assert is_mag <= scheduler.limits.i_s_max_peak_a + 1e-6
     assert scheduler.limits.i_f_min_a - 1e-6 <= res.if_ref_a <= scheduler.limits.i_f_max_a + 1e-6
+    # constraint flags for a feasible (or soft-boundary) solution
+    assert res.torque_ok is True
+    assert res.stator_current_ok is True
+    assert res.field_current_ok is True
+    assert res.domain_ok is True
+    if res.status == "feasible":
+        assert res.voltage_ok is True
 
 
 def test_infeasible_torque_does_not_return_fake_refs(
@@ -100,6 +107,26 @@ def test_infeasible_torque_does_not_return_fake_refs(
     assert res.iq_ref_a is None
     assert res.if_ref_a is None
     assert res.torque_nm is None
+    # conservative flags when no solution is returned
+    assert res.torque_ok is False
+    assert res.voltage_ok is False
+    assert res.stator_current_ok is False
+    assert res.field_current_ok is False
+    assert res.domain_ok is False
+
+
+def test_scheduler_result_to_dict_includes_flags(scheduler: CopperLossScheduler):
+    res = scheduler.schedule(omega_rpm=1500.0, t_ref_nm=20.0)
+    d = res.to_dict()
+    for key in (
+        "torque_ok",
+        "voltage_ok",
+        "stator_current_ok",
+        "field_current_ok",
+        "domain_ok",
+        "status",
+    ):
+        assert key in d
 
 
 def test_scheduler_repeatable_with_seed(fmap: SyntheticEESMMap):
