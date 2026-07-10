@@ -108,15 +108,9 @@ def _load_surrogate():
 # Units + transforms.
 # ---------------------------------------------------------------------------
 
-def rpm_to_elec(rad_per_s_elec, n_pole_pairs):
-    """Convert mechanical rpm to electrical rad/s."""
-    # omega_mech (rad/s) = rpm * 2*pi / 60
-    # omega_elec (rad/s) = omega_mech * pole_pairs
-    return None  # placeholder if needed
-
-
 def rpm_mech_to_we(rpm_mech, n_pp):
-    return (rpm_mech / 60.0) * 2.0 * math.pi * n_pp  # rad/s electrical
+    """Mechanical rpm -> electrical angular speed (rad/s)."""
+    return (rpm_mech / 60.0) * 2.0 * math.pi * n_pp
 
 
 # ---------------------------------------------------------------------------
@@ -511,11 +505,9 @@ def parse_args():
                    help="Unused placeholder for compatibility.")
     p.add_argument("--out", default="out/mtpa",
                    help="Output dir. Default out/mtpa")
-    p.add_argument("--params-json", default="data/motor_params.json",
-                   help="Optional motor_params.json from pull_motor_params.py "
-                        "(default: data/motor_params.json). If present and readable, "
-                        "overrides CLI defaults for poles/rs/vdc/i-max/flux-scale/"
-                        "t-rated/i-rated-peak using keys found there.")
+    p.add_argument("--params-json", default="data/motor_params_clean.json",
+                   help="motor_params JSON (prefer data/motor_params_clean.json). "
+                        "Falls back to data/motor_params.json if clean missing.")
     p.add_argument("--no-use-params-json", action="store_true",
                    help="Ignore --params-json even if it exists.")
     return p.parse_args()
@@ -526,7 +518,14 @@ def overlay_params_from_json(ns):
         return
     p = ns.params_json
     if not p or not os.path.exists(p):
-        return
+        # Prefer clean schema; fall back to raw AEDT dump.
+        for cand in ("data/motor_params_clean.json", "data/motor_params.json"):
+            if os.path.exists(cand):
+                p = cand
+                ns.params_json = cand
+                break
+        else:
+            return
     try:
         with open(p, "r") as f:
             j = json.load(f)
@@ -536,17 +535,19 @@ def overlay_params_from_json(ns):
         if key in j and j[key] is not None:
             try:
                 setattr(ns, attr, cast(j[key]))
-                print(f"[params-json] overriding {attr} = {j[key]}")
+                print(f"[params-json] overriding {attr} = {j[key]} (from {p})")
             except Exception:
                 pass
-    copy_if("poles", "poles", int)
-    copy_if("pole_pairs", "poles", lambda v: int(v*2))  # tolerate pole_pairs
+    # Prefer explicit poles; only derive from pole_pairs if poles absent.
+    if "poles" in j and j["poles"] is not None:
+        copy_if("poles", "poles", int)
+    elif "pole_pairs" in j and j["pole_pairs"] is not None:
+        copy_if("pole_pairs", "poles", lambda v: int(v) * 2)
     copy_if("rs_ohm", "rs", float)
     copy_if("vdc_v", "vdc", float)
     copy_if("i_max_peak_a", "i_max_peak", float)
     copy_if("i_rated_peak_a", "i_rated_peak", float)
     copy_if("t_rated_nm", "t_rated", float)
-    copy_if("flux_scale", "flux_scale", float)
     copy_if("flux_scale", "flux_scale", float)
     copy_if("omega_mech_base_rpm", "omega_mech_base_rpm", float)
     copy_if("omega_mech_max_rpm", "omega_mech_max_rpm", float)
@@ -588,22 +589,37 @@ def main():
     torque_sanity(surrogate, ns.poles // 2, ns.i_rated_peak, ns.t_rated,
                   ns.out)
 
-    # Save params.
+    # Save params actually used (freeze audit trail).
+    params_used = {
+        "poles": int(ns.poles),
+        "pole_pairs": int(ns.poles // 2),
+        "rs_ohm": ns.rs,
+        "vdc_v": ns.vdc,
+        "vmax_phase_peak_v": V_max,
+        "v_max_formula": "Vdc / sqrt(3)",
+        "i_max_peak_a": ns.i_max_peak,
+        "i_rated_peak_a": ns.i_rated_peak,
+        "t_rated_nm": ns.t_rated,
+        "flux_scale": ns.flux_scale,
+        "omega_mech_base_rpm": ns.omega_mech_base_rpm,
+        "omega_mech_max_rpm": ns.omega_mech_max_rpm,
+        "inference_path": inf_path,
+        "params_json_source": getattr(ns, "params_json", None),
+        "current_units": "peak_amperes_dq",
+        "torque_formula": "T = (3/2) * pole_pairs * (Phi_d*Iq - Phi_q*Id)",
+        "voltage_formula": "Vd = Rs*Id - we*Phi_q; Vq = Rs*Iq + we*Phi_d",
+        "phi_csv_scaling": "raw_FEM_unscaled; scale applied in FluxSurrogate",
+    }
+    try:
+        from pipeline.manifest import sha256_file
+        if ns.params_json and os.path.exists(ns.params_json):
+            params_used["params_json_sha256"] = sha256_file(ns.params_json)
+        if os.path.exists(inf_path):
+            params_used["inference_sha256"] = sha256_file(inf_path)
+    except Exception:
+        pass
     with open(os.path.join(ns.out, "motor_params_used.json"), "w") as f:
-        json.dump({
-            "poles": int(ns.poles),
-            "pole_pairs": int(ns.poles // 2),
-            "rs_ohm": ns.rs,
-            "vdc_v": ns.vdc,
-            "vmax_phase_peak_v": V_max,
-            "i_max_peak_a": ns.i_max_peak,
-            "i_rated_peak_a": ns.i_rated_peak,
-            "t_rated_nm": ns.t_rated,
-            "flux_scale": ns.flux_scale,
-            "omega_mech_base_rpm": ns.omega_mech_base_rpm,
-            "omega_mech_max_rpm": ns.omega_mech_max_rpm,
-            "inference_path": inf_path,
-        }, f, indent=2)
+        json.dump(params_used, f, indent=2)
 
     # MTPA curve (400x400 Id-Iq half-disk per torque sample; batched RF).
     print("\n[mtpa] computing MTPA curve over %d torque samples (grid_n=400)..."

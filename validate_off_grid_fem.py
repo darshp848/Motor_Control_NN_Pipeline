@@ -1,8 +1,8 @@
 """OFF-GRID FEM VALIDATION SOLVER (run inside AEDT, Automation -> Run Script).
 
 Generates 20 deterministic off-grid (Id, Iq) current pairs that fall at
-midpoints of the 40x40 training grid cells (so they interpolate the
-training set but never coincide with a training point), then for each:
+midpoints of training-grid cells (so they never coincide with a training
+point), then for each:
 
   1. Convert (Id, Iq) -> (Ia, Ib, Ic) via abc_from_dq with theta_re=0
      (same transform as gui_full_magnetostatic_export.py).
@@ -13,24 +13,23 @@ training set but never coincide with a training point), then for each:
      idempotently at the start.
   4. Delete/recreate MCP_OffGrid_ABC report, ExportToFile to per-point CSV.
   5. Park-transform the exported ABC flux linkage back to (Phi_d, Phi_q).
-  6. Append row to off_grid_fem_results.csv.
+  6. Append row to off_grid_fem_results.csv with domain_label.
+
+Stage 0 (2026-07-10): training map Id is only [-300, 0]. The previous
+ID_RANGE=(-300, 300) mixed interpolation with extrapolation. Defaults now
+match the training rectangle (in-domain mid-cell interpolation). Set
+POINT_SET_MODE = "extrapolation" for an explicit Id>0 set under a separate
+job id so the two questions are never mixed.
 
 Pure stdlib (no numpy/torch/sklearn) because this runs in AEDT's IronPython,
 which does NOT have those packages. The model-prediction + comparison half
 lives in compare_off_grid_predictions.py and runs in the venv python.
 
 Output:
-  tmp/aedt_jobs/off_grid_validation/off_grid_fem_results.csv
-      Header: Id,Iq,Phi_d,Phi_q
-  tmp/aedt_jobs/off_grid_validation/point_exports/point_NNN_fluxlinkage_abc.csv
-  tmp/aedt_jobs/off_grid_validation/off_grid_validation.json
-
-Initial state assumption:
-  Maxwell2DDesign4 is in the state left by the 40x40 full sweep
-  (SurfApprox ops deleted, slider=1 mesh, Setup_MagProbe MaximumPasses=1).
-  This script re-applies those settings idempotently in case they didn't
-  persist, so it's safe to run even if a fresh copy of the project was
-  loaded.
+  tmp/aedt_jobs/<JOB_ID>/off_grid_fem_results.csv
+      Header: Id,Iq,Phi_d,Phi_q,domain_label
+  tmp/aedt_jobs/<JOB_ID>/point_exports/point_NNN_fluxlinkage_abc.csv
+  tmp/aedt_jobs/<JOB_ID>/off_grid_validation.json
 
 Run from AEDT 2025 R2 Student: Automation -> Run Script.
 Then run compare_off_grid_predictions.py from the repo root with the venv
@@ -56,9 +55,16 @@ PROJECT_ROOT = os.path.join(_REPO_ROOT, "aedt_mcp")
 PROJECT_PATH = os.path.join(
     PROJECT_ROOT, "tmp", "aedt_projects", "ipm_1_probe", "ipm_1.aedt"
 )
-JOB_ID = "off_grid_validation"
+# Point-set mode: "interpolation" (default, in training domain) or
+# "extrapolation" (explicit Id > training id_max). Separate job dirs.
+POINT_SET_MODE = "interpolation"  # or "extrapolation"
+if POINT_SET_MODE == "extrapolation":
+    JOB_ID = "off_grid_validation_extrap"
+else:
+    JOB_ID = "off_grid_validation_interp"
+
 # Bump when fixing IronPython incompatibilities so result JSON is easy to audit.
-SCRIPT_VERSION = "2026-07-09-newline-fix"
+SCRIPT_VERSION = "2026-07-10-stage0-domain-labels"
 JOB_DIR = os.path.join(PROJECT_ROOT, "tmp", "aedt_jobs", JOB_ID)
 POINT_DIR = os.path.join(JOB_DIR, "point_exports")
 OUT_CSV = os.path.join(JOB_DIR, "off_grid_fem_results.csv")
@@ -87,27 +93,46 @@ SETUP_MAX_PASSES = 1
 SETUP_MIN_PASSES = 1
 SETUP_PERCENT_REFINEMENT = 10
 
-# Off-grid point generation: 20 deterministic pairs at cell midpoints of the
-# 40x40 training grid (Id step ~ 15.38A, Iq step ~ 7.69 A). Half-integer cell
-# indices ensure no point coincides with a training node.
+# Training domain from the frozen 40x40 map: Id [-300, 0], Iq [0, 300].
+# Grid steps match linspace endpoints (n=40 => 39 intervals).
 N_POINTS = 20
-GRID_I_STEP = 600.0 / 39.0
-GRID_Q_STEP = 300.0 / 39.0
-ID_RANGE = (-300.0, 300.0)
-IQ_RANGE = (0.0, 300.0)
+N_ID_CELLS = 39
+N_IQ_CELLS = 39
+TRAIN_ID_RANGE = (-300.0, 0.0)
+TRAIN_IQ_RANGE = (0.0, 300.0)
+# Explicit extrapolation rectangle (Id positive half).
+EXTRAP_ID_RANGE = (0.0, 300.0)
+EXTRAP_IQ_RANGE = (0.0, 300.0)
 
 
-def generate_off_grid_points(n_points=N_POINTS, seed=7):
-    """Deterministic. Returns list of (Id, Iq) tuples at random cell midpoints
-    of the 40x40 training grid."""
+def _range_and_steps_for_mode(mode):
+    if mode == "extrapolation":
+        id_range = EXTRAP_ID_RANGE
+        iq_range = EXTRAP_IQ_RANGE
+        # Half-open on Id=0 training edge: sample mid-cells of positive Id.
+        id_step = (id_range[1] - id_range[0]) / float(N_ID_CELLS)
+        iq_step = (iq_range[1] - iq_range[0]) / float(N_IQ_CELLS)
+        domain_label = "extrapolation"
+    else:
+        id_range = TRAIN_ID_RANGE
+        iq_range = TRAIN_IQ_RANGE
+        id_step = (id_range[1] - id_range[0]) / float(N_ID_CELLS)
+        iq_step = (iq_range[1] - iq_range[0]) / float(N_IQ_CELLS)
+        domain_label = "in_domain_interpolation"
+    return id_range, iq_range, id_step, iq_step, domain_label
+
+
+def generate_off_grid_points(n_points=N_POINTS, seed=7, mode=POINT_SET_MODE):
+    """Deterministic mid-cell samples. Returns list of (Id, Iq, domain_label)."""
+    id_range, iq_range, id_step, iq_step, domain_label = _range_and_steps_for_mode(mode)
     rng = random.Random(seed)
     pts = []
     for _ in range(n_points):
-        i_idx = int(rng.random() * 39) + 0.5  # half-integer in [0.5, 39.5)
-        id_v = ID_RANGE[0] + i_idx * GRID_I_STEP
-        j_idx = int(rng.random() * 39) + 0.5
-        iq_v = IQ_RANGE[0] + j_idx * GRID_Q_STEP
-        pts.append((round(id_v, 6), round(iq_v, 6)))
+        i_idx = int(rng.random() * N_ID_CELLS) + 0.5  # half-integer cell center
+        id_v = id_range[0] + i_idx * id_step
+        j_idx = int(rng.random() * N_IQ_CELLS) + 0.5
+        iq_v = iq_range[0] + j_idx * iq_step
+        pts.append((round(id_v, 6), round(iq_v, 6), domain_label))
     return pts
 
 
@@ -382,12 +407,15 @@ def main():
 
     payload = {
         "script_version": SCRIPT_VERSION,
+        "point_set_mode": POINT_SET_MODE,
         "project": project_name,
         "design": DESIGN_NAME,
         "setup": SETUP_NAME,
         "theta_re": THETA_RE,
         "n_points": N_POINTS,
         "out_csv": OUT_CSV,
+        "train_id_range": list(TRAIN_ID_RANGE),
+        "train_iq_range": list(TRAIN_IQ_RANGE),
         "prestate": {
             "solution_type": call(design.GetSolutionType),
             "validate_before": call(design.ValidateDesign),
@@ -396,22 +424,24 @@ def main():
         },
     }
 
-    warn("OffGridValidation: re-applying mesh + setup recipe (idempotent)")
+    warn("OffGridValidation: mode=%s re-applying mesh + setup recipe" % POINT_SET_MODE)
     payload["mesh_setup_recipe"] = reapply_mesh_and_setup(mesh_module, analysis)
 
-    points = generate_off_grid_points(N_POINTS, seed=7)
-    payload["points"] = [{"index": i + 1, "id": p[0], "iq": p[1]}
-                         for i, p in enumerate(points)]
+    points = generate_off_grid_points(N_POINTS, seed=7, mode=POINT_SET_MODE)
+    payload["points"] = [
+        {"index": i + 1, "id": p[0], "iq": p[1], "domain_label": p[2]}
+        for i, p in enumerate(points)
+    ]
 
     # Write CSV header.
     # IronPython's open() does not accept newline= (CPython 3-only kwarg).
     with open(OUT_CSV, "w") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["Id", "Iq", "Phi_d", "Phi_q"])
+        w.writerow(["Id", "Iq", "Phi_d", "Phi_q", "domain_label"])
 
     completed = []
     failures = []
-    for i, (id_v, iq_v) in enumerate(points, start=1):
+    for i, (id_v, iq_v, domain_label) in enumerate(points, start=1):
         row, failure = solve_one_point(
             design, boundary, report, i, id_v, iq_v
         )
@@ -425,10 +455,11 @@ def main():
         with open(OUT_CSV, "a") as f:
             w = csv.writer(f, lineterminator="\n")
             w.writerow([("%.6f" % row[0]), ("%.6f" % row[1]),
-                        ("%.12g" % row[2]), ("%.12g" % row[3])])
-        completed.append(row)
-        warn("OffGrid %d done: Phi_d=%.6e Phi_q=%.6e" %
-             (i, row[2], row[3]))
+                        ("%.12g" % row[2]), ("%.12g" % row[3]),
+                        domain_label])
+        completed.append(row + (domain_label,))
+        warn("OffGrid %d (%s) done: Phi_d=%.6e Phi_q=%.6e" %
+             (i, domain_label, row[2], row[3]))
 
     payload["completed_count"] = len(completed)
     payload["first_failure"] = None

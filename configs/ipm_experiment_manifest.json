@@ -1,0 +1,87 @@
+{
+  "schema_version": "stage0-1.0",
+  "experiment_id": "ipm_pipeline_freeze_stage0",
+  "description": "Frozen IPM FEM→surrogate→off-grid→MTPA/FW template before EESM branch",
+  "machine": {
+    "type": "IPM",
+    "project": "ipm_1",
+    "design": "Maxwell2DDesign4",
+    "poles": 4,
+    "pole_pairs": 2,
+    "rs_ohm": 2.15938,
+    "vdc_v": 311.0,
+    "i_max_peak_a": 6.0,
+    "i_rated_peak_a": 4.009026748750874,
+    "rated_current_rms_a": 2.83481,
+    "t_rated_nm": 2.89531,
+    "omega_mech_base_rpm": 1800.0,
+    "omega_mech_max_rpm": 6000.0,
+    "flux_scale": 11.861254825070445
+  },
+  "conventions": {
+    "current_units": "peak_amperes_dq",
+    "dq_convention": "motor_Park_theta_re_0_d_aligned_PhaseA",
+    "park_theta_re": 0.0,
+    "torque_formula": "T = (3/2) * pole_pairs * (Phi_d*Iq - Phi_q*Id)",
+    "voltage_formula": "Vd = Rs*Id - we*Phi_q; Vq = Rs*Iq + we*Phi_d",
+    "v_max_formula": "V_max_phase_peak = Vdc / sqrt(3)",
+    "phi_csv_scaling": "raw_FEM_unscaled; scale applied only in MTPA FluxSurrogate",
+    "flux_scale_definition": "flux_scale = T_rated / T_implied at (Id=0, Iq=I_rated_peak) using FEM Phi"
+  },
+  "training_domain": {
+    "id_min_a": -300.0,
+    "id_max_a": 0.0,
+    "iq_min_a": 0.0,
+    "iq_max_a": 300.0,
+    "n_id": 40,
+    "n_iq": 40,
+    "note": "Id never positive in training map; generation/positive-Id is extrapolation"
+  },
+  "control_domain": {
+    "id_min_a": -6.0,
+    "id_max_a": 0.0,
+    "iq_min_a": 0.0,
+    "iq_max_a": 6.0,
+    "i_max_peak_a": 6.0,
+    "note": "MTPA/FW search half-disk; map grid step ~7.7 A is coarser than control currents"
+  },
+  "seeds": {
+    "train_val_test_split": 0,
+    "torch": 0,
+    "off_grid_points": 7,
+    "lut_audit_selection": 11
+  },
+  "paths": {
+    "train_csv": "data/flux_map_fem.csv",
+    "off_grid_csv": "data/off_grid_fem_results.csv",
+    "motor_params_raw": "data/motor_params.json",
+    "motor_params_clean": "data/motor_params_clean.json",
+    "out_dir": "out",
+    "mtpa_dir": "out/mtpa",
+    "validation_dir": "out/validation",
+    "audit_dir": "out/audit"
+  },
+  "inference_selection": "off_grid_in_domain",
+  "inference_selection_note": "Promote model with best in-domain off-grid RMSE; fall back to mixed off-grid then in-grid",
+  "off_grid_protocol": {
+    "n_points_historical": 20,
+    "historical_id_range_bug": "validate_off_grid_fem used ID_RANGE=(-300,300) while training Id is [-300,0]; 10/20 points are extrapolation",
+    "frozen_default_id_range": [-300.0, 0.0],
+    "frozen_default_iq_range": [0.0, 300.0],
+    "extrapolation_set_id_range": [0.0, 300.0],
+    "seed": 7,
+    "script_version_min": "2026-07-10-stage0-domain-labels"
+  },
+  "audit": {
+    "n_mtpa": 8,
+    "n_fw": 4,
+    "n_infeasible": 2,
+    "seed": 11,
+    "fem_results_status": "pending_optional_aedt"
+  },
+  "software": {
+    "python_recommended": "3.11",
+    "aedt": "2025 R2 Student (optional; offline stages use CSV only)"
+  },
+  "known_limitations_doc": "docs/KNOWN_LIMITATIONS.md"
+}

@@ -1,0 +1,6 @@
+{
+  "status": "pending_fem",
+  "message": "FEM audit CSV not found. Protocol is frozen: generate commands with audit_lut_scheduler.py, then run validate_lut_audit_fem.py in AEDT.",
+  "commands_csv": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\audit\\lut_audit_commands.csv",
+  "expected_fem_csv": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\audit\\lut_audit_fem_results.csv"
+}

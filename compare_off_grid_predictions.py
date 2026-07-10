@@ -1,36 +1,20 @@
 """OFF-GRID MODEL COMPARISON (run in the venv python, NOT in AEDT).
 
+Stage 0: labels each truth point as in_domain_interpolation / boundary /
+extrapolation relative to the training map domain, and reports metrics
+separately so interpolation and extrapolation are never mixed into one score.
+
 Reads:
-  data/off_grid_fem_results.csv
-      (Id, Iq, Phi_d, Phi_q)  - the TRUE FEM flux at 20 off-grid points
+  data/off_grid_fem_results.csv  (Id, Iq, Phi_d, Phi_q [, domain_label])
+  data/flux_map_fem.csv          (training domain inference)
   out/logs/metrics_summary.json
-      - per-model in-grid train/val/test metrics + artifact paths
 
-For every model that the training script saved, this script:
-  1. Reloads the artifact via train_flux_map_comparison._reload_model_for_plot
-     (handles npz / pkl / pt uniformly and exposes .predict(X) -> (n,2)).
-  2. Predicts (Phi_d, Phi_q) at every off-grid (Id, Iq).
-  3. Computes off-grid RMSE + R^2 for Phi_d, Phi_q, mean.
-  4. Adds the off-grid numbers to the in-grid ones from metrics_summary.json
-     so you can see interpolation vs extrapolation gaps side by side.
-  5. Re-ranks the leaderboard by off-grid mean RMSE (the metric that actually
-     matters for trusting a surrogate in a controller).
-  6. Writes:
-       out/validation/off_grid_predictions.csv  - wide table (true + all
-                                                   models' predictions)
-       out/validation/off_grid_ranking.json     - per-model metrics + rank
-       out/validation/off_grid_validation.png   - predicted-vs-true scatter
-                                                   + residuals vs. Id
-
-Usage (from repo root, after the AEDT-side validator has run):
-
-    .venv\\Scripts\\python compare_off_grid_predictions.py \\
-        --truth data/off_grid_fem_results.csv \\
-        --models out --out out
-
-If --truth is omitted, default path used. If the truth CSV is missing, the
-script exits cleanly with a message - run validate_off_grid_fem.py in AEDT
-first.
+Writes:
+  out/validation/off_grid_predictions.csv
+  out/validation/off_grid_ranking.json
+  out/validation/off_grid_by_domain.json
+  out/validation/off_grid_fem_results_labeled.csv
+  out/validation/off_grid_validation.png
 """
 
 from __future__ import annotations
@@ -45,12 +29,18 @@ import numpy as np
 
 warnings.filterwarnings("ignore")
 
-# Reuse the loaders / model classes defined by the trainer. Both files live at
-# the same directory (repo root), so this import works from there.
 import train_flux_map_comparison as T
-
+from pipeline.domain import (
+    TrainingDomain,
+    count_labels,
+    default_ipm_training_domain,
+    domain_from_training_xy,
+    label_points,
+)
+from pipeline.data_qa import load_flux_csv
 
 DEFAULT_TRUTH_CSV = os.path.join("data", "off_grid_fem_results.csv")
+DEFAULT_TRAIN_CSV = os.path.join("data", "flux_map_fem.csv")
 
 
 def load_truth(csv_path):
@@ -68,6 +58,9 @@ def load_truth(csv_path):
             raise RuntimeError("Expected header Id,Iq,Phi_d,Phi_q, got " + str(cols))
         X = df[["Id", "Iq"]].to_numpy(np.float64)
         Y = df[["Phi_d", "Phi_q"]].to_numpy(np.float64)
+        pre_labels = None
+        if "domain_label" in df.columns:
+            pre_labels = [str(v) for v in df["domain_label"].tolist()]
     else:
         with open(csv_path, "r") as f:
             lines = [ln.strip() for ln in f if ln.strip()]
@@ -77,15 +70,31 @@ def load_truth(csv_path):
         rows = np.array([[float(v) for v in ln.split(",")[:4]]
                           for ln in lines[1:]], dtype=np.float64)
         X, Y = rows[:, :2], rows[:, 2:4]
-    return X, Y
+        pre_labels = None
+        if len(header) >= 5 and header[4] == "domain_label":
+            pre_labels = [ln.split(",")[4] for ln in lines[1:]]
+    return X, Y, pre_labels
 
 
 def per_model_metrics(y_true, y_pred):
+    if y_true.shape[0] == 0:
+        return {
+            "n": 0,
+            "rmse_phi_d": float("nan"),
+            "rmse_phi_q": float("nan"),
+            "rmse_mean": float("nan"),
+            "r2_phi_d": float("nan"),
+            "r2_phi_q": float("nan"),
+            "r2_mean": float("nan"),
+            "max_abs_err_phi_d": float("nan"),
+            "max_abs_err_phi_q": float("nan"),
+        }
     rmse = np.sqrt(np.mean((y_true - y_pred) ** 2, axis=0))
     ss_res = np.sum((y_true - y_pred) ** 2, axis=0)
     ss_tot = np.sum((y_true - y_true.mean(axis=0)) ** 2, axis=0) + 1e-12
     r2 = 1.0 - ss_res / ss_tot
     return {
+        "n": int(y_true.shape[0]),
         "rmse_phi_d": float(rmse[0]),
         "rmse_phi_q": float(rmse[1]),
         "rmse_mean": float(rmse.mean()),
@@ -97,6 +106,16 @@ def per_model_metrics(y_true, y_pred):
     }
 
 
+def resolve_training_domain(train_csv: str) -> TrainingDomain:
+    if os.path.exists(train_csv):
+        X_tr, _, issues = load_flux_csv(train_csv)
+        if issues:
+            print("[domain] train CSV issues: " + "; ".join(issues))
+        return domain_from_training_xy(X_tr)
+    print("[domain] train CSV missing; using default IPM domain [-300,0]x[0,300]")
+    return default_ipm_training_domain()
+
+
 def main(args):
     truth_csv = args.truth
     models_root = args.models
@@ -104,14 +123,51 @@ def main(args):
     val_dir = os.path.join(out_dir, "validation")
     os.makedirs(val_dir, exist_ok=True)
 
+    domain = resolve_training_domain(args.train_csv)
+    print(f"[domain] training Id [{domain.id_min}, {domain.id_max}], "
+          f"Iq [{domain.iq_min}, {domain.iq_max}]")
+
     print(f"[load] truth CSV: {truth_csv}")
-    X, Y = load_truth(truth_csv)
+    X, Y, pre_labels = load_truth(truth_csv)
     n_points = X.shape[0]
+    if pre_labels is not None and len(pre_labels) == n_points:
+        labels = pre_labels
+        print("[domain] using domain_label column from truth CSV")
+    else:
+        labels = label_points(X, domain)
+        print("[domain] labels computed from training domain")
+    label_counts = count_labels(labels)
+    print(f"[domain] counts: {label_counts}")
+
     print(f"[load] {n_points} off-grid points, "
           f"Id range [{X[:,0].min():.2f}, {X[:,0].max():.2f}], "
           f"Iq range [{X[:,1].min():.2f}, {X[:,1].max():.2f}]")
-    print(f"[load] Phi_d range [{Y[:,0].min():.5f}, {Y[:,0].max():.5f}] Wb, "
-          f"Phi_q range [{Y[:,1].min():.5f}, {Y[:,1].max():.5f}] Wb")
+
+    # Labeled truth copy for freeze / downstream.
+    labeled_path = os.path.join(val_dir, "off_grid_fem_results_labeled.csv")
+    if T._HAS_PANDAS:
+        import pandas as pd
+        pd.DataFrame({
+            "Id": X[:, 0], "Iq": X[:, 1],
+            "Phi_d": Y[:, 0], "Phi_q": Y[:, 1],
+            "domain_label": labels,
+        }).to_csv(labeled_path, index=False)
+    else:
+        with open(labeled_path, "w", newline="") as f:
+            import csv as csvmod
+            w = csvmod.writer(f)
+            w.writerow(["Id", "Iq", "Phi_d", "Phi_q", "domain_label"])
+            for i in range(n_points):
+                w.writerow([X[i, 0], X[i, 1], Y[i, 0], Y[i, 1], labels[i]])
+    # Also write under data/ for the freeze snapshot if requested.
+    data_labeled = os.path.join("data", "off_grid_fem_results_labeled.csv")
+    try:
+        import shutil
+        shutil.copy2(labeled_path, data_labeled)
+        print(f"[wrote] {data_labeled}")
+    except Exception as exc:
+        print(f"[warn] could not copy labeled CSV to data/: {exc}")
+    print(f"[wrote] {labeled_path}")
 
     summary_path = os.path.join(models_root, "logs", "metrics_summary.json")
     if not os.path.exists(summary_path):
@@ -123,14 +179,27 @@ def main(args):
         in_grid_results = json.load(f)
     models_dir = os.path.join(models_root, "models")
 
-    # Wide prediction table: Id, Iq, Phi_d_fem, Phi_q_fem, then for each
-    # working model: <model>_Phi_d_pred, <model>_Phi_q_pred,
-    # <model>_Phi_d_err, <model>_Phi_q_err.
+    domain_keys = (
+        "all",
+        "in_domain_interpolation",
+        "boundary",
+        "extrapolation",
+    )
+    masks = {
+        "all": np.ones(n_points, dtype=bool),
+        "in_domain_interpolation": np.array(
+            [lab == "in_domain_interpolation" for lab in labels]
+        ),
+        "boundary": np.array([lab == "boundary" for lab in labels]),
+        "extrapolation": np.array([lab == "extrapolation" for lab in labels]),
+    }
+
     rows_out = []
     for i in range(n_points):
         rows_out.append({
             "Id": X[i, 0], "Iq": X[i, 1],
             "Phi_d_fem": Y[i, 0], "Phi_q_fem": Y[i, 1],
+            "domain_label": labels[i],
         })
 
     leaderboard = []
@@ -150,9 +219,7 @@ def main(args):
             continue
         if model is None:
             print("  no loader - skipped")
-            leaderboard.append({
-                "name": m_name, "status": "no_loader",
-            })
+            leaderboard.append({"name": m_name, "status": "no_loader"})
             continue
         try:
             pred = np.asarray(model.predict(X)).reshape(-1, 2)
@@ -162,15 +229,22 @@ def main(args):
                 "name": m_name, "status": "predict_failed", "error": str(exc),
             })
             continue
-        m_offgrid = per_model_metrics(Y, pred)
-        print(f"  off-grid RMSE: Phi_d={m_offgrid['rmse_phi_d']:.5e} "
-              f"Phi_q={m_offgrid['rmse_phi_q']:.5e} "
-              f"(max |dPhi_d|={m_offgrid['max_abs_err_phi_d']:.3e}, "
-              f"max |dPhi_q|={m_offgrid['max_abs_err_phi_q']:.3e})")
-        print(f"  in-grid  test RMSE mean: "
-              f"{r['test']['rmse_mean']:.5e}")
 
-        # Fill the wide prediction table.
+        metrics_by_domain = {}
+        for key in domain_keys:
+            msk = masks[key]
+            metrics_by_domain[key] = per_model_metrics(Y[msk], pred[msk])
+
+        m_all = metrics_by_domain["all"]
+        m_interp = metrics_by_domain["in_domain_interpolation"]
+        m_extrap = metrics_by_domain["extrapolation"]
+        print(f"  all      RMSE mean={m_all['rmse_mean']:.5e} (n={m_all['n']})")
+        print(f"  in-domain interp RMSE mean={m_interp['rmse_mean']:.5e} "
+              f"(n={m_interp['n']})")
+        print(f"  extrap   RMSE mean={m_extrap['rmse_mean']:.5e} "
+              f"(n={m_extrap['n']})")
+        print(f"  in-grid  test RMSE mean: {r['test']['rmse_mean']:.5e}")
+
         for i in range(n_points):
             tag = m_name
             rows_out[i][tag + "_Phi_d_pred"] = float(pred[i, 0])
@@ -178,46 +252,95 @@ def main(args):
             rows_out[i][tag + "_Phi_d_err"] = float(pred[i, 0] - Y[i, 0])
             rows_out[i][tag + "_Phi_q_err"] = float(pred[i, 1] - Y[i, 1])
 
+        # Ranking keys: prefer in-domain interp; fall back to all if empty.
+        rank_key = (
+            m_interp["rmse_mean"]
+            if m_interp["n"] > 0 and np.isfinite(m_interp["rmse_mean"])
+            else m_all["rmse_mean"]
+        )
         leaderboard.append({
             "name": m_name,
             "status": "ok",
             "in_grid_test": r.get("test", {}),
-            "off_grid": m_offgrid,
-            "off_grid_rmse_mean": m_offgrid["rmse_mean"],
+            "off_grid": m_all,
+            "off_grid_by_domain": metrics_by_domain,
+            "off_grid_rmse_mean": m_all["rmse_mean"],
+            "off_grid_in_domain_rmse_mean": rank_key,
+            "off_grid_extrap_rmse_mean": m_extrap["rmse_mean"],
         })
         n_models += 1
 
-    # Re-rank by off-grid mean RMSE (lower is better).
     ok = [e for e in leaderboard if e.get("status") == "ok"]
-    ok.sort(key=lambda e: e["off_grid_rmse_mean"])
-    print("\n=== OFF-GRID LEADERBOARD (mean RMSE across Phi_d+Phi_q) ===")
-    for i, e in enumerate(ok, 1):
-        mark = "  <== off-grid winner" if i == 1 else ""
-        print(f"  {i:2d}. {e['name']:<22} "
-              f"off_grid_rmse_mean={e['off_grid_rmse_mean']:.5e} "
-              f"in_grid_test_rmse_mean={e['in_grid_test']['rmse_mean']:.5e}"
-              f"{mark}")
+    ok_all = sorted(ok, key=lambda e: e["off_grid_rmse_mean"])
+    ok_in = sorted(ok, key=lambda e: e["off_grid_in_domain_rmse_mean"])
+    ok_ex = sorted(
+        [e for e in ok if np.isfinite(e.get("off_grid_extrap_rmse_mean", float("nan")))],
+        key=lambda e: e["off_grid_extrap_rmse_mean"],
+    )
 
+    print("\n=== LEADERBOARD: in-domain interpolation off-grid RMSE (primary) ===")
+    for i, e in enumerate(ok_in, 1):
+        mark = "  <== in-domain winner" if i == 1 else ""
+        print(f"  {i:2d}. {e['name']:<22} "
+              f"in_domain_rmse={e['off_grid_in_domain_rmse_mean']:.5e} "
+              f"all_rmse={e['off_grid_rmse_mean']:.5e} "
+              f"in_grid_test={e['in_grid_test']['rmse_mean']:.5e}{mark}")
+
+    print("\n=== LEADERBOARD: mixed all-points off-grid RMSE (historical) ===")
+    for i, e in enumerate(ok_all, 1):
+        mark = "  <== mixed winner" if i == 1 else ""
+        print(f"  {i:2d}. {e['name']:<22} "
+              f"all_rmse={e['off_grid_rmse_mean']:.5e}{mark}")
+
+    if ok_ex and ok_ex[0].get("off_grid_by_domain", {}).get("extrapolation", {}).get("n", 0) > 0:
+        print("\n=== LEADERBOARD: extrapolation-only off-grid RMSE (secondary) ===")
+        for i, e in enumerate(ok_ex, 1):
+            mark = "  <== extrap winner" if i == 1 else ""
+            print(f"  {i:2d}. {e['name']:<22} "
+                  f"extrap_rmse={e['off_grid_extrap_rmse_mean']:.5e}{mark}")
+
+    ranking = {
+        "n_truth_points": n_points,
+        "truth_csv": os.path.abspath(truth_csv),
+        "training_domain": domain.to_dict(),
+        "domain_label_counts": label_counts,
+        "ranking_primary": "off_grid_in_domain_rmse_mean",
+        "leaderboard": leaderboard,
+        "leaderboard_in_domain_sorted": ok_in,
+        "leaderboard_all_sorted": ok_all,
+        "leaderboard_extrap_sorted": ok_ex,
+        "winner_off_grid_in_domain": ok_in[0] if ok_in else None,
+        "winner_off_grid_all": ok_all[0] if ok_all else None,
+        "winner_off_grid": ok_in[0] if ok_in else (ok_all[0] if ok_all else None),
+        "note": (
+            "Historical mixed ranking contaminated Id>0 extrapolation into "
+            "'generalization'. Primary winner is in-domain interpolation."
+        ),
+    }
     with open(os.path.join(val_dir, "off_grid_ranking.json"), "w") as f:
+        json.dump(ranking, f, indent=2)
+    with open(os.path.join(val_dir, "off_grid_by_domain.json"), "w") as f:
         json.dump({
-            "n_truth_points": n_points,
-            "truth_csv": os.path.abspath(truth_csv),
-            "leaderboard": leaderboard,
-            "leaderboard_off_grid_sorted": ok,
-            "winner_off_grid": ok[0] if ok else None,
+            "domain_label_counts": label_counts,
+            "training_domain": domain.to_dict(),
+            "per_model": [
+                {
+                    "name": e["name"],
+                    "by_domain": e.get("off_grid_by_domain"),
+                }
+                for e in ok
+            ],
         }, f, indent=2)
     print(f"\n[wrote] {os.path.join(val_dir, 'off_grid_ranking.json')}")
+    print(f"[wrote] {os.path.join(val_dir, 'off_grid_by_domain.json')}")
 
-    # Wide prediction CSV.
     if T._HAS_PANDAS:
         import pandas as pd
         pd.DataFrame(rows_out).to_csv(
             os.path.join(val_dir, "off_grid_predictions.csv"), index=False
         )
     else:
-        # Fallback - write whatever columns every row agrees on. We expect
-        # the same set across rows since we filled per-model in lockstep.
-        cols = ["Id", "Iq", "Phi_d_fem", "Phi_q_fem"]
+        cols = ["Id", "Iq", "Phi_d_fem", "Phi_q_fem", "domain_label"]
         for e in ok:
             cols.extend([
                 e["name"] + "_Phi_d_pred", e["name"] + "_Phi_q_pred",
@@ -232,10 +355,9 @@ def main(args):
                 w.writerow([r.get(c, "") for c in cols])
     print(f"[wrote] {os.path.join(val_dir, 'off_grid_predictions.csv')}")
 
-    # Plot.
     if T._HAS_MPL:
         try:
-            plot_comparison(ok, X, Y, models_dir, val_dir)
+            plot_comparison(ok_in, X, Y, labels, models_dir, val_dir)
             print(f"[wrote] {os.path.join(val_dir, 'off_grid_validation.png')}")
         except Exception as exc:
             print(f"[plot] failed: {exc}")
@@ -243,23 +365,33 @@ def main(args):
     return 0
 
 
-def plot_comparison(ranklist, X, Y, models_dir, val_dir):
+def plot_comparison(ranklist, X, Y, labels, models_dir, val_dir):
     import matplotlib.pyplot as plt
     if not ranklist:
         return
-    n_show = min(8, len(ranklist))  # plot top-8 to keep legible
+    n_show = min(8, len(ranklist))
     show = ranklist[:n_show]
+    labels_arr = np.asarray(labels)
+    is_extrap = labels_arr == "extrapolation"
+
+    # Rebuild minimal result dicts for the train reload helper.
+    summary_path = os.path.join(os.path.dirname(models_dir), "logs", "metrics_summary.json")
+    by_name = {}
+    if os.path.exists(summary_path):
+        with open(summary_path, "r") as f:
+            for r in json.load(f):
+                by_name[r.get("name")] = r
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 11))
-
-    # (0,0) Phi_d predicted vs true
-    # (0,1) Phi_q predicted vs true
-    # (1,0) Phi_d residual vs Id
-    # (1,1) Phi_q residual vs Id
     markers = ["o", "s", "^", "v", "D", "P", "*", "X"]
     for k, e in enumerate(show):
+        r = by_name.get(e["name"], {
+            "name": e["name"],
+            "status": "ok",
+            "artifact_path": _artifact_for(e["name"], models_dir),
+        })
         try:
-            model = T._reload_model_for_plot(e, models_dir)
+            model = T._reload_model_for_plot(r, models_dir)
         except Exception:
             continue
         if model is None:
@@ -269,18 +401,24 @@ def plot_comparison(ranklist, X, Y, models_dir, val_dir):
         except Exception:
             continue
         m = markers[k % len(markers)]
-        ax = axes[0][0]
-        ax.scatter(Y[:, 0], pred[:, 0], s=42, marker=m, alpha=0.75,
-                   label=f"{e['name']} (RMSE={e['off_grid']['rmse_phi_d']:.2e})")
-        ax = axes[0][1]
-        ax.scatter(Y[:, 1], pred[:, 1], s=42, marker=m, alpha=0.75,
-                   label=f"{e['name']} (RMSE={e['off_grid']['rmse_phi_q']:.2e})")
-        ax = axes[1][0]
-        ax.scatter(X[:, 0], pred[:, 0] - Y[:, 0], s=34, marker=m, alpha=0.75,
-                   label=e["name"])
-        ax = axes[1][1]
-        ax.scatter(X[:, 0], pred[:, 1] - Y[:, 1], s=34, marker=m, alpha=0.75,
-                   label=e["name"])
+        axes[0][0].scatter(Y[~is_extrap, 0], pred[~is_extrap, 0], s=42, marker=m,
+                           alpha=0.75, label=e["name"])
+        axes[0][1].scatter(Y[~is_extrap, 1], pred[~is_extrap, 1], s=42, marker=m,
+                           alpha=0.75, label=e["name"])
+        if np.any(is_extrap):
+            axes[0][0].scatter(Y[is_extrap, 0], pred[is_extrap, 0], s=42, marker=m,
+                               alpha=0.45, facecolors="none")
+            axes[0][1].scatter(Y[is_extrap, 1], pred[is_extrap, 1], s=42, marker=m,
+                               alpha=0.45, facecolors="none")
+        axes[1][0].scatter(X[~is_extrap, 0], (pred - Y)[~is_extrap, 0],
+                           s=34, marker=m, alpha=0.75, label=e["name"])
+        axes[1][1].scatter(X[~is_extrap, 0], (pred - Y)[~is_extrap, 1],
+                           s=34, marker=m, alpha=0.75, label=e["name"])
+        if np.any(is_extrap):
+            axes[1][0].scatter(X[is_extrap, 0], (pred - Y)[is_extrap, 0],
+                               s=34, marker=m, alpha=0.45, facecolors="none")
+            axes[1][1].scatter(X[is_extrap, 0], (pred - Y)[is_extrap, 1],
+                               s=34, marker=m, alpha=0.45, facecolors="none")
 
     lim_d = (Y[:, 0].min(), Y[:, 0].max())
     lim_q = (Y[:, 1].min(), Y[:, 1].max())
@@ -288,27 +426,38 @@ def plot_comparison(ranklist, X, Y, models_dir, val_dir):
         ax.plot([lim[0], lim[1]], [lim[0], lim[1]], "k--", lw=0.7)
     axes[0][0].set_xlabel("Phi_d FEM (Wb)")
     axes[0][0].set_ylabel("Phi_d predicted (Wb)")
-    axes[0][0].set_title("OFF-GRID validation: Phi_d predicted vs. true")
+    axes[0][0].set_title("Off-grid: Phi_d (filled=interp, open=extrap)")
     axes[0][0].legend(fontsize=7)
     axes[0][1].set_xlabel("Phi_q FEM (Wb)")
     axes[0][1].set_ylabel("Phi_q predicted (Wb)")
-    axes[0][1].set_title("OFF-GRID validation: Phi_q predicted vs. true")
+    axes[0][1].set_title("Off-grid: Phi_q (filled=interp, open=extrap)")
     axes[0][1].legend(fontsize=7)
     axes[1][0].set_xlabel("Id (A)")
     axes[1][0].set_ylabel("Phi_d residual (Wb)")
-    axes[1][0].set_title("Phi_d residual vs. Id (off-grid)")
+    axes[1][0].set_title("Phi_d residual vs Id")
+    axes[1][0].axvline(0.0, color="k", ls=":", lw=0.8)
     axes[1][0].legend(fontsize=7)
     axes[1][1].set_xlabel("Id (A)")
     axes[1][1].set_ylabel("Phi_q residual (Wb)")
-    axes[1][1].set_title("Phi_q residual vs. Id (off-grid)")
+    axes[1][1].set_title("Phi_q residual vs Id")
+    axes[1][1].axvline(0.0, color="k", ls=":", lw=0.8)
     axes[1][1].legend(fontsize=7)
     fig.suptitle(
-        f"Off-grid FEM validation - top {n_show} models by off-grid RMSE",
-        fontsize=12,
+        f"Off-grid FEM validation - top {n_show} by in-domain RMSE "
+        f"(open markers = Id extrapolation)",
+        fontsize=11,
     )
     plt.tight_layout()
     plt.savefig(os.path.join(val_dir, "off_grid_validation.png"), dpi=140)
     plt.close(fig)
+
+
+def _artifact_for(name, models_dir):
+    for ext in (".pkl", ".pt", ".npz"):
+        p = os.path.join(models_dir, name + ext)
+        if os.path.exists(p):
+            return p
+    return os.path.join(models_dir, name + ".pkl")
 
 
 if __name__ == "__main__":
@@ -316,6 +465,9 @@ if __name__ == "__main__":
     p.add_argument("--truth", default=DEFAULT_TRUTH_CSV,
                    help="Path to off_grid_fem_results.csv from AEDT-side run. "
                         "Default: " + DEFAULT_TRUTH_CSV)
+    p.add_argument("--train-csv", default=DEFAULT_TRAIN_CSV,
+                   help="Training map used to define the domain. Default: "
+                        + DEFAULT_TRAIN_CSV)
     p.add_argument("--models", default="out",
                    help="Output dir used by train_flux_map_comparison.py "
                         "(contains models/ and logs/). Default: out")

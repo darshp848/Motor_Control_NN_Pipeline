@@ -1,0 +1,22 @@
+{
+  "status": "ok",
+  "seed": 11,
+  "n_commands": 10,
+  "n_fem_candidates": 8,
+  "params_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\data\\motor_params_clean.json",
+  "lookup_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\mtpa\\reference_lookup.csv",
+  "lookup_sha256": "2351d78f2d2b54fcdfeb40787af4fef5c4b4b098b4705ca963d27b6338c552d4",
+  "params_sha256": "ad46dbb4db6409bd760f02987233e3b42132951b7597bd300e070579c7e82e2d",
+  "pole_pairs": 2,
+  "flux_scale": 11.861254825070445,
+  "v_max_v": 179.55593371797363,
+  "surrogate_torque_abs_error_mean": 0.1290699340677372,
+  "surrogate_torque_abs_error_max": 0.28683147854220703,
+  "fem_results_status": "pending_optional_aedt",
+  "next_steps": [
+    "Run validate_lut_audit_fem.py in AEDT with lut_audit_commands.csv",
+    "Run compare_lut_audit.py to join FEM fluxes and compute T_fem vs T*"
+  ],
+  "commands_csv": "out/audit\\lut_audit_commands.csv",
+  "surrogate_csv": "out/audit\\lut_audit_surrogate.csv"
+}

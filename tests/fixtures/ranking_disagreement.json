@@ -1,0 +1,8 @@
+{
+  "in_grid_winner": "gaussian_process",
+  "in_grid_test_rmse_mean": 0.0002552312073575031,
+  "off_grid_winner": "random_forest",
+  "off_grid_rmse_mean": 0.012164498497706414,
+  "note": "Frozen Stage 0 observation: in-grid and mixed off-grid winners disagree. After domain stratification, re-check in-domain winner separately.",
+  "source": "out/pipeline_results_summary.json 2026-07-09"
+}
