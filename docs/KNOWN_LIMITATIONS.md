@@ -1,4 +1,6 @@
-# Known limitations (frozen IPM Stage 0)
+# Known limitations (IPM Stage 0)
+
+**Stage 0 status: offline-frozen and audit-ready** — not FEM-audited and not deployment-ready FOC tables.
 
 These are **documented bounds**, not silent bugs. The EESM branch must not inherit them as surprises.
 

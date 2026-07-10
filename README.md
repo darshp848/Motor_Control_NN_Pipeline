@@ -2,7 +2,8 @@
 
 Public pipeline for building a **flux-map surrogate** for an IPM motor and turning it into an **MTPA / field-weakening lookup table**.
 
-**Stage 0 (repair & freeze):** branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units, seeds, and a one-command offline path before EESM work. See [`docs/STAGE0_FREEZE.md`](docs/STAGE0_FREEZE.md).
+**Stage 0 status: offline-frozen and audit-ready** (not FEM-closed / not deployment-ready).  
+Branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units, seeds, and a one-command offline path before EESM work. See [`docs/STAGE0_FREEZE.md`](docs/STAGE0_FREEZE.md).
 
 ```
 AEDT FEM (dq flux map)
@@ -39,10 +40,10 @@ From this directory, with the venv activated:
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m pytest tests -q
 
-# Full offline chain (train → compare → promote → MTPA → audit prep)
+# Official offline reference (no skip flags): train → compare → promote → MTPA → audit prep
 .\.venv\Scripts\python run_offline_pipeline.py --config configs/ipm_experiment_manifest.json
 
-# Or reuse existing models:
+# Dev-only: reuse existing models (not the official freeze reference)
 .\.venv\Scripts\python run_offline_pipeline.py --skip-train
 ```
 
@@ -98,10 +99,11 @@ AEDT Student is only required to **regenerate** FEM data, motor params, or FEM L
 
 ## Stage 0 notes
 
+- **Label:** offline-frozen + audit-ready; FEM LUT audit (`lut_audit_fem_results.csv`) is still optional/pending.
 - Domain labels: `in_domain_interpolation` / `boundary` / `extrapolation` — metrics reported **separately**.
-- Inference model is **promoted** by policy `off_grid_in_domain` (no manual RF edit).
+- Inference model is **promoted** by policy `off_grid_in_domain` (no manual RF edit); full pipeline rebuilds MTPA after promote.
+- Official offline proof: `out/run_manifest.json` with stages `train, compare, promote, mtpa, audit`.
 - See [`docs/UNITS_AND_CONVENTIONS.md`](docs/UNITS_AND_CONVENTIONS.md) and [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
-- Results under `out/` may include a pre-freeze Student-mesh proof-of-concept run.
 
 ## Learning notes
 

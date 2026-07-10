@@ -1,6 +1,6 @@
 Torque sanity check
   Point explored: Id=0, Iq=I_rated_peak=4.0090 A
-  Surrogate Phi_d=2.501070e-01 Wb, Phi_q=7.242172e-01 Wb
-  Implied rated torque T = 3.008057e+00 N.m
+  Surrogate Phi_d=2.253360e-01 Wb, Phi_q=7.135733e-01 Wb
+  Implied rated torque T = 2.710134e+00 N.m
   Expected rated torque T = 2.895310e+00 N.m (from RMxprt 0.res)
-  OK - implied torque within 5% of rated.
+  WARNING: implied torque within 6.8% of rated; check results carefully.

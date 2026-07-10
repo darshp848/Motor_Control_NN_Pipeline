@@ -1,7 +1,9 @@
 {
   "schema_version": "stage0-1.0",
   "experiment_id": "ipm_pipeline_freeze_stage0",
-  "description": "Frozen IPM FEM→surrogate→off-grid→MTPA/FW template before EESM branch",
+  "description": "IPM FEM→surrogate→off-grid→MTPA/FW template before EESM branch",
+  "freeze_status": "offline_frozen_audit_ready",
+  "fem_lut_audit": "pending",
   "machine": {
     "type": "IPM",
     "project": "ipm_1",

@@ -4,11 +4,19 @@
   "rs_ohm": 2.15938,
   "vdc_v": 311.0,
   "vmax_phase_peak_v": 179.55593371797363,
+  "v_max_formula": "Vdc / sqrt(3)",
   "i_max_peak_a": 6.0,
   "i_rated_peak_a": 4.009026748750874,
   "t_rated_nm": 2.89531,
   "flux_scale": 11.861254825070445,
   "omega_mech_base_rpm": 1800.0,
   "omega_mech_max_rpm": 6000.0,
-  "inference_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\inference_flux_map.py"
+  "inference_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\inference_flux_map.py",
+  "params_json_source": "data/motor_params_clean.json",
+  "current_units": "peak_amperes_dq",
+  "torque_formula": "T = (3/2) * pole_pairs * (Phi_d*Iq - Phi_q*Id)",
+  "voltage_formula": "Vd = Rs*Id - we*Phi_q; Vq = Rs*Iq + we*Phi_d",
+  "phi_csv_scaling": "raw_FEM_unscaled; scale applied in FluxSurrogate",
+  "params_json_sha256": "ad46dbb4db6409bd760f02987233e3b42132951b7597bd300e070579c7e82e2d",
+  "inference_sha256": "6bbd86a15f46e55b32e292b81162fc8039904df98c05e5e9967c2dacef7595c4"
 }

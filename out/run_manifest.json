@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-07-10T07:27:13.901667+00:00",
+  "created_utc": "2026-07-10T07:46:35.836446+00:00",
   "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
   "platform": "Windows-10-10.0.26200-SP0",
   "package_versions": {
@@ -11,8 +11,10 @@
     "matplotlib": "3.11.0"
   },
   "stages": [
+    "train",
     "compare",
     "promote",
+    "mtpa",
     "audit"
   ],
   "seeds": {
@@ -25,18 +27,20 @@
     "train_csv": "1ae4ba8c46633914dc34a8fab71e19e4ecd651dc06f1bad9b1d8c7dddf17f87a",
     "off_grid_csv": "8e674ef8afc9e4b53837ae0ea368c884a0b3cebc144ccdaa87a7ccf89ab5d27f",
     "motor_params_clean": "ad46dbb4db6409bd760f02987233e3b42132951b7597bd300e070579c7e82e2d",
-    "metrics_summary": "ec50936f66b800ce0c0282372edb5854d208dea51a08eba3f666221f6180ed72",
-    "off_grid_ranking": "f94753fe24e967a263b6f13d9bbb6a5bccce82484feaf21dfab43a6a39e29b6e",
-    "reference_lookup": "2351d78f2d2b54fcdfeb40787af4fef5c4b4b098b4705ca963d27b6338c552d4",
-    "lut_audit_commands": "231a138cfbb73fa46f20218a903b3bddd01b43e16f522e17924d775362c77ffb",
-    "inference_flux_map": "da2a9419ecc499aa92ea37a841995e92fc405edb3320207add6b7c9c6db4a127",
+    "metrics_summary": "5451c0c6fb8b4f6fb32e7cbb100eaa1010e006065920682e154c6750d2d6253c",
+    "off_grid_ranking": "7d89bbb3c0575186e4e0ce53c773d8f0916c106f0168b6cdf537a539cb823e92",
+    "reference_lookup": "5e8f914b1034ff995c0668af9a1bea28691e5566e4eb2a50bedc108ee3890d0a",
+    "lut_audit_commands": "02112c9618a6423bc5babc8f2cdde9510020702c2c4ce4c8b732ca86e7fcbe7e",
+    "inference_flux_map": "6bbd86a15f46e55b32e292b81162fc8039904df98c05e5e9967c2dacef7595c4",
     "inference_artifact": "6b82eb26b1b658f23654c1f95e647955bac72bfe5a10f13391d785d4cccb565a"
   },
   "inference_model": "mlp_small",
   "config": {
     "schema_version": "stage0-1.0",
     "experiment_id": "ipm_pipeline_freeze_stage0",
-    "description": "Frozen IPM FEM\u2192surrogate\u2192off-grid\u2192MTPA/FW template before EESM branch",
+    "description": "IPM FEM\u2192surrogate\u2192off-grid\u2192MTPA/FW template before EESM branch",
+    "freeze_status": "offline_frozen_audit_ready",
+    "fem_lut_audit": "pending",
     "machine": {
       "type": "IPM",
       "project": "ipm_1",

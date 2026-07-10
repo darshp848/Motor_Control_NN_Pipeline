@@ -3,7 +3,20 @@
 **Branch:** `stage0/repair-freeze-ipm-pipeline`  
 **Purpose:** Trusted, rerunnable IPM workflow before EESM 3D adaptation.
 
-## One-command offline path
+## Status
+
+| Label | Meaning |
+|-------|---------|
+| **offline-frozen and audit-ready** | **Current Stage 0 status** |
+| fully FEM-audited and deployment-ready | **Not claimed** |
+
+This is a clean IPM template for EESM work: domain-aware validation, locked units/seeds, one-command offline rerun, and a prospective LUT audit protocol. It is **not** a flash-ready FOC table and **not** FEM-closed until `out/audit/lut_audit_fem_results.csv` exists and `compare_lut_audit.py` joins cleanly.
+
+Machine-readable twin: `configs/ipm_experiment_manifest.json` → `freeze_status`, `fem_lut_audit`.
+
+## Official offline reference (no skip flags)
+
+From the branch root:
 
 ```pwsh
 .\.venv\Scripts\python -m pip install -r requirements.txt
@@ -11,11 +24,19 @@
 .\.venv\Scripts\python run_offline_pipeline.py --config configs/ipm_experiment_manifest.json
 ```
 
-Skip long retrain (reuse `out/models`):
+The **official Stage 0 offline reference** is the `out/run_manifest.json` produced by that full command. It must list:
+
+```text
+stages: train, compare, promote, mtpa, audit
+```
+
+Dev-only faster path (reuses models; **not** the official reference):
 
 ```pwsh
 .\.venv\Scripts\python run_offline_pipeline.py --skip-train
 ```
+
+After promote, MTPA must run in the same full chain so `out/mtpa` matches `inference_flux_map.py`.
 
 ## Fixed artifacts
 
@@ -26,7 +47,7 @@ Skip long retrain (reuse `out/models`):
 | Training map | `data/flux_map_fem.csv` |
 | Off-grid truth | `data/off_grid_fem_results.csv` |
 | Domain-labeled off-grid | `data/off_grid_fem_results_labeled.csv` (written by compare) |
-| Run metadata | `out/run_manifest.json` |
+| **Official run metadata** | `out/run_manifest.json` |
 | Stratified ranking | `out/validation/off_grid_ranking.json` |
 | LUT audit commands | `out/audit/lut_audit_commands.csv` |
 | Shared physics/domain | `pipeline/` |
@@ -47,26 +68,32 @@ Skip long retrain (reuse `out/models`):
 `inference_selection: off_grid_in_domain`  
 → after compare, rewrite `inference_flux_map.py` to the best **in-domain** off-grid model (not manual RF edit).
 
-On the frozen 2026-07-09 models + historical off-grid CSV, in-domain ranking prefers strong interpolators (e.g. `mlp_small` / GP), while **mixed** ranking (including Id>0) preferred `random_forest`. Always re-run MTPA after promote so `out/mtpa` matches the deployed artifact.
+On historical off-grid CSV (mixed Id domain): in-domain ranking prefers strong interpolators (e.g. `mlp_small` / GP), while **mixed** ranking (including Id>0) preferred `random_forest`. Full offline run rebuilds MTPA after promote so the LUT matches the deployed artifact.
 
 Other policy values: `off_grid_all`, `in_grid` (see `run_offline_pipeline.select_inference_model`).
 
-## Optional AEDT stages
+## Optional AEDT stages (FEM-closed path)
 
-1. Full map: `aedt_mcp/.../gui_full_magnetostatic_export.py`
+Only after the offline chain is green:
+
+1. Full map: `aedt_mcp/.../gui_full_magnetostatic_export.py` (already frozen CSV in `data/`)
 2. In-domain off-grid: `validate_off_grid_fem.py` with `POINT_SET_MODE = "interpolation"`
 3. Explicit extrap set: same script with `POINT_SET_MODE = "extrapolation"`
-4. LUT FEM audit: `validate_lut_audit_fem.py` then `compare_lut_audit.py`
+4. LUT FEM audit:
+   - `validate_lut_audit_fem.py` in AEDT → FEM fluxes
+   - copy to `out/audit/lut_audit_fem_results.csv`
+   - `compare_lut_audit.py` → join / torque errors
 
 ## Exit gate checklist
 
 - [x] Domain-stratified off-grid metrics
 - [x] LUT prospective audit command list (surrogate-side)
 - [x] Machine-readable units / params
-- [x] Seeded, orchestrated offline rerun
+- [x] Seeded, orchestrated offline path
 - [x] Regression tests for physics, domain, seeds, schema
-- [ ] Optional: FEM audit results filled under `out/audit/lut_audit_fem_results.csv`
+- [x] Full offline `train → compare → promote → mtpa → audit` reference run (`out/run_manifest.json`)
+- [ ] FEM LUT audit results: `out/audit/lut_audit_fem_results.csv` + non-pending join
 
-## Pre-freeze reference numbers (2026-07-09)
+## Pre-Stage-0 historical numbers (2026-07-09)
 
-See `out/pipeline_results_summary.json`: in-grid GP, mixed off-grid RF, flux_scale ≈ 11.861, LUT 3000 rows.
+See `out/pipeline_results_summary.json`: in-grid GP, mixed off-grid RF, flux_scale ≈ 11.861, LUT 3000 rows. Prefer the latest full-run `out/run_manifest.json` for the official offline reference.
