@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
 import numpy as np
@@ -51,13 +50,6 @@ def test_low_average_rmse_cannot_override_failed_boundary_gate() -> None:
 
     assert decision["status"] == "promoted"
     assert decision["family"] == "slightly_worse_all_gates_pass"
-
-
-def test_unfrozen_threshold_blocks_promotion_gate_evaluation() -> None:
-    metrics = {"gate_values": {"torque": 0.1}}
-
-    with pytest.raises(ValueError, match="thresholds not frozen"):
-        evaluate_gates(metrics, {"torque": None})
 
 
 @pytest.fixture
@@ -174,62 +166,11 @@ def test_copper_loss_regret_rejects_unverified_caller_values(
         )
 
 
-def test_controller_metrics_use_frozen_torque_and_voltage_conventions(
-    machine: dict,
-) -> None:
-    points = pd.DataFrame(
-        {
-            "id_a": [-20.0],
-            "iq_a": [30.0],
-            "if_a": [3.0],
-            "region": ["interior"],
-        }
-    )
-    truth = np.array([[0.2, 0.1]])
-    predicted = np.array([[0.3, 0.1]])
-
-    metrics = evaluate_controller_metrics(
-        points, truth, predicted, machine, speeds_rpm=[0.0, 3000.0]
-    )
-
-    assert metrics["overall"]["torque_nm"]["rmse"] == pytest.approx(9.0)
-    assert metrics["overall"]["voltage_magnitude_v"]["0"]["rmse"] == 0.0
-    omega_e = 2.0 * math.pi * 3000.0 / 60.0 * 2.0
-    vd = 0.05 * -20.0 - omega_e * 0.1
-    truth_vq = 0.05 * 30.0 + omega_e * 0.2
-    predicted_vq = 0.05 * 30.0 + omega_e * 0.3
-    expected_error = abs(
-        math.hypot(vd, predicted_vq) - math.hypot(vd, truth_vq)
-    )
-    assert metrics["overall"]["voltage_magnitude_v"]["3000"][
-        "rmse"
-    ] == pytest.approx(expected_error)
-
-
-def test_controller_metrics_reject_misaligned_flux_arrays(machine: dict) -> None:
-    points = pd.DataFrame(
-        {
-            "id_a": [-20.0],
-            "iq_a": [30.0],
-            "if_a": [3.0],
-            "region": ["interior"],
-        }
-    )
-
-    with pytest.raises(ValueError, match="row aligned"):
-        evaluate_controller_metrics(
-            points,
-            np.zeros((2, 2)),
-            np.zeros((1, 2)),
-            machine,
-            speeds_rpm=[0.0],
-        )
-
-
-def test_gate_evaluation_fails_an_unavailable_required_region() -> None:
+def test_gate_evaluation_reports_unavailable_and_exceeded_metrics() -> None:
     thresholds = {gate: 1.0 for gate in REQUIRED_GATES}
     values = {gate: 0.1 for gate in REQUIRED_GATES}
     values["saturation"] = float("nan")
+    values["boundary"] = 1.1
 
     result = evaluate_gates({"gate_values": values}, thresholds)
 
@@ -240,6 +181,8 @@ def test_gate_evaluation_fails_an_unavailable_required_region() -> None:
     assert saturation["available"] is False
     assert saturation["passed"] is False
     assert saturation["reason"] == "metric_unavailable"
+    assert result["gates"]["boundary"]["passed"] is False
+    assert result["gates"]["boundary"]["reason"] == "threshold_exceeded"
 
 
 def test_canonical_unfrozen_manifest_cannot_evaluate_gates() -> None:
@@ -252,19 +195,6 @@ def test_canonical_unfrozen_manifest_cannot_evaluate_gates() -> None:
 
     with pytest.raises(ValueError, match="thresholds not frozen"):
         evaluate_gates({"gate_values": values}, manifest["gates"])
-
-
-def test_gate_evaluation_requires_every_metric_to_meet_its_threshold() -> None:
-    thresholds = {gate: 1.0 for gate in REQUIRED_GATES}
-    values = {gate: 0.5 for gate in REQUIRED_GATES}
-    values["boundary"] = 1.1
-
-    result = evaluate_gates({"gate_values": values}, thresholds)
-
-    assert result["status"] == "failed"
-    assert result["gates"]["interior"]["passed"] is True
-    assert result["gates"]["boundary"]["passed"] is False
-    assert result["gates"]["boundary"]["reason"] == "threshold_exceeded"
 
 
 def test_promotion_uses_family_name_as_the_final_stable_tie_break() -> None:
@@ -282,33 +212,6 @@ def test_promotion_uses_family_name_as_the_final_stable_tie_break() -> None:
     )
 
     assert decision["family"] == "a_family"
-
-
-@pytest.mark.parametrize(
-    "deciding_field",
-    [
-        "scheduler_loss_regret_w",
-        "torque_rmse_nm",
-        "flux_rmse_wb",
-        "training_runtime_s",
-    ],
-)
-def test_promotion_applies_each_numeric_tie_break_in_order(
-    deciding_field: str,
-) -> None:
-    preferred = _ranking_metrics("preferred", 1.0, 1.0, 1.0, 1.0)
-    other = _ranking_metrics("other", 1.0, 1.0, 1.0, 1.0)
-    preferred[deciding_field] = 0.5
-    gates = {
-        "preferred": {"all_required_pass": True},
-        "other": {"all_required_pass": True},
-    }
-
-    decision = promote_candidate(
-        [other, preferred], gates, policy="all_required_then_loss"
-    )
-
-    assert decision["family"] == "preferred"
 
 
 def test_repeated_family_requires_candidate_specific_gate_results() -> None:

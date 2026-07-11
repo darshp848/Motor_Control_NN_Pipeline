@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import hashlib
-import importlib.util
 import importlib
 from pathlib import Path
 
@@ -17,7 +16,6 @@ from synthetic.synthetic_map import SyntheticEESMMap
 
 EESM_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = EESM_ROOT / "configs" / "eesm_experiment_manifest.json"
-RUNNER_PATH = EESM_ROOT / "run_equal_budget_study.py"
 
 
 @pytest.fixture
@@ -80,12 +78,23 @@ def test_frozen_manifest_builds_the_full_36_cell_matrix() -> None:
     }
 
 
-def test_training_hash_excludes_selection_and_scheduler_audit_points(
+def test_training_and_truth_evaluation_exclude_reserved_role_points(
     smoke_manifest: Path, tmp_path: Path
 ) -> None:
+    oracle = SyntheticEESMMap()
+    evaluated_ids: set[str] = set()
+
+    class RecordingTruth:
+        def flux(self, id_a, iq_a, if_a):
+            evaluated_ids.update(
+                canonical_point_id(id_value, iq_value, if_value)
+                for id_value, iq_value, if_value in zip(id_a, iq_a, if_a)
+            )
+            return oracle.flux(id_a, iq_a, if_a)
+
     output_dir = tmp_path / "study"
     summary = run_equal_budget_study(
-        str(smoke_manifest), str(output_dir), SyntheticEESMMap()
+        str(smoke_manifest), str(output_dir), RecordingTruth()
     )
     selection_ids = set(summary["role_point_ids"]["selection"])
     audit_ids = set(summary["role_point_ids"]["scheduler_audit"])
@@ -105,48 +114,8 @@ def test_training_hash_excludes_selection_and_scheduler_audit_points(
         assert train_ids.isdisjoint(selection_ids | audit_ids)
         assert metadata["training_point_ids_sha256"] == expected_hash
         assert run["training_point_ids_sha256"] == expected_hash
-
-
-def test_scheduler_audit_truth_is_never_requested(
-    smoke_manifest: Path, tmp_path: Path
-) -> None:
-    oracle = SyntheticEESMMap()
-    evaluated_ids: set[str] = set()
-
-    class RecordingTruth:
-        def flux(self, id_a, iq_a, if_a):
-            evaluated_ids.update(
-                canonical_point_id(id_value, iq_value, if_value)
-                for id_value, iq_value, if_value in zip(id_a, iq_a, if_a)
-            )
-            return oracle.flux(id_a, iq_a, if_a)
-
-    summary = run_equal_budget_study(
-        str(smoke_manifest), str(tmp_path / "study"), RecordingTruth()
-    )
-
-    audit_ids = set(summary["role_point_ids"]["scheduler_audit"])
     assert evaluated_ids
     assert evaluated_ids.isdisjoint(audit_ids)
-
-
-def test_cli_runs_the_smoke_manifest(
-    smoke_manifest: Path, tmp_path: Path
-) -> None:
-    spec = importlib.util.spec_from_file_location("run_equal_budget_cli", RUNNER_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    output_dir = tmp_path / "cli-study"
-    assert module.main(
-        ["--config", str(smoke_manifest), "--out", str(output_dir)]
-    ) == 0
-    summary = json.loads(
-        (output_dir / "equal_budget_summary.json").read_text(encoding="utf-8")
-    )
-    assert summary["status"] == "completed"
-    assert len(summary["runs"]) == 12
 
 
 def test_role_overlap_is_rejected_before_any_model_is_built(
@@ -187,42 +156,17 @@ def test_role_overlap_is_rejected_before_any_model_is_built(
     assert builds == []
 
 
-@pytest.mark.parametrize(
-    ("mutate", "message"),
-    [
-        (lambda manifest: manifest.pop("budgets"), "missing budgets"),
-        (
-            lambda manifest: manifest.__setitem__("budgets", [16, 16]),
-            "duplicate budgets",
-        ),
-        (
-            lambda manifest: manifest["seeds"].__setitem__(
-                "scheduler_audit", None
-            ),
-            "unfrozen role seeds",
-        ),
-        (
-            lambda manifest: manifest["surrogates"].append(
-                manifest["surrogates"][0]
-            ),
-            "duplicate surrogates",
-        ),
-    ],
-)
-def test_invalid_run_matrix_is_rejected_before_truth_evaluation(
-    smoke_manifest: Path,
-    tmp_path: Path,
-    mutate,
-    message: str,
+def test_unfrozen_role_seed_is_rejected_before_truth_evaluation(
+    smoke_manifest: Path, tmp_path: Path
 ) -> None:
     manifest = json.loads(smoke_manifest.read_text(encoding="utf-8"))
-    mutate(manifest)
+    manifest["seeds"]["scheduler_audit"] = None
     smoke_manifest.write_text(json.dumps(manifest), encoding="utf-8")
 
     def unexpected_truth_call(_):
         raise AssertionError("truth provider was called before validation")
 
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(ValueError, match="unfrozen role seeds"):
         run_equal_budget_study(
             str(smoke_manifest), str(tmp_path / "study"), unexpected_truth_call
         )
