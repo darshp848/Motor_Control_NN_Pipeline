@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 
 from scheduler.copper_loss_scheduler import (
+    copper_loss,
     electromagnetic_torque_eesm,
     rpm_mech_to_we,
     stator_voltage_eesm,
@@ -104,6 +105,113 @@ def _boolean_column(points: object, name: str) -> np.ndarray | None:
     if not all(isinstance(value, (bool, np.bool_)) for value in flat):
         raise ValueError(f"{name} must contain booleans")
     return flat.astype(bool)
+
+
+def _scheduler_losses(
+    points: object, n: int, rs_ohm: float, rf_ohm: float
+) -> tuple[np.ndarray | None, np.ndarray | None]:
+    current_columns = (
+        "truth_id_a",
+        "truth_iq_a",
+        "truth_if_a",
+        "predicted_id_a",
+        "predicted_iq_a",
+        "predicted_if_a",
+    )
+    present = [_has_column(points, name) for name in current_columns]
+    supplied_losses = _has_column(points, "truth_p_cu_w") or _has_column(
+        points, "predicted_p_cu_w"
+    )
+    if not any(present):
+        if supplied_losses:
+            raise ValueError(
+                "copper-loss regret requires scheduler current columns"
+            )
+        return None, None
+    if not all(present):
+        raise ValueError("all truth and predicted scheduler current columns are required")
+
+    currents = {
+        name: np.asarray(_column(points, name), dtype=np.float64).ravel()
+        for name in current_columns
+    }
+    if any(values.size != n for values in currents.values()):
+        raise ValueError("scheduler current columns must be row aligned")
+    if any(np.isinf(values).any() for values in currents.values()):
+        raise ValueError("scheduler current columns cannot contain infinity")
+
+    truth_finite = np.column_stack(
+        [currents[name] for name in current_columns[:3]]
+    )
+    predicted_finite = np.column_stack(
+        [currents[name] for name in current_columns[3:]]
+    )
+    for label, values in (
+        ("truth", truth_finite),
+        ("predicted", predicted_finite),
+    ):
+        count = np.sum(np.isfinite(values), axis=1)
+        if np.any((count != 0) & (count != 3)):
+            raise ValueError(
+                f"{label} scheduler currents must be all finite or all missing"
+            )
+
+    truth_loss = copper_loss(
+        currents["truth_id_a"],
+        currents["truth_iq_a"],
+        currents["truth_if_a"],
+        rs_ohm,
+        rf_ohm,
+    )
+    predicted_loss = copper_loss(
+        currents["predicted_id_a"],
+        currents["predicted_iq_a"],
+        currents["predicted_if_a"],
+        rs_ohm,
+        rf_ohm,
+    )
+
+    if supplied_losses:
+        if not (
+            _has_column(points, "truth_p_cu_w")
+            and _has_column(points, "predicted_p_cu_w")
+        ):
+            raise ValueError(
+                "truth_p_cu_w and predicted_p_cu_w must be supplied together"
+            )
+        for name, computed in (
+            ("truth_p_cu_w", truth_loss),
+            ("predicted_p_cu_w", predicted_loss),
+        ):
+            reported = np.asarray(_column(points, name), dtype=np.float64).ravel()
+            if reported.size != n or np.isinf(reported).any():
+                raise ValueError("reported copper losses must be row aligned and finite")
+            comparable = np.isfinite(computed)
+            if not np.array_equal(np.isfinite(reported), comparable) or not np.allclose(
+                reported[comparable], computed[comparable], rtol=1e-10, atol=1e-10
+            ):
+                raise ValueError(f"{name} does not match the frozen copper-loss formula")
+    return truth_loss, predicted_loss
+
+
+def _data_qa(points: object, n: int) -> dict[str, Any]:
+    passed = _boolean_column(points, "data_qa_passed")
+    if passed is None:
+        return {
+            "n": 0,
+            "failed_checks": 0,
+            "failure_rate": float("nan"),
+            "available": False,
+        }
+    if passed.size != n:
+        raise ValueError("data_qa_passed must be row aligned")
+    failed = int(np.sum(~passed))
+    return {
+        "n": n,
+        "failed_checks": failed,
+        "failure_rate": float(failed / n),
+        "available": True,
+    }
 
 
 def _feasibility_confusion(
@@ -247,7 +355,7 @@ def evaluate_controller_metrics(
     if pole_pairs <= 0:
         raise ValueError("pole_pairs must be positive")
     rs_ohm = _machine_number(machine, "rs_ohm")
-    _machine_number(machine, "rf_ohm")
+    rf_ohm = _machine_number(machine, "rf_ohm")
     speed_values = np.asarray(list(speeds_rpm), dtype=np.float64).ravel()
     if speed_values.size == 0 or not np.isfinite(speed_values).all() or np.any(
         speed_values < 0.0
@@ -281,18 +389,10 @@ def evaluate_controller_metrics(
 
     truth_feasible = _boolean_column(points, "truth_feasible")
     predicted_feasible = _boolean_column(points, "predicted_feasible")
-    truth_p_cu_raw = _column(points, "truth_p_cu_w", required=False)
-    predicted_p_cu_raw = _column(points, "predicted_p_cu_w", required=False)
-    truth_p_cu = (
-        None
-        if truth_p_cu_raw is None
-        else np.asarray(truth_p_cu_raw, dtype=np.float64).ravel()
+    truth_p_cu, predicted_p_cu = _scheduler_losses(
+        points, n, rs_ohm, rf_ohm
     )
-    predicted_p_cu = (
-        None
-        if predicted_p_cu_raw is None
-        else np.asarray(predicted_p_cu_raw, dtype=np.float64).ravel()
-    )
+    data_qa = _data_qa(points, n)
     for optional in (
         truth_feasible,
         predicted_feasible,
@@ -339,7 +439,7 @@ def evaluate_controller_metrics(
         if math.isfinite(entry["rmse"])
     ]
     gate_values = {
-        "data_qa": 0.0,
+        "data_qa": data_qa["failure_rate"],
         **{
             region: max(
                 by_region[region]["flux"]["lambda_d_wb"]["rmse"],
@@ -361,6 +461,6 @@ def evaluate_controller_metrics(
         "by_region": by_region,
         "feasibility_confusion": overall["feasibility_confusion"],
         "copper_loss_regret_w": overall["copper_loss_regret_w"],
-        "data_qa": {"failed_checks": 0},
+        "data_qa": data_qa,
         "gate_values": gate_values,
     }

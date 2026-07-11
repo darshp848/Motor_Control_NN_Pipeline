@@ -111,6 +111,7 @@ def test_controller_metrics_keep_unsupported_errors_out_of_interior(
             "rmse"
         ]
     )
+    assert np.isnan(metrics["gate_values"]["data_qa"])
 
 
 def test_controller_metrics_report_feasibility_confusion_and_loss_regret(
@@ -124,8 +125,13 @@ def test_controller_metrics_report_feasibility_confusion_and_loss_regret(
             "region": ["interior"] * 4,
             "truth_feasible": [True, True, False, False],
             "predicted_feasible": [True, False, True, False],
-            "truth_p_cu_w": [10.0, 20.0, np.nan, 40.0],
-            "predicted_p_cu_w": [11.0, 22.0, 30.0, np.nan],
+            "data_qa_passed": [True, True, True, False],
+            "truth_id_a": [0.0, 0.0, np.nan, np.nan],
+            "truth_iq_a": [0.0, 0.0, np.nan, np.nan],
+            "truth_if_a": [1.0, 2.0, np.nan, np.nan],
+            "predicted_id_a": [0.0, 0.0, np.nan, np.nan],
+            "predicted_iq_a": [0.0, 0.0, np.nan, np.nan],
+            "predicted_if_a": [1.1, 2.1, np.nan, np.nan],
         }
     )
     fmap = SyntheticEESMMap()
@@ -141,8 +147,31 @@ def test_controller_metrics_report_feasibility_confusion_and_loss_regret(
     assert metrics["feasibility_confusion"]["error_rate"] == pytest.approx(0.5)
     regret = metrics["copper_loss_regret_w"]
     assert regret["n"] == 2
-    assert regret["mean"] == pytest.approx(1.5)
-    assert regret["max_abs"] == pytest.approx(2.0)
+    assert regret["mean"] == pytest.approx((1.68 + 3.28) / 2.0)
+    assert regret["max_abs"] == pytest.approx(3.28)
+    assert metrics["data_qa"]["failure_rate"] == pytest.approx(0.25)
+    assert metrics["gate_values"]["data_qa"] == pytest.approx(0.25)
+
+
+def test_copper_loss_regret_rejects_unverified_caller_values(
+    machine: dict,
+) -> None:
+    points = pd.DataFrame(
+        {
+            "id_a": [-20.0],
+            "iq_a": [30.0],
+            "if_a": [3.0],
+            "region": ["interior"],
+            "truth_p_cu_w": [10.0],
+            "predicted_p_cu_w": [11.0],
+        }
+    )
+    truth = np.array([[0.2, 0.1]])
+
+    with pytest.raises(ValueError, match="scheduler current columns"):
+        evaluate_controller_metrics(
+            points, truth, truth, machine, speeds_rpm=[1500.0]
+        )
 
 
 def test_controller_metrics_use_frozen_torque_and_voltage_conventions(
