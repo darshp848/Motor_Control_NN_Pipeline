@@ -9,6 +9,7 @@ import warnings
 
 import numpy as np
 import pytest
+from sklearn.exceptions import ConvergenceWarning
 
 _SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 if _SRC not in sys.path:
@@ -93,6 +94,31 @@ def test_rbf_or_gp_enforces_256_sample_training_limit():
         )
 
 
+def test_gp_metadata_records_fitted_kernel_when_optimizer_is_enabled(
+    tiny_training_set, tmp_path
+):
+    X, y = tiny_training_set
+    model = build_surrogate(
+        "rbf_or_gp", seed=1701, config={"optimizer": "fmin_l_bfgs_b"}
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", ConvergenceWarning)
+        model.fit(X, y)
+    metadata = model.save(str(tmp_path / "optimized_gp"))
+    json.dumps(metadata, sort_keys=True)
+
+    fitted = model.model_.kernel_
+    recorded = metadata["hyperparameters"]["kernel"]
+    assert recorded["amplitude"] == pytest.approx(fitted.k1.k1.constant_value)
+    assert recorded["length_scale"] == pytest.approx(fitted.k1.k2.length_scale)
+    assert recorded["noise_level"] == pytest.approx(fitted.k2.noise_level)
+    assert metadata["hyperparameters"]["gaussian_process_regressor"]["kernel"][
+        "params"
+    ]["k1"]["params"]["k1"]["params"]["constant_value"] == pytest.approx(
+        fitted.k1.k1.constant_value
+    )
+
+
 @pytest.mark.parametrize(
     ("name", "required"),
     [
@@ -119,7 +145,9 @@ def test_metadata_is_json_serializable_and_records_complete_effective_config(
         }
         assert {"alpha", "fit_intercept", "solver", "tol"} <= set(effective["ridge"])
     elif name == "rbf_or_gp":
-        assert effective["kernel"] == {
+        assert effective["kernel"] | {
+            "amplitude": 1.0, "length_scale": 1.0, "noise_level": 1e-6
+        } == {
             "composition": "ConstantKernel * RBF + WhiteKernel",
             "amplitude": 1.0,
             "amplitude_bounds": [0.001, 1000.0],
@@ -128,6 +156,9 @@ def test_metadata_is_json_serializable_and_records_complete_effective_config(
             "noise_level": 1e-6,
             "noise_level_bounds": [1e-10, 1.0],
         }
+        assert effective["kernel"]["amplitude"] == pytest.approx(1.0)
+        assert effective["kernel"]["length_scale"] == pytest.approx(1.0)
+        assert effective["kernel"]["noise_level"] == pytest.approx(1e-6)
         assert {"alpha", "copy_X_train", "normalize_y", "optimizer", "random_state"} <= set(
             effective["gaussian_process_regressor"]
         )

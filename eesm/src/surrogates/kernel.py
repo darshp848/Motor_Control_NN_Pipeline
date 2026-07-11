@@ -38,17 +38,20 @@ class RBFOrGPSurrogate(FluxSurrogate):
             random_state=self.seed,
         )
         self.model_.fit(X, y)
+        fitted_kernel = self.model_.kernel_
+        gpr_parameters = self.model_.get_params(deep=False)
+        gpr_parameters["kernel"] = fitted_kernel
         self.hyperparameters_ = {
             "kernel": {
                 "composition": "ConstantKernel * RBF + WhiteKernel",
-                "amplitude": 1.0,
-                "amplitude_bounds": [1e-3, 1e3],
-                "length_scale": length_scale,
-                "length_scale_bounds": [1e-3, 1e3],
-                "noise_level": noise_level,
-                "noise_level_bounds": [1e-10, 1.0],
+                "amplitude": fitted_kernel.k1.k1.constant_value,
+                "amplitude_bounds": fitted_kernel.k1.k1.constant_value_bounds,
+                "length_scale": fitted_kernel.k1.k2.length_scale,
+                "length_scale_bounds": fitted_kernel.k1.k2.length_scale_bounds,
+                "noise_level": fitted_kernel.k2.noise_level,
+                "noise_level_bounds": fitted_kernel.k2.noise_level_bounds,
             },
-            "gaussian_process_regressor": self.model_.get_params(deep=False),
+            "gaussian_process_regressor": gpr_parameters,
         }
 
     def _predict_normalized(self, X: np.ndarray) -> np.ndarray:
