@@ -50,6 +50,11 @@ def load_manifest(path: str) -> dict:
         return json.load(f)
 
 
+def build_synthetic_truth_provider(manifest_path: str = DEFAULT_MANIFEST):
+    """Build the deterministic truth provider shared by Stage 1 studies."""
+    return load_map_from_manifest(manifest_path=os.path.abspath(manifest_path))
+
+
 def resolve_output_dir(manifest: dict, output_dir: Optional[str] = None) -> str:
     """Resolve artifact directory (always absolute)."""
     if output_dir:
@@ -103,7 +108,7 @@ def run_stage1(
     out_dir = resolve_output_dir(manifest, output_dir)
     os.makedirs(out_dir, exist_ok=True)
 
-    fmap = load_map_from_manifest(manifest_path=manifest_path)
+    fmap = build_synthetic_truth_provider(manifest_path)
 
     # --- oracle ---
     oracle_path = os.path.join(out_dir, "oracle_dense_map.csv")
