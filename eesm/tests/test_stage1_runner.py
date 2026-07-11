@@ -46,7 +46,9 @@ def test_run_stage1_writes_expected_outputs(tmp_path):
         "samples_latin_hypercube.csv",
         "stage1_synthetic_summary.json",
     ]
-    assert {path.name for path in out.iterdir()} == set(expected)
+    for name in expected:
+        assert (out / name).is_file(), f"missing {name}"
+    assert not (out / "samples_sequential_placeholder.csv").exists()
 
     assert summary["status"] == "ok"
     assert summary["oracle"]["n_rows"] == 5 * 5 * 3
