@@ -1,5 +1,6 @@
-"""Surrogate model comparison for EESM (Stage 1+).
+"""Baseline EESM flux-surrogate families and shared registry."""
 
-Not implemented in the first synthetic pass. Reuse patterns from the IPM
-train_flux_map_comparison.py after the synthetic truth + scheduler gates pass.
-"""
+from surrogates.base import FluxSurrogate
+from surrogates.registry import build_surrogate, load_surrogate
+
+__all__ = ["FluxSurrogate", "build_surrogate", "load_surrogate"]
