@@ -1,6 +1,6 @@
 # Stage 1 — Synthetic EESM test harness (plan)
 
-**Status:** synthetic scaffold (not a finished research result).  
+**Status:** Tasks 1–2 complete in the foundry; synthetic scaffold only, not a finished research result.
 **Goal:** prove the **EESM workflow** offline with a fake but physically reasonable map **before** spending Maxwell/AEDT 3D FEM hours.
 
 ## Why synthetic EESM comes before real Maxwell
@@ -40,7 +40,7 @@ Optionally later:
 \]
 
 **Units (Stage 1 defaults):** currents in A, flux in Wb, torque in N·m, voltages in V.  
-Limits and coefficients live in `eesm/configs/synthetic_eesm_manifest.json`.
+Legacy synthetic-map coefficients and runner settings live in `eesm/configs/synthetic_eesm_manifest.json`; the foundry source of truth for experiment domains, roles, budgets, gates, seeds, schemas, and paths is `eesm/configs/eesm_experiment_manifest.json`.
 
 ## What the copper-loss optimizer does
 
@@ -85,14 +85,15 @@ Status labels (do not invent fake currents when the problem is impossible):
 
 **Important research stance:** the learned model does **not** replace FOC. It is a **flux-map surrogate / map-correction** tool used to build **validated controller-facing references** (LUTs / schedulers).
 
-## How sampling strategies will be compared later
+## Baseline sampling strategies
 
-Stage 1 implements generators only:
+Tasks 1–2 implement three approved generators:
 
 1. **Tensor grid** — full factorial, good baseline, expensive in 3D.  
 2. **Random** — seeded uniform box samples.  
-3. **Latin hypercube** — space-filling (SciPy `qmc` when available).  
-4. **Sequential / uncertainty** — **placeholder** with a documented TODO for active learning.
+3. **Latin hypercube** — space-filling (SciPy `qmc` when available).
+
+Sequential or uncertainty-guided sampling is not implemented and is explicitly disabled in the foundry manifest until all non-adaptive baselines pass.
 
 **Later comparison (not in this first pass):**
 
@@ -110,7 +111,7 @@ Gate checklist:
 3. Scheduler finds a **feasible** modest \(T_{\mathrm{ref}}\).  
 4. Impossible \(T_{\mathrm{ref}}\) returns **`infeasible`** (no fake \(i_d,i_q,i_f\)).  
 5. Seeds make sampling **repeatable**.  
-6. CSV schemas stable (`oracle` and `samples` columns).  
+6. Sample CSV schema remains stable: `point_id, role, source, region, id_a, iq_a, if_a, lambda_d_wb, lambda_q_wb, solver_status, converged, provenance_id, strategy, budget, seed`.
 7. (Next) Surrogate train/compare loop reuses clean interfaces.  
 8. (Next) Maxwell **qualification runbook** written and reviewed.  
 9. Only then: small real EESM pilot sweep → scale up.
@@ -137,8 +138,10 @@ Stage 1 is the **offline EESM dry-run** of that story. Stage 0 IPM remains the f
 ```text
 eesm/
   run_synthetic_stage1.py          # one-command offline runner
-  configs/synthetic_eesm_manifest.json
+  configs/eesm_experiment_manifest.json  # foundry source of truth
+  configs/synthetic_eesm_manifest.json   # legacy synthetic runner/map settings
   src/
+    data/experiment_points.py
     synthetic/synthetic_map.py
     sampling/sample_designs.py
     surrogates/          # placeholder for later ML comparison
@@ -173,7 +176,6 @@ Artifacts land under `eesm/outputs/`:
 | `samples_tensor_grid.csv` | Tensor product design |
 | `samples_random.csv` | Seeded random design |
 | `samples_latin_hypercube.csv` | Space-filling LHS design |
-| `samples_sequential_placeholder.csv` | Active-learning placeholder |
 | `stage1_synthetic_summary.json` | Machine-readable Stage 1 summary |
 
 Optional overrides:
@@ -189,4 +191,4 @@ python eesm/run_synthetic_stage1.py --out path\to\temp_out --oracle-n-id 11
 - Field-flux \(\lambda_f\) identification  
 - Flash-ready embedded FOC tables  
 
-Those come **after** the synthetic harness and a Maxwell qualification runbook.
+Those require synthetic qualification evidence, a reviewed Maxwell runbook, frozen foundry gates and numerical thresholds, and independent validation. Simulink/controller readiness is not yet established.

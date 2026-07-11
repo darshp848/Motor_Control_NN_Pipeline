@@ -5,7 +5,7 @@ Public pipeline for building a **flux-map surrogate** for an IPM motor and turni
 **Stage 0 status: offline-frozen and audit-ready** (not FEM-closed / not deployment-ready).  
 Branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units, seeds, and a one-command offline path before EESM work. See [`docs/STAGE0_FREEZE.md`](docs/STAGE0_FREEZE.md) and the verification report [`docs/STAGE0_FINAL_VERIFICATION.md`](docs/STAGE0_FINAL_VERIFICATION.md).
 
-**Stage 1 (EESM):** synthetic truth + copper-loss scheduler scaffold under [`eesm/`](eesm/) — see [`eesm/docs/STAGE1_SYNTHETIC_EESM_PLAN.md`](eesm/docs/STAGE1_SYNTHETIC_EESM_PLAN.md). Real Maxwell EESM sweeps remain blocked until synthetic gates pass.
+**Stage 1 (EESM):** Tasks 1–2 establish the foundry experiment contract, canonical point identity and roles, and baseline sampling designs; the legacy synthetic harness remains an offline scaffold under [`eesm/`](eesm/). Real Maxwell sweeps and model promotion remain blocked until qualification is complete and numerical gate thresholds are frozen. See [`eesm/docs/STAGE1_SYNTHETIC_EESM_PLAN.md`](eesm/docs/STAGE1_SYNTHETIC_EESM_PLAN.md).
 
 ```
 AEDT FEM (dq flux map)
@@ -30,7 +30,7 @@ Personal write-ups, PDFs, notebooks, and the Obsidian vault live next door in:
 | `out/` | Pipeline outputs: models, metrics, validation, MTPA LUT, audit |
 | `docs/` | Units, known limitations, Stage 0 freeze + verification, AEDT LUT audit runbook |
 | `tests/` | Regression tests (physics, domain, seeds, schema) |
-| `eesm/` | Stage 1 synthetic EESM harness (map, sampling, scheduler, tests) |
+| `eesm/` | Stage 1 EESM foundry contract, canonical experiment roles, baseline sampling designs, legacy synthetic harness, scheduler, and tests |
 | `aedt_mcp/` | Optional Ansys AEDT MCP tooling + FEM job helpers |
 | `*.py` | End-to-end Python stages (see below) |
 | `.venv/` | Local Python environment (not required to read results) |
@@ -109,13 +109,15 @@ AEDT Student is only required to **regenerate** FEM data, motor params, or FEM L
 - FEM LUT audit is optional: [`docs/AEDT_LUT_AUDIT_RUNBOOK.md`](docs/AEDT_LUT_AUDIT_RUNBOOK.md).
 - See [`docs/UNITS_AND_CONVENTIONS.md`](docs/UNITS_AND_CONVENTIONS.md) and [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
 
-## Stage 1 synthetic EESM (scaffold)
+## Stage 1 EESM foundry (Tasks 1–2) and legacy synthetic harness
+
+The source of truth for experiment domains, roles, budgets, gates, seeds, schemas, and output paths is `eesm/configs/eesm_experiment_manifest.json`. Tasks 1–2 freeze disjoint `train`, `selection`, `scheduler_audit`, and optional `reference` roles plus `tensor_grid`, `random`, and `latin_hypercube` baselines. Sequential sampling is disabled and is not implemented.
 
 ```pwsh
 .\.venv\Scripts\python -m pytest eesm/tests -q
 ```
 
-Does **not** launch AEDT. Full ML surrogate comparison and real EESM Maxwell remain future steps.
+The legacy runner does **not** launch AEDT. Maxwell qualification, frozen numerical promotion thresholds, surrogate comparison, and controller/Simulink readiness remain future work; no controller-ready or Simulink-ready claim is made.
 
 ## Learning notes
 
