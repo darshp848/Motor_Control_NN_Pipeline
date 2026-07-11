@@ -44,16 +44,13 @@ def test_run_stage1_writes_expected_outputs(tmp_path):
         "samples_tensor_grid.csv",
         "samples_random.csv",
         "samples_latin_hypercube.csv",
-        "samples_sequential_placeholder.csv",
         "stage1_synthetic_summary.json",
     ]
-    for name in expected:
-        assert (out / name).is_file(), f"missing {name}"
+    assert {path.name for path in out.iterdir()} == set(expected)
 
     assert summary["status"] == "ok"
     assert summary["oracle"]["n_rows"] == 5 * 5 * 3
     assert summary["smoke_validation"]["ok"] is True
-
     fe = summary["scheduler"]["feasible_example"]
     assert fe["status"] in ("feasible", "saturated_to_boundary")
     assert fe["id_ref_a"] is not None

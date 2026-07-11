@@ -25,7 +25,6 @@ if _SRC not in sys.path:
 from sampling.sample_designs import (  # noqa: E402
     latin_hypercube_samples,
     random_samples,
-    sequential_uncertainty_placeholder,
     tensor_grid_samples,
     write_samples_csv,
 )
@@ -119,7 +118,6 @@ def run_stage1(
     tensor_cfg = samp.get("tensor", {})
     n_random = int(samp.get("n_random", 500))
     n_lhs = int(samp.get("n_lhs", 500))
-    n_seq = int(samp.get("n_sequential", 50))
 
     domain = fmap.domain
     samples_written = {}
@@ -150,16 +148,6 @@ def run_stage1(
         "path": p_lhs,
         "n": int(len(lhs["id_a"])),
         "strategy_tag": str(lhs["strategy"][0]),
-    }
-
-    seq = sequential_uncertainty_placeholder(
-        domain, n=n_seq, seed=seed, map_model=fmap
-    )
-    p_seq = os.path.join(out_dir, "samples_sequential_placeholder.csv")
-    write_samples_csv(p_seq, seq)
-    samples_written["sequential_placeholder"] = {
-        "path": p_seq,
-        "n": int(len(seq["id_a"])),
     }
 
     # --- smoke validation ---

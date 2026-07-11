@@ -1,17 +1,17 @@
 from sampling.sample_designs import (
+    CANONICAL_POINT_COLUMNS,
     SAMPLE_CSV_COLUMNS,
     latin_hypercube_samples,
     random_samples,
-    sequential_uncertainty_placeholder,
     tensor_grid_samples,
     write_samples_csv,
 )
 
 __all__ = [
+    "CANONICAL_POINT_COLUMNS",
     "SAMPLE_CSV_COLUMNS",
     "tensor_grid_samples",
     "random_samples",
     "latin_hypercube_samples",
-    "sequential_uncertainty_placeholder",
     "write_samples_csv",
 ]

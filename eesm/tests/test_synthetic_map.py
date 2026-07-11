@@ -18,7 +18,6 @@ from sampling.sample_designs import (  # noqa: E402
     SAMPLE_CSV_COLUMNS,
     latin_hypercube_samples,
     random_samples,
-    sequential_uncertainty_placeholder,
     tensor_grid_samples,
     write_samples_csv,
 )
@@ -38,6 +37,25 @@ def _manifest_path() -> str:
             "synthetic_eesm_manifest.json",
         )
     )
+
+
+EXPECTED_SAMPLE_COLUMNS = [
+    "point_id",
+    "role",
+    "source",
+    "region",
+    "id_a",
+    "iq_a",
+    "if_a",
+    "lambda_d_wb",
+    "lambda_q_wb",
+    "solver_status",
+    "converged",
+    "provenance_id",
+    "strategy",
+    "budget",
+    "seed",
+]
 
 
 def test_flux_returns_finite_values():
@@ -100,7 +118,7 @@ def test_random_seed_repeatable():
     assert not np.allclose(a["id_a"], c["id_a"])
 
 
-def test_tensor_and_lhs_and_placeholder():
+def test_sampling_functions_return_only_approved_canonical_designs():
     domain = MapDomain()
     g = tensor_grid_samples(domain, n_id=4, n_iq=3, n_if=2, seed=0)
     assert len(g["id_a"]) == 4 * 3 * 2
@@ -108,11 +126,13 @@ def test_tensor_and_lhs_and_placeholder():
 
     lhs = latin_hypercube_samples(domain, n=50, seed=0)
     assert len(lhs["id_a"]) == 50
-    assert str(lhs["strategy"][0]).startswith("latin_hypercube")
+    assert set(lhs["strategy"]) == {"latin_hypercube"}
 
-    seq = sequential_uncertainty_placeholder(domain, n=10, seed=1)
-    assert len(seq["id_a"]) == 10
-    assert seq["strategy"][0] == "sequential_placeholder"
+    for samples, budget in ((g, 24), (lhs, 50)):
+        assert list(samples) == EXPECTED_SAMPLE_COLUMNS
+        assert set(samples["role"]) == {"train"}
+        assert set(samples["budget"]) == {budget}
+        assert len(set(samples["point_id"])) == budget
 
 
 def test_samples_csv_schema_stable(tmp_path):
@@ -126,6 +146,7 @@ def test_samples_csv_schema_stable(tmp_path):
         rows = list(reader)
     assert len(rows) == 5
     assert rows[0]["strategy"] == "random"
+    assert rows[0]["budget"] == "5"
 
 
 def test_domain_contains():
