@@ -18,8 +18,16 @@ class CompactMLPSurrogate(FluxSurrogate):
         learning_rate = float(self.config.get("learning_rate", 0.01))
         epochs = int(self.config.get("epochs", 300))
         self.hyperparameters_ = {
-            "hidden_width": hidden,
-            "learning_rate": learning_rate,
+            "architecture": [3, hidden, hidden, 2],
+            "activation": "tanh",
+            "dtype": "float64",
+            "loss": "mean_squared_error",
+            "adam": {
+                "lr": learning_rate, "betas": [0.9, 0.999], "eps": 1e-8,
+                "weight_decay": 0, "amsgrad": False, "maximize": False,
+                "foreach": None, "capturable": False, "differentiable": False,
+                "fused": None, "decoupled_weight_decay": False,
+            },
             "epochs": epochs,
         }
         self.model_ = nn.Sequential(
@@ -32,6 +40,10 @@ class CompactMLPSurrogate(FluxSurrogate):
         optimizer = torch.optim.Adam(
             self.model_.parameters(),
             lr=learning_rate,
+            betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
+            amsgrad=False, maximize=False, foreach=None, capturable=False,
+            differentiable=False, fused=None,
+            decoupled_weight_decay=False,
         )
         for _ in range(epochs):
             optimizer.zero_grad()

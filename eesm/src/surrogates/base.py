@@ -12,6 +12,26 @@ from typing import Any, Mapping
 import numpy as np
 
 
+def _json_safe(value: Any) -> Any:
+    """Return a deterministic JSON-compatible representation."""
+    if value is None or isinstance(value, (str, bool, int, float)):
+        return value
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return [_json_safe(item) for item in value.tolist()]
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in sorted(value.items())}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if hasattr(value, "get_params"):
+        return {
+            "type": type(value).__name__,
+            "params": _json_safe(value.get_params(deep=False)),
+        }
+    return str(value)
+
+
 def _sha256_file(path: str) -> str:
     digest = hashlib.sha256()
     with open(path, "rb") as stream:
@@ -95,7 +115,7 @@ class FluxSurrogate(ABC):
         return {
             "family": self.family,
             "seed": self.seed,
-            "hyperparameters": dict(self.hyperparameters_),
+            "hyperparameters": _json_safe(self.hyperparameters_),
             "training_data_sha256": self.training_data_sha256_,
             "library_versions": _package_versions(),
             "artifact_format": "python_pickle",

@@ -14,16 +14,19 @@ class TreeEnsembleSurrogate(FluxSurrogate):
     family = "tree_ensemble"
 
     def _fit_normalized(self, X: np.ndarray, y: np.ndarray) -> None:
-        self.hyperparameters_ = {
+        requested = {
             "n_estimators": int(self.config.get("n_estimators", 100)),
             "max_depth": self.config.get("max_depth", None),
             "min_samples_leaf": int(self.config.get("min_samples_leaf", 1)),
         }
         self.model_ = RandomForestRegressor(
             random_state=self.seed,
-            **self.hyperparameters_,
+            **requested,
         )
         self.model_.fit(X, y)
+        self.hyperparameters_ = {
+            "random_forest_regressor": self.model_.get_params(deep=False)
+        }
 
     def _predict_normalized(self, X: np.ndarray) -> np.ndarray:
         return self.model_.predict(X)

@@ -15,11 +15,14 @@ class PhysicsPolynomialSurrogate(FluxSurrogate):
     def _fit_normalized(self, X: np.ndarray, y: np.ndarray) -> None:
         degree = int(self.config.get("degree", 2))
         alpha = float(self.config.get("alpha", 1.0e-6))
-        self.hyperparameters_ = {"degree": degree, "alpha": alpha}
         self.features_ = PolynomialFeatures(degree=degree, include_bias=False)
         transformed = self.features_.fit_transform(X)
         self.model_ = Ridge(alpha=alpha)
         self.model_.fit(transformed, y)
+        self.hyperparameters_ = {
+            "polynomial_features": self.features_.get_params(deep=False),
+            "ridge": self.model_.get_params(deep=False),
+        }
 
     def _predict_normalized(self, X: np.ndarray) -> np.ndarray:
         return self.model_.predict(self.features_.transform(X))

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sys
 import warnings
 
@@ -79,3 +80,64 @@ def test_surrogate_load_rejects_artifact_hash_mismatch(
 
     with pytest.raises(ValueError, match="artifact hash mismatch"):
         load_surrogate(metadata)
+
+
+def test_rbf_or_gp_enforces_256_sample_training_limit():
+    X = np.zeros((256, 3), dtype=np.float64)
+    y = np.zeros((256, 2), dtype=np.float64)
+    build_surrogate("rbf_or_gp", seed=1701, config={}).fit(X, y)
+
+    with pytest.raises(ValueError, match="at most 256 training samples"):
+        build_surrogate("rbf_or_gp", seed=1701, config={}).fit(
+            np.zeros((257, 3)), np.zeros((257, 2))
+        )
+
+
+@pytest.mark.parametrize(
+    ("name", "required"),
+    [
+        ("physics_polynomial", {"polynomial_features", "ridge"}),
+        ("rbf_or_gp", {"kernel", "gaussian_process_regressor"}),
+        ("tree_ensemble", {"random_forest_regressor"}),
+        ("compact_mlp", {"architecture", "activation", "dtype", "loss", "adam", "epochs"}),
+    ],
+)
+def test_metadata_is_json_serializable_and_records_complete_effective_config(
+    name, required, tiny_training_set, tmp_path
+):
+    X, y = tiny_training_set
+    model = build_surrogate(name, seed=1701, config={})
+    model.fit(X, y)
+    metadata = model.save(str(tmp_path / name))
+    json.dumps(metadata, sort_keys=True)
+    effective = metadata["hyperparameters"]
+    assert set(effective) == required
+
+    if name == "physics_polynomial":
+        assert effective["polynomial_features"] == {
+            "degree": 2, "include_bias": False, "interaction_only": False, "order": "C"
+        }
+        assert {"alpha", "fit_intercept", "solver", "tol"} <= set(effective["ridge"])
+    elif name == "rbf_or_gp":
+        assert effective["kernel"] == {
+            "composition": "ConstantKernel * RBF + WhiteKernel",
+            "amplitude": 1.0,
+            "amplitude_bounds": [0.001, 1000.0],
+            "length_scale": 1.0,
+            "length_scale_bounds": [0.001, 1000.0],
+            "noise_level": 1e-6,
+            "noise_level_bounds": [1e-10, 1.0],
+        }
+        assert {"alpha", "copy_X_train", "normalize_y", "optimizer", "random_state"} <= set(
+            effective["gaussian_process_regressor"]
+        )
+    elif name == "tree_ensemble":
+        assert effective["random_forest_regressor"] == model.model_.get_params(deep=False)
+    else:
+        assert effective["architecture"] == [3, 32, 32, 2]
+        assert effective["adam"] == {
+            "lr": 0.01, "betas": [0.9, 0.999], "eps": 1e-8,
+            "weight_decay": 0, "amsgrad": False, "maximize": False,
+            "foreach": None, "capturable": False, "differentiable": False,
+            "fused": None, "decoupled_weight_decay": False,
+        }
