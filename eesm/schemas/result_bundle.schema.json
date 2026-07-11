@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:eesm-foundry:schemas:result-bundle:1.0.0",
+  "title": "Immutable EESM result bundle",
+  "type": "object",
+  "required": [
+    "bundle_version",
+    "experiment_id",
+    "foundry_commit",
+    "manifest_sha256",
+    "created_utc",
+    "inputs",
+    "environment",
+    "stages",
+    "decisions",
+    "artifacts",
+    "gates"
+  ],
+  "properties": {
+    "bundle_version": {
+      "const": "1.0.0"
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "foundry_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "environment": {
+      "type": "object"
+    },
+    "stages": {
+      "type": "object"
+    },
+    "decisions": {
+      "type": "object"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "gates": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

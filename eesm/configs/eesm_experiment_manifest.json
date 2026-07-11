@@ -1,0 +1,114 @@
+{
+  "schema_version": "eesm-experiment-1.0.0",
+  "experiment_id": "eesm_foundry_first_20260710",
+  "machine": {
+    "type": "EESM",
+    "parameter_status": "synthetic_baseline",
+    "pole_pairs": 2,
+    "rs_ohm": 0.05,
+    "rf_ohm": 8.0,
+    "vdc_v": 400.0,
+    "i_s_max_peak_a": 120.0,
+    "i_f_min_a": 0.0,
+    "i_f_max_a": 15.0,
+    "omega_mech_base_rpm": 3000.0,
+    "omega_mech_max_rpm": 9000.0,
+    "t_rated_nm": 80.0
+  },
+  "domains": {
+    "map": {
+      "id_a": [-120.0, 0.0],
+      "iq_a": [0.0, 120.0],
+      "if_a": [0.0, 15.0]
+    },
+    "scheduler": {
+      "rpm_mech": [0.0, 9000.0],
+      "torque_nm": [0.0, 80.0]
+    },
+    "units": {
+      "id_a": "A_peak_dq",
+      "iq_a": "A_peak_dq",
+      "if_a": "A_dc",
+      "lambda_d_wb": "Wb",
+      "lambda_q_wb": "Wb",
+      "torque_nm": "N.m",
+      "voltage_v": "V_phase_peak",
+      "rpm_mech": "rpm"
+    }
+  },
+  "roles": [
+    "train",
+    "selection",
+    "scheduler_audit",
+    "reference"
+  ],
+  "regions": [
+    "interior",
+    "boundary",
+    "saturation",
+    "field_weakening",
+    "unsupported"
+  ],
+  "sampling": {
+    "baseline_strategies": [
+      "tensor_grid",
+      "random",
+      "latin_hypercube"
+    ],
+    "sequential_enabled": false
+  },
+  "budgets": [64, 128, 256],
+  "surrogates": [
+    "physics_polynomial",
+    "rbf_or_gp",
+    "tree_ensemble",
+    "compact_mlp"
+  ],
+  "metrics": {
+    "prediction_inputs": ["id_a", "iq_a", "if_a"],
+    "prediction_outputs": ["lambda_d_wb", "lambda_q_wb"],
+    "optimization_objective": "1.5 * rs_ohm * (id_a^2 + iq_a^2) + rf_ohm * if_a^2",
+    "flux": ["mae", "rmse", "max_abs"],
+    "torque": ["mae", "rmse", "max_abs"],
+    "voltage_magnitude": ["mae", "rmse", "max_abs"],
+    "feasibility": ["confusion_matrix"],
+    "scheduler": ["copper_loss_regret_w"],
+    "report_by_region": true,
+    "unsupported_policy": "report_separately"
+  },
+  "gates": {
+    "status": "baseline_required",
+    "promotion_blocked_until_frozen": true,
+    "required": [
+      "data_qa",
+      "interior",
+      "boundary",
+      "saturation",
+      "field_weakening",
+      "torque",
+      "voltage",
+      "feasibility"
+    ],
+    "thresholds": {
+      "data_qa": null,
+      "interior": null,
+      "boundary": null,
+      "saturation": null,
+      "field_weakening": null,
+      "torque": null,
+      "voltage": null,
+      "feasibility": null
+    }
+  },
+  "seeds": {
+    "split": 20260710,
+    "model": 1701,
+    "scheduler_audit": 2909
+  },
+  "paths": {
+    "point_schema": "eesm/schemas/eesm_point.schema.json",
+    "result_bundle_schema": "eesm/schemas/result_bundle.schema.json",
+    "runs": "eesm/outputs/runs",
+    "result_bundles": "eesm/outputs/result_bundles"
+  }
+}

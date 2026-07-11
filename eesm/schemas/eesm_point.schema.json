@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:eesm-foundry:schemas:eesm-point:1.0.0",
+  "title": "Canonical EESM experiment point",
+  "description": "Required columns shared by synthetic, FEM, selection, and audit point records.",
+  "type": "object",
+  "required": [
+    "point_id",
+    "role",
+    "source",
+    "region",
+    "id_a",
+    "iq_a",
+    "if_a",
+    "lambda_d_wb",
+    "lambda_q_wb",
+    "solver_status",
+    "converged",
+    "provenance_id"
+  ],
+  "properties": {
+    "point_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["train", "selection", "scheduler_audit", "reference"]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "interior",
+        "boundary",
+        "saturation",
+        "field_weakening",
+        "unsupported"
+      ]
+    },
+    "id_a": {
+      "type": "number"
+    },
+    "iq_a": {
+      "type": "number"
+    },
+    "if_a": {
+      "type": "number"
+    },
+    "lambda_d_wb": {
+      "type": ["number", "null"]
+    },
+    "lambda_q_wb": {
+      "type": ["number", "null"]
+    },
+    "solver_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "converged": {
+      "type": "boolean"
+    },
+    "provenance_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": true
+}
