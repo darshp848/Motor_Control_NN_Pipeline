@@ -95,6 +95,22 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> tuple[list[str], list[int
     return strategies, budgets, families, seeds
 
 
+def _build_run_matrix(
+    manifest: Mapping[str, Any],
+) -> list[tuple[str, int, str]]:
+    """Return the manifest's ordered, duplicate-free baseline run matrix."""
+    strategies, budgets, families, _ = _validate_manifest(manifest)
+    matrix = [
+        (strategy, budget, family)
+        for strategy in strategies
+        for budget in budgets
+        for family in families
+    ]
+    if len(matrix) != len(set(matrix)):
+        raise ValueError("duplicate run keys")
+    return matrix
+
+
 def _domain_from_manifest(manifest: Mapping[str, Any]) -> MapDomain:
     domains = manifest.get("domains")
     map_domain = domains.get("map") if isinstance(domains, Mapping) else None
@@ -261,6 +277,7 @@ def run_equal_budget_study(
     manifest_bytes = manifest_file.read_bytes()
     manifest = json.loads(manifest_bytes)
     strategies, budgets, families, seeds = _validate_manifest(manifest)
+    expected_matrix = _build_run_matrix(manifest)
     domain = _domain_from_manifest(manifest)
 
     output_root = Path(output_dir).resolve()
@@ -395,8 +412,10 @@ def run_equal_budget_study(
                     }
                 )
 
-    expected_runs = len(strategies) * len(budgets) * len(families)
-    if len(run_summaries) != expected_runs or len(run_keys) != expected_runs:
+    if (
+        len(run_summaries) != len(expected_matrix)
+        or run_keys != set(expected_matrix)
+    ):
         raise RuntimeError("incomplete equal-budget run matrix")
     summary: dict[str, Any] = {
         "created_utc": datetime.now(timezone.utc).isoformat(),

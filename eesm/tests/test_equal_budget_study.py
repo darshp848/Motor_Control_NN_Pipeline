@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from experiments.equal_budget import run_equal_budget_study
+from data.experiment_points import canonical_point_id
 from synthetic.synthetic_map import SyntheticEESMMap
 
 
@@ -63,6 +64,22 @@ def test_every_strategy_budget_family_runs_once(
     assert (tmp_path / "study" / "equal_budget_summary.json").is_file()
 
 
+def test_frozen_manifest_builds_the_full_36_cell_matrix() -> None:
+    equal_budget = importlib.import_module("experiments.equal_budget")
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+    matrix = equal_budget._build_run_matrix(manifest)
+
+    assert len(matrix) == 36
+    assert len(set(matrix)) == 36
+    assert set(matrix) == {
+        (strategy, budget, family)
+        for strategy in manifest["sampling"]["baseline_strategies"]
+        for budget in manifest["budgets"]
+        for family in manifest["surrogates"]
+    }
+
+
 def test_training_hash_excludes_selection_and_scheduler_audit_points(
     smoke_manifest: Path, tmp_path: Path
 ) -> None:
@@ -88,6 +105,29 @@ def test_training_hash_excludes_selection_and_scheduler_audit_points(
         assert train_ids.isdisjoint(selection_ids | audit_ids)
         assert metadata["training_point_ids_sha256"] == expected_hash
         assert run["training_point_ids_sha256"] == expected_hash
+
+
+def test_scheduler_audit_truth_is_never_requested(
+    smoke_manifest: Path, tmp_path: Path
+) -> None:
+    oracle = SyntheticEESMMap()
+    evaluated_ids: set[str] = set()
+
+    class RecordingTruth:
+        def flux(self, id_a, iq_a, if_a):
+            evaluated_ids.update(
+                canonical_point_id(id_value, iq_value, if_value)
+                for id_value, iq_value, if_value in zip(id_a, iq_a, if_a)
+            )
+            return oracle.flux(id_a, iq_a, if_a)
+
+    summary = run_equal_budget_study(
+        str(smoke_manifest), str(tmp_path / "study"), RecordingTruth()
+    )
+
+    audit_ids = set(summary["role_point_ids"]["scheduler_audit"])
+    assert evaluated_ids
+    assert evaluated_ids.isdisjoint(audit_ids)
 
 
 def test_cli_runs_the_smoke_manifest(
