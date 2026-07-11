@@ -95,6 +95,25 @@ def test_manifest_freezes_regions_budgets_seeds_and_problem_definition():
     )
 
 
+def test_manifest_distinguishes_required_roles_and_isolates_scheduler_audit():
+    manifest = _load_contract(MANIFEST_PATH)
+    role_policy = manifest["role_policy"]
+
+    assert role_policy["required"] == ["train", "selection", "scheduler_audit"]
+    assert role_policy["optional"] == ["reference"]
+    assert role_policy["scheduler_audit"] == {
+        "available_only_after": "promotion",
+        "prohibited_influences": [
+            "sampling",
+            "fitting",
+            "hyperparameters",
+            "budget_choice",
+            "promotion",
+        ],
+        "allowed_influence": "release_acceptance",
+    }
+
+
 def test_manifest_blocks_promotion_until_required_thresholds_are_frozen():
     manifest = _load_contract(MANIFEST_PATH)
     gates = manifest["gates"]
@@ -113,6 +132,10 @@ def test_manifest_blocks_promotion_until_required_thresholds_are_frozen():
     ]
     assert set(gates["thresholds"]) == set(gates["required"])
     assert all(value is None for value in gates["thresholds"].values())
+    assert gates["promotion_policy"] == {
+        "unfrozen_threshold_action": "reject",
+        "required_gate_policy": "all_must_pass",
+    }
 
 
 def test_point_schema_requires_canonical_columns():
@@ -140,6 +163,13 @@ def test_point_schema_freezes_role_and_region_vocabulary():
     ]
 
 
+def test_point_schema_reserves_future_flux_and_parallel_role_fields():
+    point_schema = _load_contract(POINT_SCHEMA_PATH)
+
+    assert point_schema["properties"]["lambda_f_wb"] is False
+    assert point_schema["properties"]["roles"] is False
+
+
 def test_result_bundle_schema_requires_frozen_root_keys_and_hashes():
     bundle_schema = _load_contract(RESULT_BUNDLE_SCHEMA_PATH)
 
@@ -151,3 +181,20 @@ def test_result_bundle_schema_requires_frozen_root_keys_and_hashes():
     assert bundle_schema["properties"]["manifest_sha256"]["pattern"] == (
         "^[0-9a-f]{64}$"
     )
+
+
+def test_result_bundle_schema_blocks_promotion_with_unfrozen_thresholds():
+    bundle_schema = _load_contract(RESULT_BUNDLE_SCHEMA_PATH)
+    promotion_guard = bundle_schema["allOf"][0]
+
+    assert (
+        promotion_guard["if"]["properties"]["gates"]["properties"]
+        ["threshold_status"]["const"]
+        == "baseline_required"
+    )
+    blocked_promotion = (
+        promotion_guard["then"]["properties"]["decisions"]["properties"]
+        ["promotion"]["properties"]
+    )
+    assert blocked_promotion["status"]["const"] == "blocked"
+    assert blocked_promotion["candidate"]["type"] == "null"

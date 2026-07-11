@@ -42,6 +42,21 @@
     "scheduler_audit",
     "reference"
   ],
+  "role_policy": {
+    "required": ["train", "selection", "scheduler_audit"],
+    "optional": ["reference"],
+    "scheduler_audit": {
+      "available_only_after": "promotion",
+      "prohibited_influences": [
+        "sampling",
+        "fitting",
+        "hyperparameters",
+        "budget_choice",
+        "promotion"
+      ],
+      "allowed_influence": "release_acceptance"
+    }
+  },
   "regions": [
     "interior",
     "boundary",
@@ -98,6 +113,10 @@
       "torque": null,
       "voltage": null,
       "feasibility": null
+    },
+    "promotion_policy": {
+      "unfrozen_threshold_action": "reject",
+      "required_gate_policy": "all_must_pass"
     }
   },
   "seeds": {

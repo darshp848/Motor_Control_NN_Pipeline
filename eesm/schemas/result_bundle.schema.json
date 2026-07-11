@@ -46,7 +46,25 @@
       "type": "object"
     },
     "decisions": {
-      "type": "object"
+      "type": "object",
+      "required": ["promotion"],
+      "properties": {
+        "promotion": {
+          "type": "object",
+          "required": ["status", "candidate"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["blocked", "no_promotion", "promoted"]
+            },
+            "candidate": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
     },
     "artifacts": {
       "type": "array",
@@ -67,8 +85,57 @@
       }
     },
     "gates": {
-      "type": "object"
+      "type": "object",
+      "required": ["threshold_status", "thresholds"],
+      "properties": {
+        "threshold_status": {
+          "type": "string",
+          "enum": ["baseline_required", "frozen"]
+        },
+        "thresholds": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "properties": {
+              "threshold_status": {
+                "const": "baseline_required"
+              }
+            },
+            "required": ["threshold_status"]
+          }
+        },
+        "required": ["gates"]
+      },
+      "then": {
+        "properties": {
+          "decisions": {
+            "properties": {
+              "promotion": {
+                "properties": {
+                  "status": {
+                    "const": "blocked"
+                  },
+                  "candidate": {
+                    "type": "null"
+                  }
+                },
+                "required": ["status", "candidate"]
+              }
+            },
+            "required": ["promotion"]
+          }
+        },
+        "required": ["decisions"]
+      }
+    }
+  ]
 }
