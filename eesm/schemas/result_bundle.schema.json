@@ -93,7 +93,44 @@
           "enum": ["baseline_required", "frozen"]
         },
         "thresholds": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "data_qa",
+            "interior",
+            "boundary",
+            "saturation",
+            "field_weakening",
+            "torque",
+            "voltage",
+            "feasibility"
+          ],
+          "properties": {
+            "data_qa": {
+              "type": ["number", "null"]
+            },
+            "interior": {
+              "type": ["number", "null"]
+            },
+            "boundary": {
+              "type": ["number", "null"]
+            },
+            "saturation": {
+              "type": ["number", "null"]
+            },
+            "field_weakening": {
+              "type": ["number", "null"]
+            },
+            "torque": {
+              "type": ["number", "null"]
+            },
+            "voltage": {
+              "type": ["number", "null"]
+            },
+            "feasibility": {
+              "type": ["number", "null"]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true
@@ -117,6 +154,38 @@
       },
       "then": {
         "properties": {
+          "gates": {
+            "properties": {
+              "thresholds": {
+                "properties": {
+                  "data_qa": {
+                    "type": "null"
+                  },
+                  "interior": {
+                    "type": "null"
+                  },
+                  "boundary": {
+                    "type": "null"
+                  },
+                  "saturation": {
+                    "type": "null"
+                  },
+                  "field_weakening": {
+                    "type": "null"
+                  },
+                  "torque": {
+                    "type": "null"
+                  },
+                  "voltage": {
+                    "type": "null"
+                  },
+                  "feasibility": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          },
           "decisions": {
             "properties": {
               "promotion": {
@@ -135,6 +204,57 @@
           }
         },
         "required": ["decisions"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "properties": {
+              "threshold_status": {
+                "const": "frozen"
+              }
+            },
+            "required": ["threshold_status"]
+          }
+        },
+        "required": ["gates"]
+      },
+      "then": {
+        "properties": {
+          "gates": {
+            "properties": {
+              "thresholds": {
+                "properties": {
+                  "data_qa": {
+                    "type": "number"
+                  },
+                  "interior": {
+                    "type": "number"
+                  },
+                  "boundary": {
+                    "type": "number"
+                  },
+                  "saturation": {
+                    "type": "number"
+                  },
+                  "field_weakening": {
+                    "type": "number"
+                  },
+                  "torque": {
+                    "type": "number"
+                  },
+                  "voltage": {
+                    "type": "number"
+                  },
+                  "feasibility": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   ]

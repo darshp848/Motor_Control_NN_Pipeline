@@ -40,6 +40,17 @@ EXPECTED_BUNDLE_KEYS = {
     "gates",
 }
 
+EXPECTED_REQUIRED_GATES = [
+    "data_qa",
+    "interior",
+    "boundary",
+    "saturation",
+    "field_weakening",
+    "torque",
+    "voltage",
+    "feasibility",
+]
+
 
 def _load_contract(path: Path) -> dict:
     assert path.is_file(), f"missing contract file: {path}"
@@ -120,16 +131,7 @@ def test_manifest_blocks_promotion_until_required_thresholds_are_frozen():
 
     assert gates["status"] == "baseline_required"
     assert gates["promotion_blocked_until_frozen"] is True
-    assert gates["required"] == [
-        "data_qa",
-        "interior",
-        "boundary",
-        "saturation",
-        "field_weakening",
-        "torque",
-        "voltage",
-        "feasibility",
-    ]
+    assert gates["required"] == EXPECTED_REQUIRED_GATES
     assert set(gates["thresholds"]) == set(gates["required"])
     assert all(value is None for value in gates["thresholds"].values())
     assert gates["promotion_policy"] == {
@@ -198,3 +200,34 @@ def test_result_bundle_schema_blocks_promotion_with_unfrozen_thresholds():
     )
     assert blocked_promotion["status"]["const"] == "blocked"
     assert blocked_promotion["candidate"]["type"] == "null"
+
+
+def test_result_bundle_schema_correlates_threshold_status_and_values():
+    bundle_schema = _load_contract(RESULT_BUNDLE_SCHEMA_PATH)
+    thresholds_schema = (
+        bundle_schema["properties"]["gates"]["properties"]["thresholds"]
+    )
+
+    assert thresholds_schema["required"] == EXPECTED_REQUIRED_GATES
+    assert thresholds_schema["additionalProperties"] is False
+    assert all(
+        thresholds_schema["properties"][gate]["type"] == ["number", "null"]
+        for gate in EXPECTED_REQUIRED_GATES
+    )
+
+    threshold_types_by_status = {}
+    for guard in bundle_schema["allOf"]:
+        threshold_status = (
+            guard["if"]["properties"]["gates"]["properties"]
+            ["threshold_status"]["const"]
+        )
+        guarded_thresholds = (
+            guard["then"]["properties"]["gates"]["properties"]["thresholds"]
+            ["properties"]
+        )
+        threshold_types_by_status[threshold_status] = {
+            gate: guarded_thresholds[gate]["type"] for gate in EXPECTED_REQUIRED_GATES
+        }
+
+    assert set(threshold_types_by_status["baseline_required"].values()) == {"null"}
+    assert set(threshold_types_by_status["frozen"].values()) == {"number"}
