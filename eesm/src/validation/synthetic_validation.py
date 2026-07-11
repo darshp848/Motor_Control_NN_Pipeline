@@ -14,6 +14,7 @@ from scheduler.copper_loss_scheduler import (
     electromagnetic_torque_eesm,
 )
 from synthetic.synthetic_map import MapDomain, SyntheticEESMMap, load_map_from_manifest
+from validation.controller_metrics import evaluate_controller_metrics
 
 ArrayLike = Union[float, Sequence[float], np.ndarray]
 
@@ -242,6 +243,37 @@ def run_smoke_validation(
     z = flux_rmse(ld_t, lq_t, ld_t, lq_t)
     report["checks"]["self_flux_rmse"] = z
     if not (z["rmse_flux_mean"] == 0.0 and z["n"] == 2):
+        report["ok"] = False
+
+    controller = evaluate_controller_metrics(
+        {
+            "id_a": np.array([-20.0, -40.0]),
+            "iq_a": np.array([30.0, 50.0]),
+            "if_a": np.array([4.0, 8.0]),
+            "region": np.array(["interior", "interior"]),
+        },
+        np.column_stack([ld_t, lq_t]),
+        np.column_stack([ld_t, lq_t]),
+        {
+            "pole_pairs": 2,
+            "rs_ohm": 0.05,
+            "rf_ohm": 8.0,
+            "vdc_v": 400.0,
+            "i_s_max_peak_a": 120.0,
+            "i_f_min_a": 0.0,
+            "i_f_max_a": 15.0,
+        },
+        speeds_rpm=[0.0, 3000.0],
+    )
+    controller_identity = (
+        controller["overall"]["torque_nm"]["rmse"] == 0.0
+        and all(
+            item["rmse"] == 0.0
+            for item in controller["overall"]["voltage_magnitude_v"].values()
+        )
+    )
+    report["checks"]["controller_metric_identity"] = controller_identity
+    if not controller_identity:
         report["ok"] = False
 
     # Domain labels cover all three classes on a hand-picked set
