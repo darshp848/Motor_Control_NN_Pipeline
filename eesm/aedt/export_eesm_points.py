@@ -164,7 +164,14 @@ try:
     if not os.path.exists(EXPORT_DIR):
         os.makedirs(EXPORT_DIR)
     project = required(oDesktop.GetActiveProject, "Get active project")
-    design = required(project.GetActiveDesign, "Get active design")
+    design_outcome = call(project.GetActiveDesign)
+    if not design_outcome["ok"]:
+        raise RuntimeError(
+            "No active AEDT design. In Project Manager, double-click the target "
+            "Maxwell design before running this script. Original error: "
+            + design_outcome["error"]
+        )
+    design = design_outcome["_raw"]
     project_name = required(project.GetName, "Get project name")
     design_name = required(design.GetName, "Get design name")
     progress_rows, done = read_progress()
