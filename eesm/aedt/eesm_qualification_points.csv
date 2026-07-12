@@ -1,0 +1,9 @@
+PointName,region,Id [A],Iq [A],If [A],Purpose
+zero_current,interior,0,0,0,zero_current
+field_only,interior,0,0,2,field_only
+q_current,interior,0,10,2,q_current
+negative_d,field_weakening,-10,0,2,negative_d
+combined_rated,boundary,-10,10,2,combined_rated
+saturation_neighborhood,saturation,-20,20,3,saturation_neighborhood
+q_sign_negative,interior,0,-10,2,q_sign
+d_sign_positive,interior,10,0,2,d_sign
