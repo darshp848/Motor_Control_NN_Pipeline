@@ -109,6 +109,13 @@ def test_adapter_contract(tmp_path: Path, variant: str, expected: object) -> Non
     assert "if isinstance(value, dict):" in exporter
     qualifier = (AEDT_DIR / "qualify_eesm_project.py").read_text(encoding="utf-8")
     assert '"q_sign_negative", "d_sign_positive"' in qualifier
+    if variant == "valid":
+        builder = (AEDT_DIR / "build_canonical_eesm.py").read_text(encoding="utf-8")
+        assert 'DESIGN_NAME = "EESM_2D_Qual"' in builder
+        assert 'SETUP_NAME = "Setup_Qual"' in builder
+        assert 'OUT_JSON = os.path.join(ROOT, "eesm_model_build_status.json")' in builder
+        assert '"solve_attempted": False' in builder
+        assert "M270-35A" in builder
     if variant == "solver_failure":
         assert canonical[1]["mesh_elements"] is None
         assert canonical[1]["adaptive_passes"] is None
