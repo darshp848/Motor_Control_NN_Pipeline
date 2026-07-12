@@ -102,6 +102,7 @@ def test_adapter_contract(tmp_path: Path, variant: str, expected: object) -> Non
     assert json.loads(canonical[0]["raw_units"])["flux_d"] == "Wb"
     assert report["checks"]["pole_pairs"]["status"] == "pass"
     exporter = (AEDT_DIR / "export_eesm_points.py").read_text(encoding="utf-8")
+    assert 'ROOT = os.path.dirname(os.path.abspath(__file__))' in exporter
     assert "Refusing resume: progress contains failed row" in exporter
     assert "SMOKE_APPROVED = False" in exporter
     assert "if isinstance(value, dict):" in exporter

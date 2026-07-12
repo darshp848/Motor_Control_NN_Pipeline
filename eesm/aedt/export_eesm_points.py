@@ -10,7 +10,7 @@ import math
 import os
 import traceback
 
-ROOT = r"C:\Users\darsh\TAMU\EMPE_Lab\Motor_Control_NN_Pipeline\eesm\aedt"
+ROOT = os.path.dirname(os.path.abspath(__file__))
 POINTS = os.path.join(ROOT, "eesm_qualification_points.csv")
 PROGRESS = os.path.join(ROOT, "eesm_qualification_progress.csv")
 STATUS_JSON = os.path.join(ROOT, "eesm_qualification_export_status.json")
