@@ -18,6 +18,7 @@ from typing import Any, Dict, Optional
 
 # Repo-local imports: eesm/src on path
 _EESM_ROOT = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(_EESM_ROOT)
 _SRC = os.path.join(_EESM_ROOT, "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
@@ -42,7 +43,7 @@ from validation.synthetic_validation import (  # noqa: E402
 DEFAULT_MANIFEST = os.path.join(
     _EESM_ROOT, "configs", "synthetic_eesm_manifest.json"
 )
-DEFAULT_OUTPUTS = os.path.join(_EESM_ROOT, "outputs")
+DEFAULT_OUTPUTS = os.path.join(_REPO_ROOT, "out", "eesm", "synthetic_stage1")
 
 
 def load_manifest(path: str) -> dict:
@@ -59,9 +60,9 @@ def resolve_output_dir(manifest: dict, output_dir: Optional[str] = None) -> str:
     """Resolve artifact directory (always absolute)."""
     if output_dir:
         return os.path.abspath(output_dir)
-    # Default: eesm/outputs next to this script (stable regardless of cwd)
+    # Generated artifacts stay outside the source package.
     _ = manifest  # reserved for future path overrides
-    return os.path.join(_EESM_ROOT, "outputs")
+    return DEFAULT_OUTPUTS
 
 
 def build_scheduler(fmap, manifest: dict) -> CopperLossScheduler:
@@ -256,7 +257,7 @@ def main(argv: Optional[list] = None) -> int:
     p.add_argument(
         "--out",
         default=None,
-        help="Output directory (default: eesm/outputs)",
+        help="Output directory (default: out/eesm/synthetic_stage1)",
     )
     p.add_argument("--oracle-n-id", type=int, default=21)
     p.add_argument("--oracle-n-iq", type=int, default=21)

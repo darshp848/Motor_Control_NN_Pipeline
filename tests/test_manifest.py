@@ -21,6 +21,12 @@ def test_manifest_required_keys():
     assert m["inference_selection"] == "off_grid_in_domain"
 
 
+def test_ipm_freeze_manifest_remains_stage0_specific():
+    manifest = load_experiment_manifest("configs/ipm_experiment_manifest.json")
+    assert manifest["machine"]["type"] == "IPM"
+    assert manifest["freeze_status"] == "offline_frozen_audit_ready"
+
+
 def test_motor_params_clean_schema():
     path = os.path.join("data", "motor_params_clean.json")
     params = load_json(path)

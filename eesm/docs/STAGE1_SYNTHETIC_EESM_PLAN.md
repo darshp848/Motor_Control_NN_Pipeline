@@ -1,6 +1,6 @@
 # Stage 1 — Synthetic EESM test harness (plan)
 
-**Status:** Tasks 1–2 complete in the foundry; synthetic scaffold only, not a finished research result.
+**Status:** offline foundry and synthetic comparison path complete; not a finished research result.
 **Goal:** prove the **EESM workflow** offline with a fake but physically reasonable map **before** spending Maxwell/AEDT 3D FEM hours.
 
 ## Why synthetic EESM comes before real Maxwell
@@ -95,7 +95,7 @@ Tasks 1–2 implement three approved generators:
 
 Sequential or uncertainty-guided sampling is not implemented and is explicitly disabled in the foundry manifest until all non-adaptive baselines pass.
 
-**Later comparison (not in this first pass):**
+**Implemented comparison contract:**
 
 - train surrogates on each design under a **fixed FEM budget** \(N\),
 - evaluate on a held-out dense oracle (synthetic first, then real FEM),
@@ -112,8 +112,8 @@ Gate checklist:
 4. Impossible \(T_{\mathrm{ref}}\) returns **`infeasible`** (no fake \(i_d,i_q,i_f\)).  
 5. Seeds make sampling **repeatable**.  
 6. Sample CSV schema remains stable: `point_id, role, source, region, id_a, iq_a, if_a, lambda_d_wb, lambda_q_wb, solver_status, converged, provenance_id, strategy, budget, seed`.
-7. (Next) Surrogate train/compare loop reuses clean interfaces.  
-8. (Next) Maxwell **qualification runbook** written and reviewed.  
+7. Surrogate train/compare loop reuses clean interfaces.
+8. Maxwell handoff is written and remains manual/prospective.
 9. Only then: small real EESM pilot sweep → scale up.
 
 ## Connection to the publication direction
@@ -137,19 +137,22 @@ Stage 1 is the **offline EESM dry-run** of that story. Stage 0 IPM remains the f
 
 ```text
 eesm/
-  run_synthetic_stage1.py          # one-command offline runner
+  run_synthetic_stage1.py          # one-command synthetic runner
+  run_equal_budget_study.py        # frozen baseline comparison matrix
   configs/eesm_experiment_manifest.json  # foundry source of truth
   configs/synthetic_eesm_manifest.json   # legacy synthetic runner/map settings
   src/
     data/experiment_points.py
     synthetic/synthetic_map.py
     sampling/sample_designs.py
-    surrogates/          # placeholder for later ML comparison
+    surrogates/
+    experiments/equal_budget.py
     scheduler/copper_loss_scheduler.py
-    validation/synthetic_validation.py
+    validation/
+    lut/audit.py
   tests/
-  outputs/               # generated CSVs + stage1_synthetic_summary.json
   docs/STAGE1_SYNTHETIC_EESM_PLAN.md
+out/eesm/                # generated artifacts outside source
 ```
 
 ## Commands
@@ -162,13 +165,14 @@ python eesm/run_synthetic_stage1.py
 
 # Or with the project venv:
 .\.venv\Scripts\python eesm/run_synthetic_stage1.py
+.\.venv\Scripts\python eesm/run_equal_budget_study.py
 
 # Tests
 .\.venv\Scripts\python -m pytest tests -q
 .\.venv\Scripts\python -m pytest eesm/tests -q
 ```
 
-Artifacts land under `eesm/outputs/`:
+Artifacts land under `out/eesm/`:
 
 | File | Content |
 |------|---------|
@@ -186,7 +190,7 @@ python eesm/run_synthetic_stage1.py --out path\to\temp_out --oracle-n-id 11
 
 ## What is intentionally out of scope (this pass)
 
-- Full multi-model surrogate leaderboard for EESM  
+- Real FEM-backed model leaderboard and release decision
 - Real Maxwell/AEDT EESM geometry and parametric sweeps  
 - Field-flux \(\lambda_f\) identification  
 - Flash-ready embedded FOC tables  

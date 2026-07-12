@@ -26,7 +26,8 @@ from run_synthetic_stage1 import (  # noqa: E402
 DEFAULT_CONFIG = os.path.join(
     EESM_ROOT, "configs", "eesm_experiment_manifest.json"
 )
-DEFAULT_OUTPUT = os.path.join(EESM_ROOT, "outputs")
+REPO_ROOT = os.path.dirname(EESM_ROOT)
+DEFAULT_OUTPUT = os.path.join(REPO_ROOT, "out", "eesm", "equal_budget")
 
 
 def main(argv: Optional[list[str]] = None) -> int:

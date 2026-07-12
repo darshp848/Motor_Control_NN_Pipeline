@@ -127,7 +127,7 @@
   "paths": {
     "point_schema": "eesm/schemas/eesm_point.schema.json",
     "result_bundle_schema": "eesm/schemas/result_bundle.schema.json",
-    "runs": "eesm/outputs/runs",
-    "result_bundles": "eesm/outputs/result_bundles"
+    "runs": "out/eesm/runs",
+    "result_bundles": "out/eesm/result_bundles"
   }
 }

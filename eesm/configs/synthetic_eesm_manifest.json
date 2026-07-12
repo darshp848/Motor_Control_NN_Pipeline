@@ -67,9 +67,9 @@
     "scheduler": 0
   },
   "paths": {
-    "outputs": "eesm/outputs",
-    "oracle_csv": "eesm/outputs/oracle_dense_map.csv",
-    "samples_csv": "eesm/outputs/sample_designs.csv"
+    "outputs": "out/eesm/synthetic_stage1",
+    "oracle_csv": "out/eesm/synthetic_stage1/oracle_dense_map.csv",
+    "samples_csv": "out/eesm/synthetic_stage1/sample_designs.csv"
   },
   "conventions": {
     "map": "(id, iq, if) -> (lambda_d, lambda_q)",

@@ -24,6 +24,15 @@ def _load_runner():
     return mod
 
 
+def test_default_artifacts_stay_outside_the_eesm_source_tree():
+    runner = _load_runner()
+    output = os.path.normcase(runner.resolve_output_dir({}, None))
+    source = os.path.normcase(os.path.abspath(_EESM)) + os.sep
+
+    assert not output.startswith(source)
+    assert os.path.join("out", "eesm") in output
+
+
 def test_run_stage1_writes_expected_outputs(tmp_path):
     runner = _load_runner()
     out = tmp_path / "stage1_out"
