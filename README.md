@@ -5,7 +5,7 @@ Public pipeline for building a **flux-map surrogate** for an IPM motor and turni
 **Stage 0 status: offline-frozen and audit-ready** (not FEM-closed / not deployment-ready).  
 Branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units, seeds, and a one-command offline path before EESM work. See [`docs/STAGE0_FREEZE.md`](docs/STAGE0_FREEZE.md) and the verification report [`docs/STAGE0_FINAL_VERIFICATION.md`](docs/STAGE0_FINAL_VERIFICATION.md).
 
-**Stage 1 (EESM):** the foundry now covers frozen roles, equal-budget surrogate studies, controller-aware gates, deterministic promotion policy, constrained scheduling, a prospective LUT-audit boundary, and an offline Maxwell qualification adapter. The adapter's manual smoke/pilot has not been run. Real Maxwell sweeps and promotion remain blocked until that qualification is complete and numerical thresholds are frozen. See [`docs/EESM_PIPELINE_ARCHITECTURE.md`](docs/EESM_PIPELINE_ARCHITECTURE.md).
+**Stage 1 (EESM):** the foundry now covers frozen roles, equal-budget surrogate studies, controller-aware gates, deterministic promotion policy, constrained scheduling, a prospective LUT-audit boundary, and a verified Maxwell qualification adapter. The 2026-07-15 seven-point energized pilot passes the Task 8 qualification report and unblocks the Task 9 software/campaign start. Promotion remains blocked until the separate baseline-derived numerical thresholds are frozen. See [`docs/EESM_PIPELINE_ARCHITECTURE.md`](docs/EESM_PIPELINE_ARCHITECTURE.md).
 
 ```
 AEDT FEM (dq flux map)

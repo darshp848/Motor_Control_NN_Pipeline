@@ -21,7 +21,7 @@ retaining nonlinear saturation, stator-current cross-coupling, saliency, and a
 controllable rotor field winding.
 
 The first implementation is qualification-scale only. It may run the frozen
-four-point smoke and eight-point pilot, but it must not start the Task 9 FEM
+four-point smoke and seven-point energized pilot, but it must not start the Task 9 FEM
 campaign until every Task 8 qualification check passes.
 
 ## 2. Rated operating point
@@ -121,13 +121,14 @@ from +X, and proceeds counter-clockwise. Phase belts repeat for slots 13-24:
 | 10, 11, 22, 23 | B- |
 
 Create winding groups `PhaseA`, `PhaseB`, and `PhaseC`. Local variables `Id`
-and `Iq` are peak dq amperes. At frozen electrical rotor angle
-`theta_e = 0`, apply:
+and `Iq` are peak dq amperes. Because AEDT reserves the short names `Ia`,
+`Ib`, and `Ic`, implement the phase currents as `I_phase_a`, `I_phase_b`, and
+`I_phase_c`. At the converted RMxprt reference `theta_e = 180deg`, apply:
 
 ```text
-Ia =  Id
-Ib = -0.5*Id + 0.866025403784*Iq
-Ic = -0.5*Id - 0.866025403784*Iq
+I_phase_a = Id*cos(theta_e)-Iq*sin(theta_e)
+I_phase_b = Id*cos(theta_e-120deg)-Iq*sin(theta_e-120deg)
+I_phase_c = Id*cos(theta_e+120deg)-Iq*sin(theta_e+120deg)
 ```
 
 The phase-current signs and winding directions must be verified by the pilot;
@@ -135,19 +136,29 @@ they are not accepted merely because the solve converges.
 
 ## 5. Materials and electromagnetic assumptions
 
-- Stator and rotor laminations: nonlinear `M270-35A` from the AEDT material
-  library, including its B-H curve.
+- Stator and rotor laminations: AEDT built-in `steel_1008`, material revision
+  `rmxprt-steel_1008-r1`. This is a reproducible academic benchmark choice,
+  not a claim of a commercial lamination grade.
 - Stator and field coils: copper with stranded-winding treatment.
 - Shaft: nonmagnetic stainless steel.
 - Exterior region: vacuum/air.
 - Model depth: 120 mm.
-- Rotor position: fixed at `theta_e = 0` for the initial map convention.
+- Rotor position: fixed at converted RMxprt reference `theta_e = 180deg` for
+  the qualification map convention.
 
-If `M270-35A` is unavailable, stop and record the missing material. Do not
-silently substitute another steel. Any approved substitute requires a new
+The PyAEDT builder must assign that exact RMxprt material to both cores. Do not
+silently substitute another steel. Any substitute requires a new
 `material_revision` and an updated specification.
 
-## 6. Maxwell project contract
+## 6. RMxprt-to-Maxwell project contract
+
+Seed the project from AEDT Student's installed
+`Examples/RMxprt/manual/SynM3_6p50Hz538kW.aedt`, then modify its valid
+`RMxprtDesign1` synchronous-machine definition for the canonical benchmark.
+This mirrors the proven IPM pipeline, which began from the installed IPM
+example rather than creating RMxprt from scratch. Analyze only the RMxprt
+setup, then call native `CreateMaxwell2DDesignWithAutoSetup`. Do not manually
+reconstruct the 2-D geometry or create a blank RMxprt design.
 
 The saved AEDT objects use these exact names:
 
@@ -161,7 +172,14 @@ The saved AEDT objects use these exact names:
 | Torque parameter | `TorqueRotor` |
 | Stator windings | `PhaseA`, `PhaseB`, `PhaseC` |
 | Rotor field winding | `Field` |
-| Local variables | `Id`, `Iq`, `If`, `Ia`, `Ib`, `Ic`, `theta_e` |
+| Local variables | `Id`, `Iq`, `If`, `I_phase_a`, `I_phase_b`, `I_phase_c`, `theta_e` |
+
+RMxprt initially exports a voltage-driven transient design. The builder must
+retain that native geometry, switch the converted design to magnetostatic XY,
+replace the phase windings with the declared current expressions, and create
+the setup and torque objects above. Transient results are not qualification
+evidence. The reviewed initial rotor alignment is `theta_e = 180deg` (two pole
+pairs at the RMxprt-exported 105 mechanical-degree position).
 
 Use vector-potential zero on the outer boundary of the 135 mm-radius solution
 region. The rotor core, field coils, and shaft comprise the rotating object
@@ -190,7 +208,8 @@ qualification row.
 Export raw `FluxLinkage(PhaseA)`, `FluxLinkage(PhaseB)`, and
 `FluxLinkage(PhaseC)` in Wb plus Maxwell electromagnetic torque in N.m.
 Preserve raw phase results. Convert phase flux to dq using the existing
-Task 8 transform at `theta_e = 0`. Direct `Flux_d` or `Flux_q` report export
+Task 8 transform at `theta_e = 180deg`, matching the converted RMxprt rotor
+reference. Direct `Flux_d` or `Flux_q` report export
 is not authoritative.
 
 The exporter must populate:
@@ -208,8 +227,14 @@ solver_status,solver_message,lambda_d_wb,lambda_q_wb,torque_fem_nm,pole_pairs
    `field_only`, `q_current`, `negative_d`, `combined_rated`.
 3. Inspect status JSON, progress CSV, raw ABC exports, convergence, mesh count,
    and solver messages. Keep `SMOKE_APPROVED = False` until reviewed.
-4. After explicit smoke approval, run the remaining four pilot points.
+4. After explicit smoke approval, run the remaining three energized pilot
+   points in separate fresh AEDT processes. Treat the source-free origin as an
+   analytic zero-current invariant; do not fabricate a Maxwell row when AEDT
+   Student exits on that redundant solve.
 5. Normalize results and generate `qualification_report.json`.
+6. Freeze `controller torque = -Torque_FEM` for the RMxprt rotor orientation
+   and the evidence-based 1.1 N.m closure tolerance. The seven-point pilot
+   observed a maximum residual of 1.0369609944554 N.m.
 
 Stop before Task 9 if any of these holds:
 

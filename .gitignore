@@ -8,7 +8,11 @@ __pycache__/
 *.egg-info/
 .ipynb_checkpoints/
 .worktrees/
-/out/eesm/
+/out/eesm/*
+!/out/eesm/qualification/
+/out/eesm/qualification/*
+!/out/eesm/qualification/canonical_qualification.csv
+!/out/eesm/qualification/qualification_report.json
 
 # Local / machine-specific
 .DS_Store

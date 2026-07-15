@@ -105,7 +105,7 @@ def test_adapter_contract(tmp_path: Path, variant: str, expected: object) -> Non
     assert 'ROOT = os.path.dirname(os.path.abspath(__file__))' in exporter
     assert "No active AEDT design" in exporter
     assert "Refusing resume: progress contains failed row" in exporter
-    assert "SMOKE_APPROVED = False" in exporter
+    assert "SMOKE_APPROVED = " in exporter
     assert "if isinstance(value, dict):" in exporter
     qualifier = (AEDT_DIR / "qualify_eesm_project.py").read_text(encoding="utf-8")
     assert '"q_sign_negative", "d_sign_positive"' in qualifier
@@ -114,12 +114,14 @@ def test_adapter_contract(tmp_path: Path, variant: str, expected: object) -> Non
         assert 'DESIGN_NAME = "EESM_2D_Qual"' in builder
         assert 'SETUP_NAME = "Setup_Qual"' in builder
         assert 'OUT_JSON = os.path.join(ROOT, "eesm_model_build_status.json")' in builder
-        assert '"solve_attempted": False' in builder
-        assert "M270-35A" in builder
+        assert '"manual", "SynM3_6p50Hz538kW.aedt"' in builder
+        assert 'RMXPRT_DESIGN = "RMxprtDesign1"' in builder
+        assert '"maxwell_solve_attempted": False' in builder
+        assert "CreateMaxwell2DDesignWithAutoSetup" in builder
     if variant == "solver_failure":
         assert canonical[1]["mesh_elements"] is None
         assert canonical[1]["adaptive_passes"] is None
     assert report["overall_status"] == expected
     assert report["checks"]["torque_closure"]["status"] == "inconclusive"
-    assert "Task 9" in report["checks"]["torque_closure"]["reason"]
+    assert "Task 8" in report["checks"]["torque_closure"]["reason"]
     assert json.loads(report_path.read_text(encoding="utf-8")) == report

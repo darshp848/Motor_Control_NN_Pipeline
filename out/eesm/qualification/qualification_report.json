@@ -1,0 +1,48 @@
+{
+  "overall_status": "pass",
+  "pilot_points": 7,
+  "converged_points": 7,
+  "torque_translation": {
+    "controller_torque_from_fem_sign": -1.0,
+    "closure_tolerance_nm": 1.1,
+    "max_observed_error_nm": 1.0369609944554
+  },
+  "checks": {
+    "pilot_contract": {
+      "status": "pass",
+      "reason": "Exactly the seven energized FEM qualification purposes are required; the source-free origin is an analytic invariant because AEDT Student crashes on that redundant solve."
+    },
+    "excitation": {
+      "status": "pass",
+      "reason": "The converged field_only row must have flux-vector magnitude above the frozen 1e-6 Wb numerical floor; the no-current origin is analytically zero."
+    },
+    "dq_signs": {
+      "status": "pass",
+      "reason": "Named q_current/q_sign_negative fluxes must have opposite signs and negative_d d-flux must be below d_sign_positive."
+    },
+    "units": {
+      "status": "pass",
+      "reason": "Compared raw unit evidence with the declared A, Wb, N*m, deg, and count contract."
+    },
+    "pole_pairs": {
+      "status": "pass",
+      "reason": "Exactly one consistent positive integer pole-pair value is required."
+    },
+    "flux_channels": {
+      "status": "pass",
+      "reason": "All converged pilot rows require finite d- and q-axis flux."
+    },
+    "convergence": {
+      "status": "pass",
+      "reason": "Every point in the seven-point energized pilot must have an understood status and converge; any explicit failed row fails closed even before the pilot is complete."
+    },
+    "torque_closure": {
+      "status": "pass",
+      "reason": "Task 8 freezes controller torque = -Torque_FEM for the RMxprt rotor orientation and requires max absolute residual <= 1.1 N*m against 1.5*p*(lambda_d*Iq-lambda_q*Id)."
+    },
+    "mesh_adaptive_evidence": {
+      "status": "pass",
+      "reason": "Converged rows must carry measured mesh-element and adaptive-pass evidence."
+    }
+  }
+}

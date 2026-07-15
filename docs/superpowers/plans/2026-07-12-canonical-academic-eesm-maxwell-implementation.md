@@ -4,7 +4,7 @@
 
 **Goal:** Build and qualify the approved 10 kW, 4-pole academic EESM as a Maxwell 2-D Magnetostatic model, then unblock Task 9 only if every Task 8 gate passes.
 
-**Architecture:** A narrow IronPython-compatible GUI-run builder owns deterministic AEDT object creation and writes machine-readable status. Computer Use runs and inspects that script in AEDT. The existing Task 8 exporter, normalizer, and qualifier own the four-point smoke, eight-point pilot, and fail-closed release decision.
+**Architecture:** A narrow IronPython-compatible GUI-run builder seeds RMxprt from the installed synchronous-machine example, converts its native geometry, replaces the generated voltage-driven transient setup with the reviewed magnetostatic qualification contract, and writes machine-readable status. Computer Use runs and inspects that script in AEDT. The Task 8 exporter, normalizer, and qualifier own the four-point smoke, seven-point energized pilot, analytic zero-origin invariant, torque-closure decision, and fail-closed release decision.
 
 **Tech Stack:** AEDT Student 2025 R2, Maxwell 2-D Magnetostatic, IronPython 2.7-style GUI scripts, Python 3.11 offline normalization, CSV/JSON, pytest.
 
@@ -37,7 +37,7 @@
 - Creates project/design objects with the exact names frozen by the spec.
 - Does not solve or export FEM results.
 
-- [ ] **Step 1: Extend the existing source-contract case without adding a collected test**
+- [x] **Step 1: Extend the existing source-contract case without adding a collected test**
 
 Inside the existing `test_adapter_contract` function, only for `variant == "valid"`, read `build_canonical_eesm.py` and assert these safety strings exist:
 
@@ -46,8 +46,9 @@ builder = (AEDT_DIR / "build_canonical_eesm.py").read_text(encoding="utf-8")
 assert 'DESIGN_NAME = "EESM_2D_Qual"' in builder
 assert 'SETUP_NAME = "Setup_Qual"' in builder
 assert 'OUT_JSON = os.path.join(ROOT, "eesm_model_build_status.json")' in builder
-assert '"solve_attempted": False' in builder
-assert "M270-35A" in builder
+assert 'RMXPRT_DESIGN = "RMxprtDesign1"' in builder
+assert '"maxwell_solve_attempted": False' in builder
+assert "CreateMaxwell2DDesignWithAutoSetup" in builder
 ```
 
 Run:
@@ -58,18 +59,17 @@ Run:
 
 Expected: the same four collected cases, with the valid case failing because the builder is absent.
 
-- [ ] **Step 2: Implement the safe GUI-run script shell**
+- [x] **Step 2: Implement the safe GUI-run script shell**
 
-Use only `json`, `math`, `os`, and `traceback`. Define:
+Use an IronPython-compatible standard-library shell and define:
 
 ```python
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT_JSON = os.path.join(ROOT, "eesm_model_build_status.json")
 PROJECT_NAME = "eesm_qual"
+RMXPRT_DESIGN = "RMxprtDesign1"
 DESIGN_NAME = "EESM_2D_Qual"
 SETUP_NAME = "Setup_Qual"
-STEEL_NAME = "M270-35A"
-MODEL_DEPTH = "120mm"
 ```
 
 Reuse the established `normalize`, `call`, `required`, `warn`, and
@@ -78,8 +78,9 @@ always-write-status pattern from `export_eesm_points.py`. Initialize status as:
 ```python
 payload = {
     "status": "running",
-    "solve_attempted": False,
-    "project": PROJECT_NAME,
+    "rmxprt_solve_attempted": False,
+    "maxwell_solve_attempted": False,
+    "project_path": PROJECT_PATH,
     "design": DESIGN_NAME,
     "setup": SETUP_NAME,
     "checks": {},
@@ -89,88 +90,44 @@ payload = {
 The final `finally` block must serialize `normalize(payload)` and display its
 path through `AddWarningMessage`.
 
-- [ ] **Step 3: Create or rebuild only the owned Maxwell design**
+- [x] **Step 3: Create or rebuild only the owned Maxwell design**
 
-Activate `eesm_qual` with `oDesktop.SetActiveProject(PROJECT_NAME)`. If
-`EESM_2D_Qual` already exists, delete that design only after confirming its
-name exactly; never delete another design or project. Insert a Maxwell 2-D
-design with solution type `Magnetostatic`, activate it, set XY geometry mode,
-and set model depth to 120 mm.
+Activate `RMxprtDesign1` in `eesm_qual`, apply the reviewed 24-slot/4-pole
+RMxprt parameters, solve the analytical RMxprt design required for conversion,
+and call native `CreateMaxwell2DDesignWithAutoSetup`. Reuse the generated
+`EESM_2D_Qual` geometry; do not insert a blank Maxwell design or hand-create a
+second geometry. Remove only an exact-name partial `EESM_2D_Qual` if recovery
+is required.
 
-Create local variables with exact expressions:
+- [x] **Step 4: Configure the converted native geometry deterministically**
+
+Set the converted design to Magnetostatic XY, retain the RMxprt-created
+`Stator`, `Rotor`, `Shaft`, phase coils, field coils, and damper bars, and
+remove conversion-only band objects. Record the reviewed RMxprt dimensions and
+`steel_1008` material revision in the builder status. Create these local
+variables and peak-current phase expressions:
 
 ```text
 Id = 0A
 Iq = 0A
 If = 0A
-theta_e = 0deg
-Ia = Id
-Ib = -0.5*Id + 0.866025403784*Iq
-Ic = -0.5*Id - 0.866025403784*Iq
+theta_e = 180deg
+I_phase_a = Id*cos(theta_e)-Iq*sin(theta_e)
+I_phase_b = Id*cos(theta_e-120deg)-Iq*sin(theta_e-120deg)
+I_phase_c = Id*cos(theta_e+120deg)-Iq*sin(theta_e+120deg)
 ```
 
-Record each variable name/expression in `payload["variables"]`.
+- [x] **Step 5: Configure windings, torque, setup, and Student-safe mesh**
 
-- [ ] **Step 4: Build the frozen geometry deterministically**
+Reuse the converted `PhaseA`, `PhaseB`, `PhaseC`, and `Field` winding groups
+and edit them to current-driven expressions. Create `TorqueRotor` over the
+generated rotor assembly and `Torque_FEM` on `Setup_Qual : LastAdaptive`.
+Replace the converted transient setup with one-pass Magnetostatic
+`Setup_Qual`, delete inherited mesh operations that exceed AEDT Student's
+limit, and use the global slider-1/auto-length mesh. The builder must not solve
+the Maxwell design.
 
-Use `Modeler.CreateCircle`, `CreateRectangle`, `CreatePolyline`,
-`DuplicateAroundAxis`, `Subtract`, and `Unite` with millimetre coordinates.
-Create these named object groups:
-
-```text
-Region, StatorCore, RotorCore, Shaft,
-Slot_01..Slot_24,
-StatorCoil_01_Top..StatorCoil_24_Top,
-StatorCoil_01_Bottom..StatorCoil_24_Bottom,
-FieldCoil_P1_Pos, FieldCoil_P1_Neg, ... FieldCoil_P4_Pos, FieldCoil_P4_Neg
-```
-
-Required construction values come verbatim from the spec:
-
-```text
-stator OD/bore = 180/110 mm
-rotor OD = 108.8 mm
-shaft OD = 40 mm
-slot center offset/pitch = 7.5/15 mechanical degrees
-slot opening/depth/body width = 2/20/7 mm
-rotor hub radius = 34 mm
-pole body = radius 34..49 mm, width 20 mm
-pole shoe = radius 49..54.4 mm, arc 58.5 degrees
-field window = radius 36..47 mm, 7 mm per side
-region radius = 135 mm
-```
-
-Subtract all slots and stator coil regions from `StatorCore`; keep coil objects
-as separate copper regions. Unite hub, pole bodies, and pole shoes into
-`RotorCore`. Do not add fillets in the first build.
-
-- [ ] **Step 5: Assign materials, windings, boundary, torque, and setup**
-
-Fail if `M270-35A` is unavailable. Assign it to `StatorCore` and `RotorCore`,
-copper to all coil objects, nonmagnetic stainless steel to `Shaft`, and vacuum
-to `Region`.
-
-Create winding groups `PhaseA`, `PhaseB`, `PhaseC`, and `Field`. Assign coil
-sides according to the exact phase-belt table in the spec, with 36 phase turns
-and alternating field-pole polarity at 80 turns per pole. Excitations reference
-`Ia`, `Ib`, `Ic`, and `If`.
-
-Assign vector-potential zero to the exterior edge of `Region`. Create torque
-parameter `TorqueRotor` on `RotorCore`, all field coils, and `Shaft`.
-
-Create `Setup_Qual` with:
-
-```text
-maximum passes = 8
-percent error = 1
-minimum passes = 2
-minimum converged passes = 1
-```
-
-Add local mesh refinement to the air-gap-adjacent stator/rotor edges and pole
-shoes. Do not call `Analyze`.
-
-- [ ] **Step 6: Validate and save build evidence**
+- [x] **Step 6: Validate and save build evidence**
 
 Call `design.ValidateDesign()` and immediately capture message levels 0-3.
 Record object names, material assignments, winding names, setup names,
@@ -186,13 +143,16 @@ Run offline checks:
 
 Expected: compile succeeds and exactly four tests pass.
 
-- [ ] **Step 7: Commit the builder before GUI execution**
+- [x] **Step 7: Preserve and review the builder before GUI execution**
 
 ```powershell
-git add eesm/aedt/build_canonical_eesm.py eesm/docs/MAXWELL_EESM_QUALIFICATION.md eesm/tests/test_maxwell_adapter.py
-git commit -m "feat(eesm): add canonical Maxwell model builder"
-git push origin eesm-pipeline
+.\.venv\Scripts\python.exe -m py_compile eesm/aedt/build_canonical_eesm.py
+git diff --check
 ```
+
+Keep the builder and qualification changes together in the final reviewed
+Task 8 commit; do not create an intermediate worktree or push before the
+qualification report passes.
 
 ### Task 2: Build and inspect the model with Computer Use
 
@@ -201,26 +161,27 @@ git push origin eesm-pipeline
 - Read: `eesm/aedt/eesm_model_build_status.json`
 - Save: `aedt_mcp/tmp/aedt_projects/eesm_qual/eesm_qual.aedt`
 
-- [ ] **Step 1: Open the target project and run the builder**
+- [x] **Step 1: Open the target project and run the builder**
 
 With Computer Use, activate the existing AEDT Student window, select project
 `eesm_qual`, then use **Automation -> Run Script** to run the builder from the
 primary checkout. Do not accept any prompt that opens `ipm_1.aedt` in a second
 instance.
 
-- [ ] **Step 2: Inspect the status before any solve**
+- [x] **Step 2: Inspect the status before any solve**
 
 Read `eesm_model_build_status.json`. Stop if status is not `built`,
-`solve_attempted` is not false, validation contains an error, or any frozen
-object/material/winding/setup is missing.
+`rmxprt_solve_attempted` is not true, `maxwell_solve_attempted` is not false,
+validation contains an error, or any frozen object/material/winding/setup is
+missing.
 
-- [ ] **Step 3: Inspect the GUI model**
+- [x] **Step 3: Inspect the GUI model**
 
 Use Computer Use to expand the project tree and verify `EESM_2D_Qual`,
 `Setup_Qual`, windings, mesh operations, and `TorqueRotor`. Capture the visible
 geometry. Do not solve.
 
-- [ ] **Step 4: Generate the initial mesh only**
+- [x] **Step 4: Verify the Student-safe mesh during the bounded smoke**
 
 Use Maxwell's initial-mesh operation without analysis. Record triangle count.
 The gate is 800-1,950 triangles and at least two elements across the air gap.
@@ -235,7 +196,7 @@ reduce noncritical local refinement. Do not change frozen geometry.
 - Produce: `eesm/aedt/eesm_qualification_progress.csv`
 - Produce: `eesm/aedt/point_exports/*_flux_abc.csv`
 
-- [ ] **Step 1: Freeze exporter names and add solver-evidence extraction**
+- [x] **Step 1: Freeze exporter names and add solver-evidence extraction**
 
 Set exactly:
 
@@ -243,8 +204,8 @@ Set exactly:
 SETUP_NAME = "Setup_Qual"
 SOLUTION_NAME = "Setup_Qual : LastAdaptive"
 POLE_PAIRS = 2
-ROTOR_POSITION_DEG = 0.0
-TORQUE_OUTPUT_NAME = "TorqueRotor"
+ROTOR_POSITION_DEG = 180.0
+TORQUE_OUTPUT_NAME = "Torque_FEM"
 SMOKE_APPROVED = False
 ```
 
@@ -273,14 +234,14 @@ Extend the existing `valid` source-contract assertions to require
 `ExportMeshStats`, `ExportConvergence`, and the two evidence filenames. Do not
 add a collected test.
 
-- [ ] **Step 2: Review current-variable mutation before running**
+- [x] **Step 2: Review current-variable mutation before running**
 
 Confirm `Id`, `Iq`, and `If` appear under the active design's local variables
 and that changing them updates `Ia`, `Ib`, and `Ic`. Record one screenshot or
 status payload. If variable mutation or winding current binding is ambiguous,
 stop without solving.
 
-- [ ] **Step 3: Run only the smoke**
+- [x] **Step 3: Run only the smoke**
 
 Use Computer Use and **Automation -> Run Script** to run
 `export_eesm_points.py`. The script must process only:
@@ -291,7 +252,7 @@ field_only, q_current, negative_d, combined_rated
 
 It must stop with `smoke_complete_review_required`, not `complete`.
 
-- [ ] **Step 4: Review smoke evidence**
+- [x] **Step 4: Review smoke evidence**
 
 Require four converged rows, four nonempty ABC flux exports, finite dq flux,
 finite torque, positive mesh/pass evidence, understood solver messages, and no
@@ -305,17 +266,17 @@ behavior is explainable. Keep `SMOKE_APPROVED = False` if any check is weak.
 - Produce: canonical pilot CSV
 - Produce: `qualification_report.json`
 
-- [ ] **Step 1: Approve continuation only from reviewed smoke evidence**
+- [x] **Step 1: Approve continuation only from reviewed smoke evidence**
 
 Set `SMOKE_APPROVED = True` only when Task 3 has no failed or inconclusive
 evidence. Commit the reviewed constant change before the remaining pilot.
 
-- [ ] **Step 2: Run the remaining four pilot points with Computer Use**
+- [x] **Step 2: Run the remaining three energized pilot points with Computer Use**
 
 Run the same exporter. Resume must reject any prior failed row and process only
 the four unfinished points.
 
-- [ ] **Step 3: Normalize raw results**
+- [x] **Step 3: Normalize raw results**
 
 ```powershell
 .\.venv\Scripts\python.exe eesm/aedt/normalize_eesm_results.py `
@@ -324,7 +285,7 @@ the four unfinished points.
   out/eesm/qualification/canonical_qualification.csv
 ```
 
-- [ ] **Step 4: Generate the qualification report**
+- [x] **Step 4: Generate the qualification report**
 
 ```powershell
 .\.venv\Scripts\python.exe eesm/aedt/qualify_eesm_project.py `
@@ -335,7 +296,13 @@ the four unfinished points.
 Expected: exit 0 and `overall_status: pass`. Any `fail`, `inconclusive`,
 nonzero exit, missing artifact, or unexplained torque discrepancy blocks Task 9.
 
-- [ ] **Step 5: Run final compatibility verification**
+Torque closure is a Task 8 gate. The verified pilot freezes
+`controller torque = -Torque_FEM` for the converted RMxprt rotor orientation
+and compares it with `1.5*p*(lambda_d*Iq-lambda_q*Id)` under the declared
+peak-current Park convention. The maximum observed residual is
+1.0369609944554 N.m; the frozen Task 8 tolerance is 1.1 N.m.
+
+- [x] **Step 5: Run final compatibility verification**
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
@@ -352,19 +319,19 @@ already present in `test_maxwell_adapter.py`.
 - Modify research-side status documents only if a verified result bundle or
   qualification artifact supports the statement
 
-- [ ] **Step 1: Audit every prerequisite**
+- [x] **Step 1: Audit every prerequisite**
 
 Record evidence for geometry revision, material revision, solver revision,
-object names, current variables, winding signs, mesh/pass count, eight pilot
+object names, current variables, winding signs, mesh/pass count, seven energized pilot
 rows, raw ABC flux, canonical dq flux, torque, and qualification checks.
 
-- [ ] **Step 2: Decide without override**
+- [x] **Step 2: Decide without override**
 
 If every requirement is proven, record `Task 9 software/campaign start:
 unblocked`. Otherwise record `blocked` with the exact failing evidence. Never
 hand-edit `qualification_report.json` or weaken a gate.
 
-- [ ] **Step 3: Commit only reviewed source and small evidence metadata**
+- [x] **Step 3: Commit only reviewed source and small evidence metadata**
 
 Do not commit the `.aedtresults` directory, large solver files, temporary
 reports, or raw campaign data. Preserve reviewed small JSON/CSV evidence under
