@@ -1,0 +1,65 @@
+{
+  "artifact_type": "post_failure_research_correction",
+  "created_date": "2026-07-16",
+  "preserves_r7_failure_evidence": true,
+  "qualification_authorized": false,
+  "new_task9_campaign_authorized": false,
+  "task_10_authorized": false,
+  "training_on_corrected_real_fem_authorized": false,
+  "correction": {
+    "superseded_claim": "The r5-r7 failures rule out any additional dependent-boundary direction retry.",
+    "corrected_finding": "The failures cover only three cells of the domain-topology by dependent-direction interaction. RMxprt/Band plus ReverseU=true remains untested, and it matches the local AEDT-generated Maxwell 2D motor script. r8 may build and verify that missing no-solve source model, but this artifact authorizes no campaign or solve."
+  },
+  "interaction_matrix": [
+    {
+      "revision": "r5",
+      "domain_topology": "generic_region",
+      "dependent_reverse_u": true,
+      "result": "periodic_mesh_mismatch",
+      "evidence_sha256": "8c4567dbfd64ba2fc7b654b495564b6590cd8ed8da449305e320635520470b72"
+    },
+    {
+      "revision": "r6",
+      "domain_topology": "generic_region",
+      "dependent_reverse_u": false,
+      "result": "periodic_mesh_mismatch",
+      "evidence_sha256": "77ce8481fa7b3857a06a46a25b13a0fccbfe059eec577f704ea12166e261b092"
+    },
+    {
+      "revision": "r7",
+      "domain_topology": "rmxprt_band_shared_tool",
+      "dependent_reverse_u": false,
+      "result": "periodic_mesh_mismatch",
+      "evidence_sha256": "23655f049ba25ed18c24005d6fdfedfa3d8a1a4b882352cd3798e4a884bcd4e6"
+    },
+    {
+      "revision": "r8_proposed_no_solve_source",
+      "domain_topology": "rmxprt_band_shared_tool",
+      "dependent_reverse_u": true,
+      "result": "untested",
+      "campaign_authorized": false
+    }
+  ],
+  "sources": {
+    "official_ansys_assign_dependent_2d": "https://ansyshelp.ansys.com/public/Views/Secured/Electronics/v252/en/Subsystems/Maxwell/Subsystems/Maxwell%20Scripting/Content/AssignDependent2D.htm",
+    "official_ansys_matching_boundary_orientation": "https://ansyshelp.ansys.com/public/Views/Secured/Electronics/v242/en/Subsystems/Maxwell/Content/Creating3DIndependentandDependentBoundaries.htm",
+    "local_generated_maxwell_2d_motor_script": {
+      "path": "aedt_mcp/tmp/aedt_projects/eesm_qual/eesm_qual.aedtresults/RMxprtDesign1.results/DV106_SOL79_V0.MExportData/Maxwl2DV.vbs",
+      "sha256": "a07337b394a9bba6d78453f2478f0dba828829f19778bee65248129ded25719b",
+      "boundary_contract": {
+        "reverse_v": false,
+        "reverse_u": true,
+        "same_as_master": false
+      }
+    }
+  },
+  "r8_allowed_change": "dependent boundary ReverseU false to true only",
+  "r8_must_preserve": [
+    "r7 RMxprt/Band 90 mm shared-tool topology",
+    "r7 machine physics and terminal map",
+    "Magnetostatic Setup_Qual",
+    "manual x4 scaling contract",
+    "ReverseV=false and SameAsMaster=false",
+    "no solve or campaign binding before immutable build and verification hashes"
+  ]
+}

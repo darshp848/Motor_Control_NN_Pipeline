@@ -379,7 +379,7 @@ def configure_maxwell_qualification(project):
         "NAME:" + SETUP_NAME,
         "Enabled:=", True,
         ["NAME:MeshLink", "ImportMesh:=", False],
-        "MaximumPasses:=", 1,
+        "MaximumPasses:=", 3,
         "MinimumPasses:=", 1,
         "MinimumConvergedPasses:=", 1,
         "PercentRefinement:=", 10,
@@ -496,19 +496,24 @@ def build():
     return payload
 
 
-try:
-    status = build()
-except BaseException as exc:
-    status = {
-        "status": "error",
-        "error": str(exc),
-        "traceback": traceback.format_exc().splitlines(),
-        "project_path": PROJECT_PATH,
-        "design": DESIGN_NAME,
-        "setup": SETUP_NAME,
-        "maxwell_solve_attempted": False,
-        "aedt_messages": collect_aedt_messages(),
-    }
+def main():
+    try:
+        status = build()
+    except BaseException as exc:
+        status = {
+            "status": "error",
+            "error": str(exc),
+            "traceback": traceback.format_exc().splitlines(),
+            "project_path": PROJECT_PATH,
+            "design": DESIGN_NAME,
+            "setup": SETUP_NAME,
+            "maxwell_solve_attempted": False,
+            "aedt_messages": collect_aedt_messages(),
+        }
+    write_status(status)
+    warn("EESM model build status: " + OUT_JSON)
+    return status
 
-write_status(status)
-warn("EESM model build status: " + OUT_JSON)
+
+if __name__ == "__main__":
+    main()

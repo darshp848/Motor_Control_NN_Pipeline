@@ -13,6 +13,13 @@ __pycache__/
 /out/eesm/qualification/*
 !/out/eesm/qualification/canonical_qualification.csv
 !/out/eesm/qualification/qualification_report.json
+!/out/eesm/task9_baseline/
+/out/eesm/task9_baseline/*
+!/out/eesm/task9_baseline/frozen_points.csv
+!/out/eesm/task9_baseline/campaign_freeze.json
+!/out/eesm/task9_baseline/canonical_campaign.csv
+!/out/eesm/task9_baseline/campaign_report.json
+!/out/eesm/task9_baseline/setup_remediation_status.json
 
 # Local / machine-specific
 .DS_Store

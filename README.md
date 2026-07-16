@@ -7,6 +7,22 @@ Branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units,
 
 **Stage 1 (EESM):** the foundry now covers frozen roles, equal-budget surrogate studies, controller-aware gates, deterministic promotion policy, constrained scheduling, a prospective LUT-audit boundary, and a verified Maxwell qualification adapter. The 2026-07-15 seven-point energized pilot passes the Task 8 qualification report and unblocks the Task 9 software/campaign start. Promotion remains blocked until the separate baseline-derived numerical thresholds are frozen. See [`docs/EESM_PIPELINE_ARCHITECTURE.md`](docs/EESM_PIPELINE_ARCHITECTURE.md).
 
+**Task 9 offline status:** all **64/64** frozen Maxwell rows converged with complete raw evidence and no adaptive non-convergence warning; the maximum measured mesh was 1,826 elements. Canonical normalization completed, but `campaign_report.json` is intentionally `fail`: 59/64 rows exceed the frozen 1.1 N.m torque-closure limit, all 13 field-weakening rows fail it, and the maximum residual is 42.474642129016004 N.m. Direct AEDT diagnostics confirmed that `Torque_FEM` and `TorqueRotor.Torque` agree, so this is not an exporter readback error. No promoted surrogate, controller-ready LUT, released map, numerical-threshold update, or Task 10 result is claimed. Raw evidence remains local under `out/eesm/task9_baseline/raw/`; earlier non-converged attempts remain preserved under `out/eesm/task9_baseline/failed_runs/`.
+
+**Corrective requalification status:** a write-once ten-point `r2` diagnostic
+freeze is preserved under `out/eesm/task9_requalification_r2/`. Its preflight
+blocks solves because the saved Task 8/9 model is not the frozen academic
+machine: it has 77.0793 mm model depth, 144 stator series turns per phase,
+20 field turns per pole, and a damper cage. A corrected `r3` project was later
+configured and validated, but its first displaced co-energy solve exposed that
+rotating an already clipped quarter sector invalidates its periodic topology.
+A separate full-machine direct-geometry `r4` project passed independent
+inventory and AEDT design validation with the frozen 120 mm depth, 36 turns per
+phase, 80 field turns per pole, and no damper cage. Its first field-only solve
+then stopped at the AEDT Student mesh-size limit. Both failures and their
+project hashes are preserved. A smaller anti-periodic sector is a prospective
+new revision, not an accepted FEM result; no Task 10 authorization is claimed.
+
 ```
 AEDT FEM (dq flux map)
     → train classical + NN surrogates
@@ -119,7 +135,16 @@ The source of truth for domains, roles, budgets, gates, seeds, schemas, and path
 .\.venv\Scripts\python eesm/run_equal_budget_study.py
 ```
 
-These runners do **not** launch AEDT. Generated artifacts land under `out/eesm/`. The offline Maxwell adapter is available under `eesm/aedt/`, but its user-run smoke/pilot and frozen numerical thresholds remain pending; no controller-ready or Simulink-ready claim is made.
+These runners do **not** launch AEDT. Generated artifacts land under `out/eesm/`. Task 8's seven-point qualification is complete. Task 9 collected all 64 frozen rows under the stricter adaptive-convergence contract, but its final physics report fails the frozen 1.1 N.m torque-closure gate with a 42.474642129016004 N.m maximum residual. Numerical thresholds therefore remain `baseline_required`; no controller-ready or Simulink-ready claim is made.
+
+Safe offline inspection (does not launch AEDT):
+
+```pwsh
+Get-Content out/eesm/task9_baseline/campaign_freeze.json
+Get-Content out/eesm/task9_baseline/raw/campaign_status.json
+```
+
+Task 9 normalization and reporting have run. Inspect `out/eesm/task9_baseline/campaign_report.json`; do not promote or begin Task 10 while its `campaign_status` is `fail`.
 
 ## Learning notes
 

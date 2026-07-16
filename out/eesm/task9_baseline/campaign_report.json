@@ -1,0 +1,188 @@
+{
+  "campaign_status": "fail",
+  "checks": {
+    "all_energized_converged": {
+      "reason": "Every requested row must be an understood converged energized solve.",
+      "status": "pass"
+    },
+    "current_and_sign_domain": {
+      "reason": "Canonical currents must match the frozen point rows, stay in-domain, and exclude the analytic source-free origin.",
+      "status": "pass"
+    },
+    "exact_point_set": {
+      "reason": "Exactly the frozen 64 unique point IDs must be present once.",
+      "status": "pass"
+    },
+    "finite_flux_and_torque": {
+      "reason": "Flux and both torque conventions must be finite.",
+      "status": "pass"
+    },
+    "immutable_role_boundaries": {
+      "evidence": {
+        "reference": 8,
+        "scheduler_audit": 4,
+        "selection": 12,
+        "train": 40
+      },
+      "reason": "Roles and regions must match the pre-FEM frozen point CSV.",
+      "status": "pass"
+    },
+    "measured_convergence": {
+      "reason": "Every row must preserve a positive measured adaptive-pass count.",
+      "status": "pass"
+    },
+    "no_duplicate_currents": {
+      "reason": "Current tuples must be unique.",
+      "status": "pass"
+    },
+    "raw_to_canonical_provenance": {
+      "reason": "Every canonical row must hash-link to raw progress and nonempty ABC, mesh, and convergence evidence.",
+      "status": "pass"
+    },
+    "solver_messages": {
+      "reason": "Every solver message payload must parse, contain no AEDT errors, and contain no adaptive non-convergence warning.",
+      "status": "pass"
+    },
+    "student_mesh_limit": {
+      "evidence": {
+        "max": 1826
+      },
+      "reason": "Measured mesh elements must be positive and no more than 1,950.",
+      "status": "pass"
+    },
+    "task8_torque_translation": {
+      "evidence": {
+        "max_observed_error_nm": 42.474642129016004
+      },
+      "reason": "controller torque = -Torque_FEM and closure residual must remain within 1.1 N.m.",
+      "status": "fail"
+    },
+    "units_and_machine_metadata": {
+      "reason": "Units, project, design, setup, rotor position, and pole pairs must be frozen and consistent.",
+      "status": "pass"
+    }
+  },
+  "claims": {
+    "controller_ready_lut": false,
+    "promoted_surrogate": false,
+    "release_ready_map": false,
+    "task_10_complete": false
+  },
+  "converged_points": 64,
+  "requested_points": 64,
+  "task": 9,
+  "threshold_decision": {
+    "canonical_manifest_updated": false,
+    "proposed_thresholds": {
+      "boundary": null,
+      "data_qa": null,
+      "feasibility": null,
+      "field_weakening": null,
+      "interior": null,
+      "saturation": null,
+      "torque": null,
+      "voltage": null
+    },
+    "reason": "Task 9 can require zero failed baseline QA rows, but surrogate-error, voltage, and feasibility distributions do not exist until later frozen model evaluation. The all-or-none manifest threshold contract therefore remains baseline_required.",
+    "scheduler_audit_available_for_decisions": false,
+    "scheduler_audit_collected": true,
+    "scheduler_audit_used": false,
+    "threshold_status": "baseline_required"
+  },
+  "torque_translation": {
+    "closure_tolerance_nm": 1.1,
+    "controller_torque_from_fem_sign": -1.0,
+    "error_summary": {
+      "by_region": {
+        "boundary": {
+          "count": 7,
+          "max_abs_error_nm": 42.474642129016004,
+          "mean_abs_error_nm": 17.172158859971073,
+          "outside_tolerance": 6
+        },
+        "field_weakening": {
+          "count": 13,
+          "max_abs_error_nm": 26.011701471849996,
+          "mean_abs_error_nm": 15.122452351111905,
+          "outside_tolerance": 13
+        },
+        "interior": {
+          "count": 26,
+          "max_abs_error_nm": 15.832539051444297,
+          "mean_abs_error_nm": 7.065164999078131,
+          "outside_tolerance": 24
+        },
+        "saturation": {
+          "count": 18,
+          "max_abs_error_nm": 19.3512454703119,
+          "mean_abs_error_nm": 9.525773569473472,
+          "outside_tolerance": 16
+        }
+      },
+      "count": 64,
+      "max_abs_error_nm": 42.474642129016004,
+      "mean_abs_error_nm": 10.499300106418847,
+      "outside_tolerance": 59,
+      "rms_error_nm": 13.082397283615798,
+      "within_tolerance": 5,
+      "worst_points": [
+        {
+          "abs_error_nm": 42.474642129016004,
+          "id_a": -120.0,
+          "if_a": 15.0,
+          "iq_a": 120.0,
+          "point_id": "756d155dba272cbe",
+          "region": "boundary",
+          "role": "train",
+          "torque_controller_nm": 3.10540984738,
+          "torque_from_flux_nm": -39.369232281636
+        },
+        {
+          "abs_error_nm": 26.011701471849996,
+          "id_a": -100.0,
+          "if_a": 5.0,
+          "iq_a": 100.0,
+          "point_id": "8a29b780e7f5352a",
+          "region": "field_weakening",
+          "role": "reference",
+          "torque_controller_nm": 2.13920048336,
+          "torque_from_flux_nm": 28.150901955209996
+        },
+        {
+          "abs_error_nm": 25.496076272184602,
+          "id_a": -60.0,
+          "if_a": 8.0,
+          "iq_a": 120.0,
+          "point_id": "1f08f997ce81954a",
+          "region": "boundary",
+          "role": "selection",
+          "torque_controller_nm": 10.2166125207,
+          "torque_from_flux_nm": -15.2794637514846
+        },
+        {
+          "abs_error_nm": 25.211200091957497,
+          "id_a": -105.0,
+          "if_a": 6.0,
+          "iq_a": 45.0,
+          "point_id": "d49bd485b1817f08",
+          "region": "field_weakening",
+          "role": "selection",
+          "torque_controller_nm": -0.876033239008,
+          "torque_from_flux_nm": 24.3351668529495
+        },
+        {
+          "abs_error_nm": 23.26778321914633,
+          "id_a": -113.711646,
+          "if_a": 2.629892,
+          "iq_a": 110.765335,
+          "point_id": "33c59d8bee1f3e8d",
+          "region": "field_weakening",
+          "role": "train",
+          "torque_controller_nm": 2.48075766408,
+          "torque_from_flux_nm": 25.74854088322633
+        }
+      ]
+    },
+    "max_observed_error_nm": 42.474642129016004
+  }
+}

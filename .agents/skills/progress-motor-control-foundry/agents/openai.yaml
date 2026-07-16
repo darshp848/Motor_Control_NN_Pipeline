@@ -1,0 +1,4 @@
+interface:
+  display_name: "Progress Motor Control Foundry"
+  short_description: "Advance motor-control work through evidence gates"
+  default_prompt: "Use $progress-motor-control-foundry to identify and complete the next safe, evidence-backed motor-control milestone."

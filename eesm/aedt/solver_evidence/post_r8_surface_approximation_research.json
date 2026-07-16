@@ -1,0 +1,67 @@
+{
+  "artifact_type": "post_failure_research_hypothesis",
+  "created_date": "2026-07-16",
+  "preserves_r8_failure_evidence": true,
+  "qualification_authorized": false,
+  "new_task9_campaign_authorized": false,
+  "task_10_authorized": false,
+  "training_on_corrected_real_fem_authorized": false,
+  "r8_failure_evidence": {
+    "path": "out/eesm/task9_requalification_r8_attempt1_20260716/failed_anchor_01_periodic_mesh_mismatch.json",
+    "sha256": "b10b91d879b09e89e565741a7ffd699e2d48eb0ffd3f24d9c81c78e02207aba6",
+    "failure_class": "periodic_mesh_perimeter_neighborhood_mismatch",
+    "face": 10
+  },
+  "finding": "The local AEDT-generated Maxwell 2D motor script assigns a manual SurfApprox_Main operation to the curved motor core and domain objects before solving. Revisions r7 and r8 reproduced its RMxprt/Band quarter topology and boundary direction but omitted that generated surface-discretization contract. An isolated no-solve r9 source model may restore only this operation; the evidence does not authorize a campaign or solve before immutable build and independent-verification hashes exist.",
+  "source": {
+    "path": "aedt_mcp/tmp/aedt_projects/eesm_qual/eesm_qual.aedtresults/RMxprtDesign1.results/DV106_SOL79_V0.MExportData/Maxwl2DV.vbs",
+    "sha256": "a07337b394a9bba6d78453f2478f0dba828829f19778bee65248129ded25719b",
+    "generated_operation": {
+      "name": "SurfApprox_Main",
+      "objects": [
+        "Stator",
+        "Rotor",
+        "Band",
+        "OuterRegion",
+        "InnerRegion",
+        "Shaft"
+      ],
+      "surf_dev_choice": 2,
+      "surf_dev": "0.09mm",
+      "normal_dev_choice": 2,
+      "normal_dev": "15deg",
+      "aspect_ratio_choice": 1
+    }
+  },
+  "direct_model_mapping": {
+    "Stator": "Stator",
+    "Rotor": [
+      "RotorYoke",
+      "PoleAssembly_01"
+    ],
+    "OuterRegion": "OuterRegion",
+    "Shaft": "Shaft",
+    "Band": "not_present_in_direct_model",
+    "InnerRegion": "not_present_in_direct_model"
+  },
+  "r9_surface_approximation_objects": [
+    "Stator",
+    "RotorYoke",
+    "PoleAssembly_01",
+    "OuterRegion",
+    "Shaft"
+  ],
+  "excluded_objects": {
+    "field_conductors": "not assigned by the generated SurfApprox_Main operation",
+    "stator_conductors": "not assigned by the generated SurfApprox_Main operation"
+  },
+  "r9_allowed_change": "add generated SurfApprox_Main settings to analogous curved core and domain objects only",
+  "r9_must_preserve": [
+    "r8 RMxprt/Band 90 mm shared-tool topology",
+    "r8 ReverseV=false ReverseU=true SameAsMaster=false boundary contract",
+    "r8 machine physics and exact terminal map",
+    "Magnetostatic Setup_Qual",
+    "manual x4 scaling contract",
+    "no solve or campaign binding before immutable build and verification hashes"
+  ]
+}

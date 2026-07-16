@@ -1,0 +1,34 @@
+{
+  "campaign_budget": 64,
+  "campaign_id": "eesm_task9_real_baseline_20260715",
+  "domain": {
+    "id_a": [
+      -120.0,
+      0.0
+    ],
+    "if_a": [
+      0.0,
+      15.0
+    ],
+    "iq_a": [
+      0.0,
+      120.0
+    ]
+  },
+  "points_path": "out/eesm/task9_baseline/frozen_points.csv",
+  "points_sha256": "3ce7f7bd4bc2abbe7aefb425d2923fa488286603c32ec506d20eecbbc361fb6d",
+  "role_counts": {
+    "reference": 8,
+    "scheduler_audit": 4,
+    "selection": 12,
+    "train": 40
+  },
+  "role_seeds": {
+    "reference": 20260712,
+    "scheduler_audit": 2909,
+    "selection": 20260711,
+    "train": 20260710
+  },
+  "sampling_revision_policy": "frozen_before_fem_no_result_driven_revision",
+  "source_free_origin_policy": "analytic_invariant_not_sent_to_aedt"
+}
