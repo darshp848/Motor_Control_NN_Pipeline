@@ -2,6 +2,7 @@ from validation.physics_invariants import evaluate_invariants
 from validation.controller_metrics import evaluate_controller_metrics
 from validation.gates import evaluate_gates
 from validation.promotion import promote_candidate
+from validation.uncertainty import evaluate_calibration
 from validation.synthetic_validation import (
     DOMAIN_LABELS,
     METRIC_KEYS,
@@ -22,6 +23,7 @@ __all__ = [
     "VOLTAGE_ERR_KEYS",
     "evaluate_invariants",
     "evaluate_controller_metrics",
+    "evaluate_calibration",
     "evaluate_gates",
     "flux_rmse",
     "label_domain_3d",

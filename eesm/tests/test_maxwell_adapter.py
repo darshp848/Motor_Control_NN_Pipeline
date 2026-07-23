@@ -106,14 +106,23 @@ def test_adapter_contract(tmp_path: Path, variant: str, expected: object) -> Non
     assert 'ROOT = os.path.dirname(os.path.abspath(__file__))' in exporter
     assert "No active AEDT design" in exporter
     assert "Refusing resume: progress contains failed row" in exporter
-    assert 'PROJECT_NAME = "eesm_qual"' in exporter
+    # Phase 2 of PILOT_EXECUTION_PLAN.md rewrote export_eesm_points.py in
+    # place: the pilot disposable copy is eesm_pilot_01 (not the Task 9
+    # eesm_qual), the frozen-points hash lives in a file written by
+    # freeze_pilot_block.py (POINTS_SHA256_PATH, not a baked hex), and the
+    # per-row evidence-path columns were lowercased to align with
+    # eesm_point.schema.json's additionalProperties. The GUARD INTENT is
+    # unchanged: the exporter still pins its project identity, references
+    # the frozen-points hash store, and records per-point raw/mesh/
+    # convergence evidence paths.
+    assert 'PROJECT_NAME = "eesm_pilot_01"' in exporter
     assert "if isinstance(value, dict):" in exporter
     assert 'POINTS = os.path.join(CAMPAIGN_ROOT, "frozen_points.csv")' in exporter
     assert 'MAX_NEW_POINTS_PER_RUN = 1' in exporter
-    assert 'POINTS_SHA256 = ' in exporter
-    assert '"RawABCFluxPath"' in exporter
-    assert '"ConvergenceEvidencePath"' in exporter
-    assert '"MeshEvidencePath"' in exporter
+    assert 'POINTS_SHA256_PATH = ' in exporter
+    assert '"raw_abc_flux_path"' in exporter
+    assert '"convergence_evidence_path"' in exporter
+    assert '"mesh_evidence_path"' in exporter
     assert 'project.Save()' in exporter
     assert 'ADAPTIVE_NONCONVERGENCE_MARKER = "adaptive passes did not converge"' in exporter
     assert "AEDT adaptive convergence criteria were not met" in exporter

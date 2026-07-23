@@ -67,22 +67,38 @@ $process.Refresh()
     task_10_authorized = $false
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $runnerResult -Encoding utf8
 
-$files = @()
-if (Test-Path -LiteralPath $targetResults) {
-    $files = @(Get-ChildItem -LiteralPath $targetResults -Recurse -Force -File | Sort-Object FullName | ForEach-Object {
-        [ordered]@{
-            path = [IO.Path]::GetRelativePath($targetResults, $_.FullName)
-            size_bytes = $_.Length
-            sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-        }
-    })
+# The results manifest is bookkeeping, not evidence. A failure here must
+# never discard a completed AEDT run, so it is best-effort.
+#
+# NOTE: [IO.Path]::GetRelativePath is .NET Core / .NET 5+ only and does not
+# exist in Windows PowerShell 5.1 (.NET Framework). Use a substring instead.
+try {
+    $files = @()
+    if (Test-Path -LiteralPath $targetResults) {
+        $prefix = (Resolve-Path -LiteralPath $targetResults).Path.TrimEnd('\') + '\'
+        $files = @(Get-ChildItem -LiteralPath $targetResults -Recurse -Force -File | Sort-Object FullName | ForEach-Object {
+            $full = $_.FullName
+            $relative = if ($full.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+                $full.Substring($prefix.Length)
+            } else {
+                $full
+            }
+            [ordered]@{
+                path       = $relative
+                size_bytes = $_.Length
+                sha256     = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant()
+            }
+        })
+    }
+    [ordered]@{
+        root = $targetResults
+        file_count = $files.Count
+        files = $files
+        collected_after_aedt_exit = $true
+    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $manifest -Encoding utf8
+} catch {
+    Write-Warning "results manifest generation failed (non-fatal): $($_.Exception.Message)"
 }
-[ordered]@{
-    root = $targetResults
-    file_count = $files.Count
-    files = $files
-    collected_after_aedt_exit = $true
-} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $manifest -Encoding utf8
 
 if (-not (Test-Path -LiteralPath $result)) {
     throw "AEDT exited without a generated-geometry solve result; inspect $runnerResult and $log"

@@ -13,6 +13,7 @@ class RBFOrGPSurrogate(FluxSurrogate):
     """RBF-kernel Gaussian process intended for small training budgets."""
 
     family = "rbf_or_gp"
+    provides_uncertainty = True
 
     def _fit_normalized(self, X: np.ndarray, y: np.ndarray) -> None:
         if X.shape[0] > 256:
@@ -56,3 +57,14 @@ class RBFOrGPSurrogate(FluxSurrogate):
 
     def _predict_normalized(self, X: np.ndarray) -> np.ndarray:
         return np.asarray(self.model_.predict(X), dtype=np.float64)
+
+    def _predict_std_normalized(self, X: np.ndarray) -> np.ndarray:
+        """Posterior predictive std (normalized targets).
+
+        sklearn returns (n, n_targets) on multi-output GPs in current versions
+        and (n,) on older ones; base.predict_std handles either. The White
+        kernel's noise term is included in the posterior, so this is a
+        predictive (not latent) std.
+        """
+        _, std = self.model_.predict(X, return_std=True)
+        return np.asarray(std, dtype=np.float64)

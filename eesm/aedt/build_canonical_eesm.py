@@ -352,13 +352,26 @@ def configure_maxwell_qualification(project):
     variables = add_qualification_variables(design)
 
     boundary = design.GetModule("BoundarySetup")
+    # ParallelBranchesNum: the r2 winding contract is 36 conductors/slot with
+    # FOUR balanced stator branches -> 36 series turns/phase (see
+    # eesm/docs/MAXWELL_EESM_QUALIFICATION.md). With 4 branches, the commanded
+    # winding current is the TERMINAL current and AEDT drives each branch with
+    # I/4, so the exporter's (id, iq) domain reads in terminal amps and the
+    # per-sector flux linkage is the terminal flux linkage (multiplier x1).
+    #
+    # The previous value of "1" (series, 144 turns/phase) contradicted the
+    # contract. Note: the 2026-07 flux-convention diagnostic probes were solved
+    # with the old value; their labelled currents are BRANCH amps, i.e.
+    # terminal amps / 4 under the contract. See flux_extraction_v2.py NOTES.
+    #
+    # The field winding is a single series circuit and keeps 1 branch.
     winding_currents = {
-        "PhaseA": "I_phase_a",
-        "PhaseB": "I_phase_b",
-        "PhaseC": "I_phase_c",
-        "Field": "If",
+        "PhaseA": ("I_phase_a", "4"),
+        "PhaseB": ("I_phase_b", "4"),
+        "PhaseC": ("I_phase_c", "4"),
+        "Field": ("If", "1"),
     }
-    for name, current in winding_currents.items():
+    for name, (current, branches) in winding_currents.items():
         boundary.EditWindingGroup(name, [
             "NAME:" + name,
             "Type:=", "Current",
@@ -367,7 +380,7 @@ def configure_maxwell_qualification(project):
             "Resistance:=", "0ohm",
             "Inductance:=", "0nH",
             "Voltage:=", "0V",
-            "ParallelBranchesNum:=", "1",
+            "ParallelBranchesNum:=", branches,
             "Phase:=", "0deg",
         ])
 

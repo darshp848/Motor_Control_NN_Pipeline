@@ -119,6 +119,16 @@
       "required_gate_policy": "all_must_pass"
     }
   },
+  "uncertainty": {
+    "status": "report_only",
+    "is_gate": false,
+    "rationale": "Raw predictive variance is not a safety signal until its calibration is demonstrated. This leg MEASURES calibration on independent frozen off-grid FEM truth; it does not gate promotion. Promotion may consume calibrated uncertainty as a gate or acquisition aid only after coverage, reliability, and error-vs-uncertainty discrimination are shown adequate for this machine.",
+    "evaluated_on_role": "selection",
+    "provider_families": ["rbf_or_gp"],
+    "central_levels": [0.5, 0.6827, 0.9, 0.9545, 0.99],
+    "metrics": ["coverage", "reliability_curve", "calibration_error", "sharpness_mean_sigma", "error_sigma_spearman", "standardized_residual_moments"],
+    "report_by": ["component", "region"]
+  },
   "seeds": {
     "split": 20260710,
     "model": 1701,

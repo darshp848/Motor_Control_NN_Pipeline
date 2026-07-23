@@ -55,6 +55,12 @@ class FluxSurrogate(ABC):
 
     family: str
 
+    #: Whether this family exposes a predictive standard deviation via
+    #: predict_std(). Only probabilistic families (e.g. the GP) set this True;
+    #: point-estimate families (polynomial, tree, MLP) leave it False so a
+    #: caller can branch cleanly rather than receiving a fabricated interval.
+    provides_uncertainty: bool = False
+
     def __init__(self, seed: int, config: Mapping[str, Any] | None = None):
         self.seed = int(seed)
         self.config = dict(config or {})
@@ -102,6 +108,41 @@ class FluxSurrogate(ABC):
         if normalized.shape != (X_array.shape[0], 2):
             raise ValueError("surrogate prediction must have shape (n, 2)")
         return normalized * self.y_scale_ + self.y_mean_
+
+    def predict_std(self, X: np.ndarray) -> np.ndarray:
+        """Predictive standard deviation of `(lambda_d, lambda_q)`, in Wb.
+
+        Returns an ``(n, 2)`` array of per-output standard deviations in the
+        SAME physical units as ``predict`` (the model works on normalized
+        targets, so the normalized std is rescaled by ``y_scale_``; there is no
+        mean shift for a standard deviation). Raises for point-estimate
+        families -- check ``provides_uncertainty`` first.
+        """
+        if not self.provides_uncertainty:
+            raise NotImplementedError(
+                self.family + " is a point-estimate surrogate and exposes no "
+                "predictive uncertainty; check `provides_uncertainty` first")
+        if not self._fitted:
+            raise RuntimeError("surrogate must be fitted before prediction")
+        X_array = np.asarray(X, dtype=np.float64)
+        if X_array.ndim != 2 or X_array.shape[1] != 3:
+            raise ValueError("X must have shape (n, 3)")
+        std_normalized = np.asarray(
+            self._predict_std_normalized((X_array - self.x_mean_) / self.x_scale_),
+            dtype=np.float64,
+        )
+        # Accept (n,) shared-std or (n, 2) per-output std across sklearn versions.
+        if std_normalized.ndim == 1:
+            std_normalized = np.column_stack([std_normalized, std_normalized])
+        if std_normalized.shape != (X_array.shape[0], 2):
+            raise ValueError("predictive std must have shape (n,) or (n, 2)")
+        if np.any(std_normalized < 0.0):
+            raise ValueError("predictive std must be non-negative")
+        return std_normalized * self.y_scale_
+
+    def _predict_std_normalized(self, X: np.ndarray) -> np.ndarray:
+        """Return normalized predictive std. Override in probabilistic families."""
+        raise NotImplementedError
 
     def save(self, path: str) -> dict[str, Any]:
         if not self._fitted:
