@@ -29,4 +29,5 @@ The AEDT path under eesm/aedt/ is untouched and remains the parallel history.
 
 from __future__ import annotations
 
-__all__ = ["config", "geometry", "extract", "campaign", "runtime", "mock_femm"]
+__all__ = ["config", "geometry", "extract", "campaign", "points", "runtime",
+           "mock_femm"]

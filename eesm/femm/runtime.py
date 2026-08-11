@@ -22,7 +22,20 @@ import platform
 import shutil
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+#: This package's own directory. `import femm` finds THIS package whenever
+#: eesm/ is on sys.path -- which Python does for free to any script under
+#: eesm/, including eesm/run_femm_campaign.py. Detecting that is the
+#: difference between "no FEMM here" and a run driven against the wrong
+#: object, so the shadow is named explicitly rather than reported as success.
+_PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+#: The GATE: names a real pyFEMM certainly exposes. Deliberately NOT the full
+#: FEMM_CALL_SURFACE below -- that list is itself unverified, so gating on it
+#: would let one wrong name reject a genuine pyFEMM and stall the Windows run
+#: behind an error that looks like a FEMM fault.
+PYFEMM_SENTINELS: Tuple[str, ...] = ("openfemm", "mi_probdef", "mi_analyze")
 
 
 @dataclass(frozen=True)
@@ -36,6 +49,11 @@ class FemmAvailability:
     wine_path: Optional[str] = None
     xfemm_paths: Dict[str, str] = field(default_factory=dict)
     import_error: Optional[str] = None
+    #: Set when a module named `femm` imported but is this package, not pyFEMM.
+    shadowed_by: Optional[str] = None
+    #: Diagnostic only, never a gate: which of FEMM_CALL_SURFACE are absent.
+    missing_api: Tuple[str, ...] = ()
+    module_file: Optional[str] = None
 
     @property
     def can_solve(self) -> bool:
@@ -44,8 +62,17 @@ class FemmAvailability:
 
     def reason(self) -> str:
         if self.importable:
+            if self.missing_api:
+                return ("pyfemm import succeeded, but %d of the calls this "
+                        "package makes are absent: %s"
+                        % (len(self.missing_api), ", ".join(self.missing_api)))
             return "pyfemm import succeeded"
         parts = ["pyfemm not importable (%s)" % (self.import_error or "unknown")]
+        if self.shadowed_by:
+            parts.append(
+                "this repository's own eesm/femm package at %s is shadowing "
+                "pyFEMM on sys.path" % self.shadowed_by
+            )
         if not self.platform_supported:
             parts.append("platform %s is not Windows" % self.system)
         if self.wine_path:
@@ -58,16 +85,50 @@ class FemmAvailability:
         return "; ".join(parts)
 
 
+def _is_this_package(module_file: Optional[str]) -> bool:
+    """True if `module_file` belongs to eesm/femm itself."""
+    if not module_file:
+        return False
+    return os.path.realpath(module_file).startswith(
+        os.path.realpath(_PACKAGE_DIR) + os.sep
+    )
+
+
 def detect_femm() -> FemmAvailability:
-    """Probe for FEMM, Wine and xfemm. Never raises, never fakes."""
+    """Probe for FEMM, Wine and xfemm. Never raises, never fakes.
+
+    A module named `femm` that lacks PYFEMM_SENTINELS is NOT pyFEMM and is
+    reported as unavailable, however it got onto sys.path.
+    """
     system = platform.system()
     platform_supported = system == "Windows"
 
     importable = False
     import_error: Optional[str] = None
-    try:  # pragma: no cover - depends on host, not on logic
+    shadowed_by: Optional[str] = None
+    missing_api: Tuple[str, ...] = ()
+    module_file: Optional[str] = None
+    try:
         import femm  # noqa: F401
-        importable = True
+        module_file = getattr(femm, "__file__", None)
+        missing_sentinels = [n for n in PYFEMM_SENTINELS if not hasattr(femm, n)]
+        if missing_sentinels:
+            if _is_this_package(module_file):
+                shadowed_by = module_file
+                import_error = (
+                    "a module named 'femm' imported from %s, which is this "
+                    "package itself, not pyFEMM" % module_file
+                )
+            else:
+                import_error = (
+                    "a module named 'femm' imported from %s but lacks %s, so "
+                    "it is not pyFEMM" % (module_file, missing_sentinels)
+                )
+        else:
+            importable = True
+            missing_api = tuple(
+                name for name in FEMM_CALL_SURFACE if not hasattr(femm, name)
+            )
     except BaseException as exc:  # ImportError on Linux, COM errors elsewhere
         import_error = "%s: %s" % (type(exc).__name__, exc)
 
@@ -87,6 +148,9 @@ def detect_femm() -> FemmAvailability:
         wine_path=wine_path,
         xfemm_paths=xfemm_paths,
         import_error=import_error,
+        shadowed_by=shadowed_by,
+        missing_api=missing_api,
+        module_file=module_file,
     )
 
 
@@ -123,6 +187,9 @@ def availability_payload() -> Dict[str, Any]:
         "python_version": availability.python_version,
         "wine_path": availability.wine_path,
         "xfemm_paths": dict(availability.xfemm_paths),
+        "shadowed_by": availability.shadowed_by,
+        "module_file": availability.module_file,
+        "missing_api": list(availability.missing_api),
         "reason": availability.reason(),
         "real_solve_performed": False,
     }
@@ -131,6 +198,11 @@ def availability_payload() -> Dict[str, Any]:
 #: The complete list of FEMM API calls this package makes. Every one of these
 #: must be confirmed against a live FEMM 4.2 on the first Windows run; this
 #: list is the checklist in eesm/docs/FEMM_MIGRATION.md.
+#:
+#: This is a DIAGNOSTIC, not a gate. detect_femm() reports which of these a
+#: live pyFEMM is missing but never refuses on that basis -- the list is
+#: unverified, so a wrong name here must not be able to block a real run.
+#: PYFEMM_SENTINELS above is the gate.
 FEMM_CALL_SURFACE: List[str] = [
     "openfemm",
     "newdocument",
