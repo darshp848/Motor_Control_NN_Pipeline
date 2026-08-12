@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple
 
 from . import config as cfg_mod
+from . import section
 from .config import (
     BOUNDARY_ANTIPERIODIC_NAME,
     BOUNDARY_OUTER_NAME,
@@ -173,7 +174,11 @@ def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
     geo = cfg.geometry
     axis = pole_axis_deg(cfg)
     radial = (pole_body_inner_radius_mm(cfg) + pole_shoe_inner_radius_mm(cfg)) / 2.0
-    offset = geo.pole_body_width_mm / 2.0 + geo.field_winding_clearance_mm
+    # Centre of the drawn bundle, not its inner edge. Before section.py drew
+    # the cavities, this sat at the clearance line -- which is now the coil's
+    # boundary, and a label on a boundary belongs to no region.
+    offset = (geo.pole_body_width_mm / 2.0 + geo.field_winding_clearance_mm
+              + geo.field_coil_width_mm / 2.0)
     turns = cfg.machine.field_turns_per_pole
     labels: List[Dict[str, Any]] = []
     for (name, sign) in FIELD_COIL_MAP:
@@ -200,7 +205,10 @@ def sector_edge_endpoints(cfg: FemmConfig = DEFAULT_CONFIG
     modelling failure, which is why the geometry test asserts two distinct
     midpoints.
     """
-    inner = shaft_radius_mm(cfg)
+    # From the centre: the shaft is now a modelled region, so the radial
+    # edges must bound it too. Before section.py drew the shaft arc, these
+    # started at shaft_radius and the inner disc was never enclosed.
+    inner = 0.0
     outer = stator_outer_radius_mm(cfg) * cfg.geometry.outer_boundary_scale
     return {
         SECTOR_EDGE_LOW: (polar_to_xy(inner, 0.0), polar_to_xy(outer, 0.0)),
@@ -212,44 +220,20 @@ def sector_edge_endpoints(cfg: FemmConfig = DEFAULT_CONFIG
 
 
 def region_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
-    """Non-winding material regions: steel, air, shaft."""
-    axis = pole_axis_deg(cfg)
-    half_span = cfg.machine.sector_span_deg / 2.0
-    stator_yoke_radius = (slot_bottom_radius_mm(cfg)
-                          + stator_outer_radius_mm(cfg)) / 2.0
-    pole_radius = (pole_body_inner_radius_mm(cfg)
-                   + pole_shoe_inner_radius_mm(cfg)) / 2.0
-    shoe_radius = (pole_shoe_inner_radius_mm(cfg)
-                   + rotor_outer_radius_mm(cfg)) / 2.0
-    # Interpolar air: a quarter-span away from the pole axis, i.e. between
-    # this pole and the sector edge.
-    interpolar_angle = axis + half_span / 2.0
+    """Non-winding material regions, one per region the section encloses.
 
-    entries = [
-        ("stator_yoke", stator_yoke_radius, half_span,
-         cfg.materials.steel_material, cfg.api.group_stator_steel),
-        ("airgap", airgap_mid_radius_mm(cfg), half_span,
-         cfg.materials.air_material, cfg.api.group_airgap),
-        ("pole_shoe", shoe_radius, axis,
-         cfg.materials.steel_material, cfg.api.group_rotor_steel),
-        ("pole_body", pole_radius, axis,
-         cfg.materials.steel_material, cfg.api.group_rotor_steel),
-        ("interpolar_air", pole_radius, interpolar_angle,
-         cfg.materials.air_material, cfg.api.group_airgap),
-        ("shaft", shaft_radius_mm(cfg) / 2.0, half_span,
-         cfg.materials.steel_material, cfg.api.group_shaft),
-    ]
-    labels: List[Dict[str, Any]] = []
-    for name, radius, angle, material, group in entries:
-        x, y = polar_to_xy(radius, angle)
-        labels.append({
-            "name": name,
-            "material": material,
-            "x": x,
-            "y": y,
-            "group": group,
-        })
-    return labels
+    This used to return six labels -- stator_yoke, airgap, pole_shoe,
+    pole_body, interpolar_air, shaft -- describing a machine that was never
+    drawn. Three of them landed in a single undivided annulus while disagreeing
+    about whether it was steel or air, which is what made FEMM refuse the first
+    real solve on 2026-08-11.
+
+    The drawn section encloses four non-winding regions. The pole shoe, pole
+    body and hub are one connected steel body, so they take one label between
+    them; the interpolar space, airgap, slot mouths and wedges are one
+    connected air region, so they take one.
+    """
+    return section.section_region_labels(cfg)
 
 
 # ---------------------------------------------------------------------------
@@ -266,6 +250,7 @@ class BuildReport:
     field_coils: List[str] = field(default_factory=list)
     antiperiodic_edges: List[str] = field(default_factory=list)
     material_regions: List[str] = field(default_factory=list)
+    section_features: List[str] = field(default_factory=list)
     model_depth_m: float = 0.0
     steel_material: str = ""
     steel_is_placeholder: bool = True
@@ -277,6 +262,7 @@ class BuildReport:
             "field_coils": list(self.field_coils),
             "antiperiodic_edges": list(self.antiperiodic_edges),
             "material_regions": list(self.material_regions),
+            "section_features": list(self.section_features),
             "model_depth_m": self.model_depth_m,
             "steel_material": self.steel_material,
             "steel_is_placeholder": self.steel_is_placeholder,
@@ -293,14 +279,20 @@ def _mm_to_m(value_mm: float) -> float:
 
 
 def define_problem(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> None:
-    """mi_probdef. Depth is the RMxprt emitted value, in metres."""
+    """mi_probdef. Depth goes in the PROBLEM'S units, not metres.
+
+    This passed model_depth_m straight through until 2026-08-11, so with
+    problem_units = "millimeters" the model was 0.077 mm deep rather than
+    77.08 mm and every flux linkage came out 1000x small. See
+    config.model_depth_in_problem_units.
+    """
     api = cfg.api
     handle.mi_probdef(
         api.problem_frequency_hz,
         api.problem_units,
         api.problem_type,
         api.problem_precision,
-        cfg.machine.model_depth_m,
+        cfg_mod.model_depth_in_problem_units(cfg),
         api.problem_min_angle_deg,
     )
 
@@ -322,27 +314,52 @@ def define_circuits(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     return names
 
 
+def antiperiodic_band_name(index: int) -> str:
+    """One antiperiodic property per radius band. See define_boundaries."""
+    return "%s_%d" % (BOUNDARY_ANTIPERIODIC_NAME, index)
+
+
 def define_boundaries(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> None:
-    """Antiperiodic on the sector edges, Dirichlet A=0 on the outer arc."""
+    """Antiperiodic on the sector edges, Dirichlet A=0 on the outer arc.
+
+    ONE antiperiodic property PER RADIUS BAND, not one for the whole edge.
+    The drawn section lands arcs on each radial edge at the shaft, hub and
+    bore radii, splitting it into four segments. FEMM applies a periodic or
+    antiperiodic condition to exactly one segment and its partner, so a single
+    property covers one band and leaves the rest on the default homogeneous
+    Neumann -- which blocks the flux return path rather than continuing it.
+
+    Found 2026-08-11: the first solve on the drawn section converged but
+    returned lambda_d = 2.96e-5 Wb against the AEDT anchor 0.01281 Wb, a
+    factor of 432, because three of the four bands were walled off.
+    """
     api = cfg.api
     zeros = [0.0] * 8
-    handle.mi_addboundprop(BOUNDARY_ANTIPERIODIC_NAME, *zeros,
-                           api.boundary_format_antiperiodic)
+    for index in range(len(section.sector_edge_bands(cfg))):
+        handle.mi_addboundprop(antiperiodic_band_name(index), *zeros,
+                               api.boundary_format_antiperiodic)
     handle.mi_addboundprop(BOUNDARY_OUTER_NAME, *zeros,
                            api.boundary_format_prescribed_a)
 
 
 def apply_antiperiodic_edges(handle: Any,
                              cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
-    """Apply the antiperiodic condition to BOTH radial edges, separately."""
+    """Pair each radius band of the low edge with the same band of the high edge."""
+    span = cfg.machine.sector_span_deg
     applied: List[str] = []
     for name, ((x0, y0), (x1, y1)) in sector_edge_endpoints(cfg).items():
         handle.mi_drawline(x0, y0, x1, y1)
-        handle.mi_clearselected()
-        handle.mi_selectsegment((x0 + x1) / 2.0, (y0 + y1) / 2.0)
-        handle.mi_setsegmentprop(BOUNDARY_ANTIPERIODIC_NAME, 0, 1, 0, 0)
-        handle.mi_clearselected()
         applied.append(name)
+
+    for index, (inner, outer) in enumerate(section.sector_edge_bands(cfg)):
+        mid_radius = (inner + outer) / 2.0
+        for angle in (0.0, span):
+            mx, my = polar_to_xy(mid_radius, angle)
+            handle.mi_clearselected()
+            handle.mi_selectsegment(mx, my)
+            handle.mi_setsegmentprop(antiperiodic_band_name(index), 0, 1, 0, 0)
+            handle.mi_clearselected()
+        applied.append(antiperiodic_band_name(index))
     return applied
 
 
@@ -376,25 +393,38 @@ def build_sector(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> BuildReport:
     report.circuits = define_circuits(handle, cfg)
     define_boundaries(handle, cfg)
 
-    # Steel / air / shaft outlines. The arcs bound the sector radially.
+    # The cross-section itself: slots, teeth, pole body, shoe, field cavities.
+    # Before 2026-08-11 this was five concentric arcs and nothing else, so the
+    # labels below had no regions to land in and FEMM refused to solve.
     outer_radius = stator_outer_radius_mm(cfg) * cfg.geometry.outer_boundary_scale
     span = cfg.machine.sector_span_deg
-    max_arc_seg_deg = cfg.api.problem_min_angle_deg
-    for radius in (shaft_radius_mm(cfg), rotor_outer_radius_mm(cfg),
-                   stator_bore_radius_mm(cfg), slot_bottom_radius_mm(cfg),
-                   outer_radius):
-        x0, y0 = polar_to_xy(radius, 0.0)
-        x1, y1 = polar_to_xy(radius, span)
-        handle.mi_drawarc(x0, y0, x1, y1, span, max_arc_seg_deg)
+    report.section_features = section.draw_section(handle, cfg)
 
     report.antiperiodic_edges = apply_antiperiodic_edges(handle, cfg)
 
-    # Outer arc gets the Dirichlet condition.
-    ox0, oy0 = polar_to_xy(outer_radius, 0.0)
-    ox1, oy1 = polar_to_xy(outer_radius, span)
+    # Outer ARC gets the Dirichlet condition. It is an arc, so it needs
+    # mi_selectarcsegment / mi_setarcsegmentprop -- mi_selectsegment only ever
+    # selects LINES (FEMM 4.2 manual: "Select the line segment closest to
+    # (x,y)").
+    #
+    # Until 2026-08-12 this used mi_selectsegment at the arc's CHORD midpoint,
+    # (45, 45), which is r = 63.64 mm at 45 deg and not even on the arc. The
+    # nearest line to that point is a wall of stator slot 2, 5.39 mm away, so
+    # a PRESCRIBED A = 0 boundary was silently pinned onto one slot wall beside
+    # phase C -- and the outer arc got no condition at all, defaulting to
+    # homogeneous Neumann.
+    #
+    # That single misplaced Dirichlet broke mirror symmetry about the pole
+    # axis: lambda_C came out -0.284 instead of 0, theta_d 138.68 instead of
+    # 150, and it produced Ldq = -7.7e-5 H and L_aa != L_bb. It was invisible
+    # to a geometry mirror check because a boundary assignment is not a drawn
+    # primitive, and mesh-independent because it is a boundary condition --
+    # lambda_C held to 4 digits across a 20x element sweep.
+    mx, my = polar_to_xy(outer_radius, span / 2.0)  # a point ON the arc
     handle.mi_clearselected()
-    handle.mi_selectsegment((ox0 + ox1) / 2.0, (oy0 + oy1) / 2.0)
-    handle.mi_setsegmentprop(BOUNDARY_OUTER_NAME, 0, 1, 0, 0)
+    handle.mi_selectarcsegment(mx, my)
+    handle.mi_setarcsegmentprop(cfg.api.problem_min_angle_deg,
+                                BOUNDARY_OUTER_NAME, 0, 0)
     handle.mi_clearselected()
 
     for entry in region_labels(cfg):

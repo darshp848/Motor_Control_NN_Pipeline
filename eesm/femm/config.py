@@ -103,6 +103,15 @@ class GeometryConfig:
     pole_shoe_width_mm: float = 45.0
     field_winding_clearance_mm: float = 2.0
 
+    #: Tangential width of one field bundle, measured outward from the
+    #: clearance. UNVERIFIED and NEW (2026-08-11): nothing in the RMxprt
+    #: scalars fixes the field-winding footprint -- only its 2 mm clearance
+    #: from the pole body is given. The section has to enclose the bundle
+    #: somehow, and a bundle needs a width. It sets the field slot area and
+    #: therefore the achievable current density, not the pole MMF (which is
+    #: field_turns_per_pole * If regardless).
+    field_coil_width_mm: float = 8.0
+
     #: Radial airgap = (stator_id - rotor_od) / 2 = (110 - 108.8) / 2.
     #: UNVERIFIED: RMxprt DiaGap also appeared as 109.4 mm in other VBS
     #: blocks, which would give 0.3 mm. Confirm against the real geometry
@@ -221,7 +230,22 @@ class ExtractionConfig:
     #: geometry.build_sector() intends. It must still be confirmed by a
     #: field-only FEMM probe (Id=Iq=0, If>0) before any production run --
     #: exactly the measurement that produced 330.01 on the AEDT side.
-    d_axis_electrical_deg: float = 0.0
+    #: DERIVED, then confirmed. 2026-08-12.
+    #:
+    #: For a pole at 45 deg the field vector potential is A_z = sin(2*theta -
+    #: 90 deg), giving slot values -0.966, -0.707, -0.259, +0.259, +0.707,
+    #: +0.966 at 7.5 .. 82.5 deg. With the winding map A(0,1)+, C(2,3)-,
+    #: B(4,5)+ that is lambda_abc proportional to (-1, +1, 0) and
+    #:
+    #:     theta_d = 150 deg exactly
+    #:
+    #: FEMM measures 149.999 deg, and lambda_C -- which must be exactly zero
+    #: because phase C straddles the pole axis -- comes out 2e-7 and shrinks
+    #: under mesh refinement.
+    #:
+    #: The earlier value 139.1253 was measured on a model carrying a misplaced
+    #: Dirichlet boundary (see geometry.build_sector). It was an artefact.
+    d_axis_electrical_deg: float = 150.0
 
     #: Terminal flux linkage multiplier. See the class docstring.
     flux_multiplier: float = 1.0
@@ -425,6 +449,11 @@ PROVENANCE: Dict[str, Provenance] = {
         note="Real BH curve not supplied. M-19 is a documented stand-in. "
              "Saturation-region results are meaningless until replaced.",
     ),
+    "geometry.field_coil_width_mm": Provenance(
+        "section.py modelling choice", unverified=True,
+        note="NEW 2026-08-11. No RMxprt scalar fixes the field bundle "
+             "footprint. Sets field slot area, not pole MMF.",
+    ),
     "materials.air_material": Provenance(_FEMM_MANUAL, unverified=True,
                                          note="Library name not read back."),
     "materials.coil_material": Provenance(_FEMM_MANUAL, unverified=True,
@@ -535,6 +564,39 @@ def missing_provenance(cfg: FemmConfig = DEFAULT_CONFIG) -> Tuple[str, ...]:
 # ---------------------------------------------------------------------------
 # Derived quantities (still no magic numbers -- all from the fields above)
 # ---------------------------------------------------------------------------
+
+
+#: Metres per one unit of each length unit mi_probdef accepts.
+PROBLEM_UNIT_METRES: Dict[str, float] = {
+    "inches": 0.0254,
+    "millimeters": 1e-3,
+    "centimeters": 1e-2,
+    "mils": 2.54e-5,
+    "meters": 1.0,
+    "micrometers": 1e-6,
+}
+
+
+def model_depth_in_problem_units(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """Model depth expressed in `api.problem_units`, which is what FEMM wants.
+
+    mi_probdef's depth argument is in the PROBLEM'S length units, not metres.
+    The manual does not say so; FEMM's own Problem Definition dialog shows the
+    depth field labelled with the selected units.
+
+    Found 2026-08-11: define_problem passed model_depth_m (0.0770793) straight
+    into mi_probdef while problem_units was "millimeters", making the model
+    0.077 mm deep instead of 77.08 mm. Flux linkage in a 2-D problem is exactly
+    linear in depth, so every lambda was 1000x too small. The first solves on
+    the drawn section returned lambda_d = 2.96e-5 Wb.
+    """
+    scale = PROBLEM_UNIT_METRES.get(cfg.api.problem_units)
+    if scale is None:
+        raise ValueError(
+            "Unknown problem_units %r; cannot convert model depth. Known: %s"
+            % (cfg.api.problem_units, sorted(PROBLEM_UNIT_METRES))
+        )
+    return cfg.machine.model_depth_m / scale
 
 
 def slots_in_sector(cfg: FemmConfig = DEFAULT_CONFIG) -> int:

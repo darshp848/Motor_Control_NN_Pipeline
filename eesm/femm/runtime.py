@@ -219,6 +219,8 @@ FEMM_CALL_SURFACE: List[str] = [
     "mi_setblockprop",
     "mi_selectsegment",
     "mi_setsegmentprop",
+    "mi_selectarcsegment",
+    "mi_setarcsegmentprop",
     "mi_clearselected",
     "mi_setcurrent",
     "mi_saveas",

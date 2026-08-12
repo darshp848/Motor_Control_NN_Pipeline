@@ -172,9 +172,30 @@ def test_sector_edges_are_two_distinct_edges():
 def test_problem_definition_uses_the_rmxprt_depth(built):
     handle, report = built
     assert handle.problem is not None
-    assert handle.problem["depth"] == pytest.approx(0.0770793)
     assert handle.problem["frequency"] == 0.0  # magnetostatic
+    # The report keeps metres, the canonical form used everywhere else.
     assert report.model_depth_m == pytest.approx(0.0770793)
+
+
+def test_probdef_depth_is_in_problem_units_not_metres(built):
+    """The bug of 2026-08-11, third solve.
+
+    mi_probdef takes depth in the PROBLEM'S length units. This passed metres
+    while problem_units was "millimeters", so the model was 0.077 mm deep, not
+    77.08 mm. Flux linkage is exactly linear in depth in 2-D, so every lambda
+    came back 1000x small -- lambda_d = 2.96e-5 Wb against an AEDT anchor of
+    0.01281 Wb. The previous version of this test asserted the metres value
+    reached FEMM, which pinned the defect in place.
+    """
+    from eesm.femm import config as cfg_mod
+    handle, _report = built
+    assert DEFAULT_CONFIG.api.problem_units == "millimeters"
+    assert handle.problem["depth"] == pytest.approx(77.0793)
+    assert handle.problem["depth"] != pytest.approx(
+        DEFAULT_CONFIG.machine.model_depth_m)
+    # And the conversion must track the units, not hard-code a factor.
+    assert cfg_mod.model_depth_in_problem_units(DEFAULT_CONFIG) == \
+        pytest.approx(DEFAULT_CONFIG.machine.model_depth_m * 1000.0)
 
 
 def test_four_circuits_are_created_series_connected(built):
@@ -187,26 +208,49 @@ def test_four_circuits_are_created_series_connected(built):
         assert entry["current"] == 0.0
 
 
-def test_antiperiodic_condition_lands_on_two_distinct_edges(built):
-    """The whole point of the sector model. Applying it twice to one edge
-    would be a silent modelling failure, so distinctness is asserted."""
+def test_every_radius_band_of_both_edges_is_antiperiodic(built):
+    """The bug of 2026-08-11, second solve.
+
+    The drawn section lands arcs on each radial edge at the shaft, hub and
+    bore radii, splitting it into four segments. FEMM applies an antiperiodic
+    condition to exactly one segment and its partner (manual, Periodic
+    Boundary Conditions: "A different periodic condition must be defined for
+    each section of the boundary"). Selecting the edge midpoint covered ONE
+    band; the other three defaulted to homogeneous Neumann and walled off the
+    flux return path. lambda_d came back 432x under the AEDT anchor.
+
+    Every band must carry its own property, on BOTH edges, at distinct points.
+    """
+    from eesm.femm import geometry, section
     handle, report = built
-    antiperiodic = [seg for seg in handle.segments
-                    if seg["boundary"] == BOUNDARY_ANTIPERIODIC_NAME]
-    assert len(antiperiodic) == 2
-    positions = [seg["position"] for seg in antiperiodic]
-    assert all(pos is not None for pos in positions)
-    assert positions[0] != positions[1]
-    assert math.dist(positions[0], positions[1]) > 1.0
-    assert len(report.antiperiodic_edges) == 2
-    assert len(set(report.antiperiodic_edges)) == 2
+    bands = section.sector_edge_bands(DEFAULT_CONFIG)
+    assert len(bands) == 4
+
+    for index in range(len(bands)):
+        name = geometry.antiperiodic_band_name(index)
+        segs = [seg for seg in handle.segments if seg["boundary"] == name]
+        assert len(segs) == 2, "band %d covers %d segments, need exactly 2" % (
+            index, len(segs))
+        positions = [seg["position"] for seg in segs]
+        assert all(pos is not None for pos in positions)
+        assert math.dist(positions[0], positions[1]) > 1.0
+        assert name in report.antiperiodic_edges
+
+    # No band may reuse another band's property.
+    assigned = [seg["boundary"] for seg in handle.segments
+                if seg["boundary"] and seg["boundary"].startswith(
+                    BOUNDARY_ANTIPERIODIC_NAME)]
+    assert len(assigned) == 2 * len(bands)
+    assert len(set(assigned)) == len(bands)
 
 
 def test_antiperiodic_boundary_uses_the_configured_format(built):
+    from eesm.femm import geometry, section
     handle, _ = built
     by_name = {entry["name"]: entry for entry in handle.boundary_props}
-    assert by_name[BOUNDARY_ANTIPERIODIC_NAME]["format"] == \
-        DEFAULT_CONFIG.api.boundary_format_antiperiodic
+    for index in range(len(section.sector_edge_bands(DEFAULT_CONFIG))):
+        assert by_name[geometry.antiperiodic_band_name(index)]["format"] == \
+            DEFAULT_CONFIG.api.boundary_format_antiperiodic
     assert by_name[BOUNDARY_OUTER_NAME]["format"] == \
         DEFAULT_CONFIG.api.boundary_format_prescribed_a
 
@@ -277,9 +321,104 @@ def test_steel_is_assigned_to_the_steel_regions_and_flagged_placeholder(built):
 
 def test_expected_material_regions_are_present(built):
     _handle, report = built
-    for name in ("stator_yoke", "airgap", "pole_shoe", "pole_body",
-                 "interpolar_air", "shaft"):
+    for name in ("shaft", "rotor_steel", "air", "stator_steel"):
         assert name in report.material_regions
+
+
+def test_the_section_is_actually_drawn(built):
+    """The defect of 2026-08-11: labels placed into regions that never existed.
+
+    The old build emitted five concentric arcs and two radial edges, then
+    placed twenty labels as though slots, teeth, poles and winding cavities
+    were there. FEMM refused the first real solve with "Material properties
+    have not been defined for all regions". This asserts the curves exist.
+    """
+    _handle, report = built
+    for feature in ("shaft_arc", "hub_arc_low", "hub_arc_high",
+                    "pole_body_sides", "pole_shoe_inner_arcs",
+                    "pole_shoe_end_faces", "pole_shoe_arc",
+                    "field_coil_cavities", "bore_arc_segments",
+                    "stator_slots", "outer_arc"):
+        assert feature in report.section_features
+
+
+def test_outer_dirichlet_lands_on_the_arc_not_a_slot_wall(built):
+    """The bug of 2026-08-12.
+
+    The outer boundary is an ARC. mi_selectsegment only ever selects LINES
+    (manual: "Select the line segment closest to (x,y)"), and it was being
+    called at the arc's CHORD midpoint (45, 45) -- r = 63.64 mm at 45 deg,
+    not on the arc at all. The nearest line is a wall of stator slot 2,
+    5.39 mm away, so a prescribed A = 0 boundary was pinned onto one slot wall
+    beside phase C while the outer arc got nothing.
+
+    That broke mirror symmetry about the pole axis and was invisible both to a
+    geometry mirror check (a BC is not a drawn primitive) and to mesh
+    refinement (lambda_C held to 4 digits over a 20x element sweep).
+    """
+    from eesm.femm import geometry
+    handle, _report = built
+    cfg = DEFAULT_CONFIG
+    outer = (cfg.geometry.stator_outer_diameter_mm / 2.0
+             * cfg.geometry.outer_boundary_scale)
+
+    # The Dirichlet must be an ARC property, and no line may carry it.
+    arc_bcs = [a for a in handle.arc_segments
+               if a["boundary"] == BOUNDARY_OUTER_NAME]
+    assert len(arc_bcs) == 1
+    line_bcs = [s for s in handle.segments
+                if s["boundary"] == BOUNDARY_OUTER_NAME]
+    assert line_bcs == [], "outer Dirichlet leaked onto a line segment"
+
+    # And the selection point must lie ON the arc, not on its chord.
+    x, y = arc_bcs[0]["position"]
+    assert math.hypot(x, y) == pytest.approx(outer)
+
+
+def test_pole_shoe_has_constant_radial_thickness(built):
+    """The shoe was first a circular segment of the rotor OD -- 5 mm thick on
+    the pole axis, tapering to nothing at the tips. Iron that thin carries no
+    flux, so only the middle of the pole face was active and lambda_d came out
+    0.59x the AEDT anchor at equal ampere-turns with the iron unsaturated."""
+    from eesm.femm import section
+    cfg = DEFAULT_CONFIG
+    r_od = cfg.geometry.rotor_outer_diameter_mm / 2.0
+    r_in = section.pole_shoe_inner_radius_mm(cfg)
+    assert r_od - r_in == pytest.approx(cfg.geometry.pole_shoe_height_mm)
+    # Thickness is the same at the tips as on the axis, which is what
+    # "constant radial thickness" means and what the segment shape violated.
+    half = section.shoe_half_angle_deg(cfg)
+    assert half == pytest.approx(math.degrees(math.asin(
+        (cfg.geometry.pole_shoe_width_mm / 2.0) / r_od)))
+    # The field bundle must stay clear of that inner arc.
+    _, r_out, _, t_out = section.field_coil_extent_mm(cfg)
+    assert math.hypot(r_out, t_out) < r_in
+
+
+def test_every_block_label_is_uniquely_placed(built):
+    """No two labels may share a point -- the cheapest offline proxy for
+    'no two labels share a region'. True enclosure can only be proven by a
+    solve, which the mock cannot fake; see test_femm_smoke_windows.py."""
+    handle, _report = built
+    points = [(round(block["position"][0], 9), round(block["position"][1], 9))
+              for block in handle.blocks]
+    assert len(points) == len(set(points))
+    # 4 non-winding regions + 12 coil sheets + 2 field bundles
+    assert len(points) == 18
+
+
+def test_slot_mouths_leave_the_bore_arc_open(built):
+    """Slot openings must not be sealed by a continuous bore arc: the mouth
+    air, wedge air, interpolar air and airgap are one region on purpose."""
+    from eesm.femm import config as cfg_mod, section
+    handle, _report = built
+    bore = DEFAULT_CONFIG.geometry.stator_inner_diameter_mm / 2.0
+    bore_arcs = [call for call in handle.calls_named("mi_drawarc")
+                 if abs(math.hypot(call.args[0], call.args[1]) - bore) < 1e-6]
+    # One arc before the first mouth, one between each adjacent pair, one after
+    # the last: slots + 1 segments, never a single unbroken circle.
+    assert len(bore_arcs) == cfg_mod.slots_in_sector(DEFAULT_CONFIG) + 1
+    assert section.slot_opening_half_angle_deg(DEFAULT_CONFIG) > 0.0
 
 
 def test_build_never_imports_femm():

@@ -100,6 +100,7 @@ class MockFemm:
         self.currents: Dict[str, float] = {}
         self.blocks: List[Dict[str, Any]] = []
         self.segments: List[Dict[str, Any]] = []
+        self.arc_segments: List[Dict[str, Any]] = []
         self.boundary_props: List[Dict[str, Any]] = []
         self.circuits: List[Dict[str, Any]] = []
         self.materials: List[str] = []
@@ -109,6 +110,7 @@ class MockFemm:
         self.rotor_angle_deg: float = 0.0
         self._selected_label: Optional[Tuple[float, float]] = None
         self._selected_segment: Optional[Tuple[float, float]] = None
+        self._selected_arc: Optional[Tuple[float, float]] = None
         self._selected_groups: List[int] = []
         self._solution: Optional[Dict[str, float]] = None
 
@@ -200,6 +202,16 @@ class MockFemm:
         self._record("mi_selectsegment", x, y)
         self._selected_segment = (x, y)
 
+    def mi_selectarcsegment(self, x: float, y: float) -> None:
+        """ARCS need this, not mi_selectsegment, which only takes LINES.
+
+        Added 2026-08-12 with the outer-boundary fix: the Dirichlet condition
+        had been going through mi_selectsegment and landing on a stator slot
+        wall instead of the outer arc.
+        """
+        self._record("mi_selectarcsegment", x, y)
+        self._selected_arc = (x, y)
+
     def mi_selectgroup(self, group: int) -> None:
         self._record("mi_selectgroup", group)
         self._selected_groups.append(group)
@@ -208,6 +220,7 @@ class MockFemm:
         self._record("mi_clearselected")
         self._selected_label = None
         self._selected_segment = None
+        self._selected_arc = None
         self._selected_groups = []
 
     # -- property assignment ----------------------------------------------
@@ -233,6 +246,17 @@ class MockFemm:
             "boundary": boundary,
             "group": group,
             "position": self._selected_segment,
+        })
+
+    def mi_setarcsegmentprop(self, maxsegdeg: float, boundary: str,
+                             hide: int, group: int) -> None:
+        """Note the DIFFERENT argument order from mi_setsegmentprop."""
+        self._record("mi_setarcsegmentprop", maxsegdeg, boundary, hide, group)
+        self.arc_segments.append({
+            "boundary": boundary,
+            "group": group,
+            "maxsegdeg": maxsegdeg,
+            "position": self._selected_arc,
         })
 
     def mi_setcurrent(self, circuit: str, current: float) -> None:
