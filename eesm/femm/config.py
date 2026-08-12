@@ -69,8 +69,24 @@ class MachineConfig:
     field_turns_per_pole: int = 80
     field_parallel_branches: int = 1
 
-    #: 2-D model depth in metres.
-    model_depth_m: float = 0.0770793
+    #: 2-D model depth in metres. THE CONTRACT VALUE, 120 mm.
+    #:
+    #: Changed 2026-08-12 from 0.0770793. That figure is RMxprt's emitted
+    #: ModelDepth, and MAXWELL_EESM_QUALIFICATION.md lists it as a DEFECT --
+    #: "Maxwell ModelDepth='77.0793mm', not the frozen 120 mm" -- corrected in
+    #: the r4 rebuild. The frozen geometry spec gives an active stack length of
+    #: 120 mm, and r9_03 carries 120 mm.
+    #:
+    #: It was held at 0.0770793 while the AEDT pilot anchors were the reference,
+    #: so the comparison stayed like for like. Those anchors come from
+    #: eesm_pilot_source_01, which carries the 77.0793 mm defect AND
+    #: ConductorsPerPole=40 (20 field turns/pole, against the contract's 80), so
+    #: they are not a validation target. Absolute checks against the frozen spec
+    #: are, and those need the contract depth.
+    #:
+    #: Flux linkage and torque are exactly linear in depth, so every extensive
+    #: quantity scales by 120 / 77.0793 = 1.55684 relative to earlier runs.
+    model_depth_m: float = 0.120
 
 
 @dataclass(frozen=True)
@@ -405,8 +421,10 @@ PROVENANCE: Dict[str, Provenance] = {
     "machine.field_turns_per_pole": Provenance(_CONTRACT),
     "machine.field_parallel_branches": Provenance(_CONTRACT),
     "machine.model_depth_m": Provenance(
-        _V2,
-        note="RMxprt's emitted MODEL_DEPTH_M, NOT the 120 mm physical stack.",
+        _CONTRACT,
+        note="120 mm active stack, frozen geometry spec section 3. RMxprt's "
+             "emitted 77.0793 mm is a defect per MAXWELL_EESM_QUALIFICATION.md "
+             "and was corrected in r4; r9_03 carries 120 mm.",
     ),
     # -- geometry -----------------------------------------------------------
     "geometry.stator_outer_diameter_mm": Provenance(_RMXPRT),

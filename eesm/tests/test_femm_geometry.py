@@ -93,7 +93,7 @@ def test_winding_contract_numbers():
     assert machine.series_turns_per_phase == 36
     assert machine.field_turns_per_pole == 80
     assert machine.field_parallel_branches == 1
-    assert machine.model_depth_m == 0.0770793
+    assert machine.model_depth_m == 0.120
 
 
 def test_sector_derivations():
@@ -169,12 +169,20 @@ def test_sector_edges_are_two_distinct_edges():
 # ---------------------------------------------------------------------------
 
 
-def test_problem_definition_uses_the_rmxprt_depth(built):
+def test_problem_definition_uses_the_contract_depth(built):
+    """120 mm active stack, per the frozen geometry spec.
+
+    RMxprt's emitted 77.0793 mm is listed as a defect in
+    MAXWELL_EESM_QUALIFICATION.md and was corrected in the r4 rebuild. The
+    AEDT pilot anchors still carry it, which is one reason they are not a
+    validation target.
+    """
     handle, report = built
     assert handle.problem is not None
     assert handle.problem["frequency"] == 0.0  # magnetostatic
     # The report keeps metres, the canonical form used everywhere else.
-    assert report.model_depth_m == pytest.approx(0.0770793)
+    assert report.model_depth_m == pytest.approx(0.120)
+    assert report.model_depth_m != pytest.approx(0.0770793)
 
 
 def test_probdef_depth_is_in_problem_units_not_metres(built):
@@ -190,7 +198,7 @@ def test_probdef_depth_is_in_problem_units_not_metres(built):
     from eesm.femm import config as cfg_mod
     handle, _report = built
     assert DEFAULT_CONFIG.api.problem_units == "millimeters"
-    assert handle.problem["depth"] == pytest.approx(77.0793)
+    assert handle.problem["depth"] == pytest.approx(120.0)
     assert handle.problem["depth"] != pytest.approx(
         DEFAULT_CONFIG.machine.model_depth_m)
     # And the conversion must track the units, not hard-code a factor.

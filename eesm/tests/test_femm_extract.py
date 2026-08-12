@@ -300,7 +300,9 @@ def test_result_carries_provenance():
     assert result["solver_status"] == "converged"
     assert result["converged"] is True
     assert result["pole_pairs"] == 2
-    assert result["model_depth_m"] == pytest.approx(0.0770793)
+    # 120 mm contract stack. Was 0.0770793 (RMxprt's emitted value, a defect
+    # per MAXWELL_EESM_QUALIFICATION.md) until 2026-08-12.
+    assert result["model_depth_m"] == pytest.approx(0.120)
     assert result["flux_multiplier"] == 1.0
     assert result["torque_sector_multiplier"] == 4.0
     assert set(result["applied_branch_currents_a"]) == set(
