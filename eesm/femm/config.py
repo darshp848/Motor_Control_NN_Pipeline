@@ -302,7 +302,9 @@ class DomainConfig:
     rf_ohm: float = 8.0
     vdc_v: float = 400.0
     i_s_max_peak_a: float = 120.0
-    t_rated_nm: float = 80.0
+    #: 10 kW at 3000 rpm. Tracks the manifest, corrected 2026-08-12 from the
+    #: 80.0 synthetic_baseline placeholder.
+    t_rated_nm: float = 31.83
     omega_mech_base_rpm: float = 3000.0
     omega_mech_max_rpm: float = 9000.0
 
@@ -511,8 +513,14 @@ PROVENANCE: Dict[str, Provenance] = {
     "domain.vdc_v": Provenance(_MANIFEST, unverified=True,
                                note="parameter_status = synthetic_baseline."),
     "domain.i_s_max_peak_a": Provenance(_MANIFEST),
-    "domain.t_rated_nm": Provenance(_MANIFEST, unverified=True,
-                                    note="parameter_status = synthetic_baseline."),
+    "domain.t_rated_nm": Provenance(
+        _MANIFEST,
+        note="10 kW / 3000 rpm = 31.83 N.m, frozen geometry spec section 2. "
+             "No longer a synthetic_baseline placeholder: the 80.0 it "
+             "replaced implied 25.1 kW and contradicted the spec's rating. "
+             "FEMM measures a 57.20 N.m peak over the current domain, so "
+             "rated torque sits at 1.80x margin.",
+    ),
     "domain.omega_mech_base_rpm": Provenance(_MANIFEST, unverified=True,
                                              note="synthetic_baseline."),
     "domain.omega_mech_max_rpm": Provenance(_MANIFEST, unverified=True,

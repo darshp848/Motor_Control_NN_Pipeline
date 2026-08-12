@@ -13,7 +13,8 @@
     "i_f_max_a": 15.0,
     "omega_mech_base_rpm": 3000.0,
     "omega_mech_max_rpm": 9000.0,
-    "t_rated_nm": 80.0
+    "t_rated_nm": 31.83,
+    "t_rated_nm_note": "10 kW at 3000 rpm = 31.83 N.m, per the frozen geometry spec 2026-07-12 section 2. Was 80.0, a synthetic_baseline placeholder written 2026-07-10 before any geometry existed; 80 N.m at 3000 rpm is 25.1 kW, contradicting the spec's 10 kW rating. Corrected 2026-08-12 as a gate-1 contradiction resolution."
   },
   "domains": {
     "map": {
@@ -23,7 +24,8 @@
     },
     "scheduler": {
       "rpm_mech": [0.0, 9000.0],
-      "torque_nm": [0.0, 80.0]
+      "torque_nm": [0.0, 31.83],
+      "torque_nm_note": "Upper bound is rated torque. Was 80.0, which is not producible: FEMM measures a peak of 57.20 N.m over the whole current domain (|is| = 120 A peak, if = 15 A), so roughly 30 percent of the old commanded range was infeasible at any current. Measured 2026-08-12 on the 120 mm contract stack."
     },
     "units": {
       "id_a": "A_peak_dq",
