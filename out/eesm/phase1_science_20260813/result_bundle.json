@@ -1,0 +1,49 @@
+{
+ "artifacts": [
+  {
+   "path": "phase1_science.json",
+   "sha256": "fa9eabdd0f87629c5f6fd8e13b6e80f23c0310594858212c6c5c57f685375968"
+  }
+ ],
+ "bundle_version": "1.0.0",
+ "created_utc": "2026-08-13T17:11:38.490229+00:00",
+ "decisions": {
+  "promotion": {
+   "candidate": null,
+   "reason": "diagnostic phase; promotion stays with the frozen Phase 1 bundle",
+   "status": "not_attempted"
+  }
+ },
+ "environment": {
+  "git_dirty": false,
+  "python": "3.11.9",
+  "working_tree_may_be_dirty": false
+ },
+ "experiment_id": "eesm_phase1_science_20260813",
+ "foundry_commit": "af35f60d506ef04b01665b5ae15bbfcf139c96cf",
+ "gates": {
+  "diagnostics_are_not_gates": true,
+  "threshold_status": "frozen",
+  "thresholds": {
+   "boundary": 0.05580556892824304,
+   "data_qa": 0.0,
+   "feasibility": 0.02,
+   "field_weakening": 0.05121253119353738,
+   "interior": 0.03937430873722512,
+   "saturation": 0.05890606707606628,
+   "torque": 9.65519376554659,
+   "voltage": 73.32389575047401
+  }
+ },
+ "inputs": {
+  "anchors": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_fd_anchors_20260813\\fd_anchors.json",
+  "campaign": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_20260813\\femm_results.csv"
+ },
+ "manifest_sha256": "a989cd4f0bb0b6121e8d047ec2f13e3b3a902717bd755ad8356c30d5f4d5154f",
+ "stages": {
+  "equal_budget_fit": "complete",
+  "l_diff_diagnostic": "complete",
+  "reciprocity_diagnostic": "complete",
+  "zero_shot_field_ablation": "complete"
+ }
+}
