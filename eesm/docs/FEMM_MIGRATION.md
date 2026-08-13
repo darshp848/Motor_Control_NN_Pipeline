@@ -182,15 +182,28 @@ be driven. Run the campaign from the repository root rather than from inside
 
 ## Running it
 
-### Offline rehearsal (no FEMM, no licence, produces no evidence)
+### Invoke it as a MODULE, from the repo root
 
 ```
-.venv/bin/python eesm/run_femm_campaign.py --check
-.venv/bin/python eesm/run_femm_campaign.py \
+python -m eesm.run_femm_campaign --check
+python -m eesm.run_femm_campaign \
     --out out/eesm/femm_rehearsal \
     --points out/eesm/task9_baseline/frozen_points.csv \
     --mock
 ```
+
+**Not** `python eesm/run_femm_campaign.py`. Python front-loads a script's own
+directory onto `sys.path`, so running it by path puts `eesm/` first and
+`import femm` resolves to this repository's own `eesm/femm/` package instead of
+pyFEMM. The probe detects that and reports `femm_importable: false` with a
+`shadowed_by` field naming the culprit — correct behaviour, but it means the
+runner is unreachable by that invocation even when pyFEMM is correctly
+installed. Running as a module puts the repo root on `sys.path` instead, and
+`import femm` finds site-packages.
+
+Confirmed 2026-08-11 on a machine with FEMM 4.2 and pyfemm 0.1.3: by path,
+`femm_importable: false`; as a module, `femm_importable: true`,
+`missing_api: []`.
 
 The mock is **opt-in**. Without `--mock` the runner resolves a real handle and
 fails loudly on a machine without FEMM; it never falls back silently. A mock
@@ -227,15 +240,29 @@ columns.
 
 ## Gate status
 
+Updated 2026-08-12 after the first real solves.
+
 | Gate | State |
 |---|---|
-| Offline software and schema validation | **passed** (mock only) |
-| Real BH curve | **blocked** — placeholder in use |
-| Airgap dimension | **blocked** — 0.6 mm vs 0.3 mm unresolved |
-| d-axis electrical angle | **blocked** — needs a field-only probe |
-| FEMM API constants | **blocked** — 9 unverified, never read back |
-| Any FEMM solve | **never performed** |
-| Canonical normalization, fitting, promotion, LUT audit, Task 10 | **blocked** |
+| Offline software and schema validation | **passed** |
+| Any FEMM solve | **passed** — converging to 500k+ elements, 113x the AEDT Student cap |
+| FEMM API constants | **passed** — `missing_api: []` against pyfemm 0.1.3; the 4 silent-failure enums verified against `C:\femm42\bin\manual.pdf` |
+| d-axis electrical angle | **passed** — derived as 150.0° from the winding map, FEMM measures 149.999° |
+| Airgap dimension | **passed** — 0.6 mm. Bore 110.0 and rotor OD 108.8 read directly from `eesm_pilot_source_01.aedt`, matching the frozen spec |
+| Model depth | **passed** — 120 mm contract stack (was RMxprt's 77.0793 mm, a documented defect) |
+| Torque instrument (F1) | **passed** — mirror \|T\| asymmetry 1.31% against the 3% gate; closure k = 1.044 at peak torque, inside [0.90, 1.10] |
+| **Pole arc** | **FAILS SPEC** — drawn 48.86° (0.543 ratio) against the frozen spec's 58.5° (0.65). See below |
+| **Rotor hub / pole body split** | **FAILS SPEC** — hub outer radius 24.4 mm against the spec's 34.0 |
+| **Lamination material** | **FAILS SPEC** — `M-19 Steel` in use where §5 names `steel_1008` and forbids substitution |
+| Exterior solution region | **deviates** — Dirichlet at 90 mm against the spec's 135 mm |
+| Canonical normalization, fitting, promotion, LUT audit, Task 10 | **blocked** on the four above |
+
+The remaining blocks are **spec-conformance defects, not missing measurements**.
+`GeometryConfig` was transcribed from RMxprt scalars rather than from
+`docs/superpowers/specs/2026-07-12-canonical-academic-eesm-geometry-design.md`,
+and the RMxprt implementation drifted from that spec in at least six places —
+model depth and field turns were the first two found, the four above are the
+rest.
 
 Numerical thresholds remain `baseline_required`. Nothing in this migration
 changes that.
