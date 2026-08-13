@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from surrogates.base import FluxSurrogate, load_verified_artifact
+from surrogates.energy_gradient import EnergyGradientSurrogate
 from surrogates.kernel import RBFOrGPSurrogate
 from surrogates.mlp import CompactMLPSurrogate
 from surrogates.polynomial import PhysicsPolynomialSurrogate
+from surrogates.pwa import PWASurrogate
 from surrogates.tree import TreeEnsembleSurrogate
 
 _SURROGATES: dict[str, type[FluxSurrogate]] = {
@@ -15,6 +17,8 @@ _SURROGATES: dict[str, type[FluxSurrogate]] = {
     "rbf_or_gp": RBFOrGPSurrogate,
     "tree_ensemble": TreeEnsembleSurrogate,
     "compact_mlp": CompactMLPSurrogate,
+    "energy_gradient_net": EnergyGradientSurrogate,
+    "pwa": PWASurrogate,
 }
 
 

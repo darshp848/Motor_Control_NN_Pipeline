@@ -247,7 +247,9 @@ def main(argv: list[str] | None = None) -> int:
          "sha256": _sha256_file(str(close_path))},
         {"path": os.path.relpath(args.campaign, REPO_ROOT).replace("\\", "/"),
          "sha256": _sha256_file(args.campaign)},
-        {"path": "out/eesm/equal_budget_femm_20260813/equal_budget_summary.json",
+        {"path": os.path.relpath(
+            os.path.join(args.study, "equal_budget_summary.json"), REPO_ROOT
+         ).replace("\\", "/"),
          "sha256": _sha256_file(os.path.join(args.study, "equal_budget_summary.json"))},
     ]
     bundle = {

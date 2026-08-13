@@ -1,0 +1,219 @@
+{
+  "schema_version": "eesm-experiment-2.0.0",
+  "experiment_id": "eesm_phase1_structured_20260813",
+  "machine": {
+    "type": "EESM",
+    "parameter_status": "synthetic_baseline",
+    "pole_pairs": 2,
+    "rs_ohm": 0.05,
+    "rf_ohm": 8.0,
+    "vdc_v": 400.0,
+    "i_s_max_peak_a": 120.0,
+    "i_f_min_a": 0.0,
+    "i_f_max_a": 15.0,
+    "omega_mech_base_rpm": 3000.0,
+    "omega_mech_max_rpm": 9000.0,
+    "t_rated_nm": 31.83,
+    "t_rated_nm_note": "10 kW at 3000 rpm = 31.83 N.m, per the frozen geometry spec 2026-07-12 section 2. Was 80.0, a synthetic_baseline placeholder written 2026-07-10 before any geometry existed; 80 N.m at 3000 rpm is 25.1 kW, contradicting the spec's 10 kW rating. Corrected 2026-08-12 as a gate-1 contradiction resolution."
+  },
+  "domains": {
+    "map": {
+      "id_a": [
+        -120.0,
+        0.0
+      ],
+      "iq_a": [
+        0.0,
+        120.0
+      ],
+      "if_a": [
+        0.0,
+        15.0
+      ]
+    },
+    "scheduler": {
+      "rpm_mech": [
+        0.0,
+        9000.0
+      ],
+      "torque_nm": [
+        0.0,
+        31.83
+      ],
+      "torque_nm_note": "Upper bound is rated torque. Was 80.0, which is not producible: FEMM measures a peak of 57.20 N.m over the whole current domain (|is| = 120 A peak, if = 15 A), so roughly 30 percent of the old commanded range was infeasible at any current. Measured 2026-08-12 on the 120 mm contract stack."
+    },
+    "units": {
+      "id_a": "A_peak_dq",
+      "iq_a": "A_peak_dq",
+      "if_a": "A_dc",
+      "lambda_d_wb": "Wb",
+      "lambda_q_wb": "Wb",
+      "torque_nm": "N.m",
+      "voltage_v": "V_phase_peak",
+      "rpm_mech": "rpm"
+    }
+  },
+  "roles": [
+    "train",
+    "selection",
+    "scheduler_audit",
+    "reference"
+  ],
+  "role_policy": {
+    "required": [
+      "train",
+      "selection",
+      "scheduler_audit"
+    ],
+    "optional": [
+      "reference"
+    ],
+    "scheduler_audit": {
+      "available_only_after": "promotion",
+      "prohibited_influences": [
+        "sampling",
+        "fitting",
+        "hyperparameters",
+        "budget_choice",
+        "promotion"
+      ],
+      "allowed_influence": "release_acceptance"
+    }
+  },
+  "regions": [
+    "interior",
+    "boundary",
+    "saturation",
+    "field_weakening",
+    "unsupported"
+  ],
+  "sampling": {
+    "baseline_strategies": [
+      "tensor_grid",
+      "random",
+      "latin_hypercube"
+    ],
+    "sequential_enabled": false
+  },
+  "budgets": [
+    64,
+    128,
+    256
+  ],
+  "surrogates": [
+    "physics_polynomial",
+    "rbf_or_gp",
+    "tree_ensemble",
+    "compact_mlp",
+    "energy_gradient_net",
+    "pwa"
+  ],
+  "metrics": {
+    "prediction_inputs": [
+      "id_a",
+      "iq_a",
+      "if_a"
+    ],
+    "prediction_outputs": [
+      "lambda_d_wb",
+      "lambda_q_wb"
+    ],
+    "optimization_objective": "1.5 * rs_ohm * (id_a^2 + iq_a^2) + rf_ohm * if_a^2",
+    "flux": [
+      "mae",
+      "rmse",
+      "max_abs"
+    ],
+    "torque": [
+      "mae",
+      "rmse",
+      "max_abs"
+    ],
+    "voltage_magnitude": [
+      "mae",
+      "rmse",
+      "max_abs"
+    ],
+    "feasibility": [
+      "confusion_matrix"
+    ],
+    "scheduler": [
+      "copper_loss_regret_w"
+    ],
+    "report_by_region": true,
+    "unsupported_policy": "report_separately"
+  },
+  "gates": {
+    "status": "frozen",
+    "promotion_blocked_until_frozen": false,
+    "frozen_at": "2026-08-13",
+    "method": "eesm/docs/THRESHOLD_FREEZE_METHOD.md",
+    "frozen_from": "out/eesm/threshold_proposal_20260813.json",
+    "required": [
+      "data_qa",
+      "interior",
+      "boundary",
+      "saturation",
+      "field_weakening",
+      "torque",
+      "voltage",
+      "feasibility"
+    ],
+    "thresholds": {
+      "data_qa": 0.0,
+      "interior": 0.03937430873722512,
+      "boundary": 0.05580556892824304,
+      "saturation": 0.05890606707606628,
+      "field_weakening": 0.05121253119353738,
+      "torque": 9.65519376554659,
+      "voltage": 73.32389575047401,
+      "feasibility": 0.02
+    },
+    "promotion_policy": {
+      "unfrozen_threshold_action": "reject",
+      "required_gate_policy": "all_must_pass"
+    }
+  },
+  "uncertainty": {
+    "status": "report_only",
+    "is_gate": false,
+    "rationale": "Raw predictive variance is not a safety signal until its calibration is demonstrated. This leg MEASURES calibration on independent frozen off-grid FEM truth; it does not gate promotion. Promotion may consume calibrated uncertainty as a gate or acquisition aid only after coverage, reliability, and error-vs-uncertainty discrimination are shown adequate for this machine.",
+    "evaluated_on_role": "selection",
+    "provider_families": [
+      "rbf_or_gp"
+    ],
+    "central_levels": [
+      0.5,
+      0.6827,
+      0.9,
+      0.9545,
+      0.99
+    ],
+    "metrics": [
+      "coverage",
+      "reliability_curve",
+      "calibration_error",
+      "sharpness_mean_sigma",
+      "error_sigma_spearman",
+      "standardized_residual_moments"
+    ],
+    "report_by": [
+      "component",
+      "region"
+    ]
+  },
+  "seeds": {
+    "split": 20260710,
+    "model": 1701,
+    "scheduler_audit": 2909
+  },
+  "paths": {
+    "point_schema": "eesm/schemas/eesm_point.schema.json",
+    "result_bundle_schema": "eesm/schemas/result_bundle.schema.json",
+    "runs": "out/eesm/runs",
+    "result_bundles": "out/eesm/result_bundles"
+  },
+  "phase": "1",
+  "parent_experiment_id": "eesm_foundry_first_20260710",
+  "parent_commit": "8321609a38bc8941f0291dd1e724bccd5a44c32f"
+}
