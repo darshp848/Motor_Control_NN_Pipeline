@@ -68,29 +68,29 @@ def offset_polar_to_xy(radial_mm: float, tangential_mm: float,
             radial_mm * sin_a + tangential_mm * cos_a)
 
 
-def shoe_half_chord_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    """Half-chord of the pole shoe: pole_shoe_width_mm / 2, as configured."""
-    return cfg.geometry.pole_shoe_width_mm / 2.0
-
-
 def shoe_half_angle_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    """Angular half-span of the pole shoe at the rotor OD.
+    """Angular half-span of the pole shoe, FROM THE SPEC'S POLE-ARC RATIO.
 
-    CORRECTED 2026-08-11. The shoe was first built as a CIRCULAR SEGMENT of
-    the rotor OD circle, cut at (r_od - pole_shoe_height). That gives a
-    wedge-shaped shoe: 5 mm thick on the pole axis, tapering to nothing at the
-    tips. Iron that thin carries no flux, so only the middle of the pole face
-    was active -- FEMM measured average B_r under the pole of 0.0511 T against
-    0.1313 T at the centre, a ratio of 0.39, and lambda_d came out 0.59x the
-    AEDT anchor at equal ampere-turns even though the iron was unsaturated
-    (mu_r 2400-3900) and 104% of the MMF was crossing the airgap.
+    Spec section 3: "Pole-arc ratio 0.65", "Pole-shoe angular span 58.5
+    mechanical degrees" -- and 0.65 x 90 deg pole pitch = 58.5, so the two
+    lines agree. Section 7 then protects it: "not change air gap, POLE ARC,
+    slot count, current domains, or material to meet the limit."
 
-    A salient-pole shoe has roughly CONSTANT radial thickness across its
-    width: outer surface on the rotor OD arc, inner surface a concentric arc
-    pole_shoe_height below it. The span comes from the configured width.
+    Derived from the ratio rather than from a chord width. RMxprt's
+    PoleShoeWidth = 45 mm gives 48.86 deg (ratio 0.543) and does not implement
+    the spec; the spec's 0.65 needs a 53.2 mm chord.
+
+    A distributed winding senses the FUNDAMENTAL, so the flux effect is
+    B_1 = (4/pi) B_g sin(alpha pi / 2), i.e. sin(58.5)/sin(48.86) = 1.132 --
+    not the 58.5/48.86 = 1.197 that linear-in-arc reasoning suggests.
     """
+    return cfg.geometry.pole_arc_ratio * cfg.machine.sector_span_deg / 2.0
+
+
+def shoe_half_chord_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """Half-chord implied by the spec's pole arc, at the rotor OD."""
     r_od = cfg.geometry.rotor_outer_diameter_mm / 2.0
-    return math.degrees(math.asin(min(shoe_half_chord_mm(cfg) / r_od, 1.0)))
+    return r_od * math.sin(math.radians(shoe_half_angle_deg(cfg)))
 
 
 def pole_body_shoe_junction_half_angle_deg(cfg: FemmConfig = DEFAULT_CONFIG
@@ -120,13 +120,13 @@ def pole_body_foot_half_angle_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
 
 
 def pole_body_inner_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    r_od = cfg.geometry.rotor_outer_diameter_mm / 2.0
-    return r_od - cfg.geometry.pole_shoe_height_mm - cfg.geometry.pole_body_height_mm
+    """Spec 3: "Rotor hub outer radius 34.0" -- the pole body starts here."""
+    return cfg.geometry.rotor_hub_outer_radius_mm
 
 
 def pole_shoe_inner_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    return (cfg.geometry.rotor_outer_diameter_mm / 2.0
-            - cfg.geometry.pole_shoe_height_mm)
+    """Spec 3: pole body spans 34.0 to 49.0, shoe spans 49.0 to 54.4."""
+    return cfg.geometry.pole_body_outer_radius_mm
 
 
 def slot_opening_half_angle_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
@@ -136,16 +136,25 @@ def slot_opening_half_angle_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
 
 def slot_profile_mm(cfg: FemmConfig = DEFAULT_CONFIG
                     ) -> List[Tuple[float, float]]:
-    """(radial, half_width) breakpoints of the slot, bore outward."""
+    """(radial, half_width) breakpoints of the slot, bore outward.
+
+    Spec 3.1, a PARALLEL-SIDED OPEN SLOT: a 2.0 mm opening for the first
+    1.5 mm of depth, then a step out to a constant 7.0 mm body running a
+    further 18.5 mm, 20.0 mm total. Note the repeated radius -- the step at
+    the tooth tip is a real horizontal edge, not a taper.
+
+    RMxprt's slot is a different shape: tapered 3.0 -> 5.0 -> 7.0 over
+    0.8 + 1.2 + 15.0 = 17.0 mm. It is shallower, wider-mouthed, and not
+    parallel-sided.
+    """
     geo = cfg.geometry
     bore = geo.stator_inner_diameter_mm / 2.0
-    r_open = bore + geo.slot_opening_height_mm
-    r_wedge = r_open + geo.slot_wedge_height_mm
-    r_bottom = r_wedge + geo.slot_body_height_mm
+    r_tip = bore + geo.slot_tooth_tip_depth_mm
+    r_bottom = r_tip + geo.slot_body_depth_mm
     return [
         (bore, geo.slot_opening_width_mm / 2.0),
-        (r_open, geo.slot_opening_width_mm / 2.0),
-        (r_wedge, geo.slot_wedge_width_mm / 2.0),
+        (r_tip, geo.slot_opening_width_mm / 2.0),
+        (r_tip, geo.slot_body_width_mm / 2.0),
         (r_bottom, geo.slot_body_width_mm / 2.0),
     ]
 
@@ -153,10 +162,8 @@ def slot_profile_mm(cfg: FemmConfig = DEFAULT_CONFIG
 def slot_split_radial_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> Tuple[float, float]:
     """Mid-body radial position separating the two coil sheets, and its half-width."""
     profile = slot_profile_mm(cfg)
-    (r_wedge, hw_wedge), (r_bottom, hw_bottom) = profile[2], profile[3]
-    r_mid = (r_wedge + r_bottom) / 2.0
-    hw_mid = (hw_wedge + hw_bottom) / 2.0
-    return r_mid, hw_mid
+    (r_top, hw_top), (r_bottom, hw_bottom) = profile[2], profile[3]
+    return (r_top + r_bottom) / 2.0, (hw_top + hw_bottom) / 2.0
 
 
 def sector_edge_split_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> List[float]:
@@ -179,6 +186,11 @@ def sector_edge_split_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> List[float]:
         geo.shaft_diameter_mm / 2.0,
         pole_body_inner_radius_mm(cfg),
         geo.stator_inner_diameter_mm / 2.0,
+        # The stator OD. Only an edge once the exterior region exists: with
+        # outer_boundary_scale = 1.0 the outer arc WAS the stator OD, so this
+        # was the same radius as the next entry. Spec 3 puts the solution
+        # region at 135 mm, which separates them and adds a fifth band.
+        geo.stator_outer_diameter_mm / 2.0,
         geo.stator_outer_diameter_mm / 2.0 * geo.outer_boundary_scale,
     ]
 
@@ -194,14 +206,13 @@ def field_coil_extent_mm(cfg: FemmConfig = DEFAULT_CONFIG
                          ) -> Tuple[float, float, float, float]:
     """(radial_inner, radial_outer, tangential_inner, tangential_outer)."""
     geo = cfg.geometry
-    inner_t = geo.pole_body_width_mm / 2.0 + geo.field_winding_clearance_mm
-    outer_t = inner_t + geo.field_coil_width_mm
-    # The shoe's inner surface is now a concentric arc, so the bundle's outer
-    # top corner is the binding constraint: keep it a clearance below.
-    r_inner = pole_shoe_inner_radius_mm(cfg)
-    radial_out = (math.sqrt(max(r_inner * r_inner - outer_t * outer_t, 0.0))
-                  - geo.field_winding_clearance_mm)
-    return (pole_body_inner_radius_mm(cfg), radial_out, inner_t, outer_t)
+    # Spec 3.2 gives the window outright: "coil window radial span: radius
+    # 36.0 to 47.0 mm; coil window tangential width per side of pole body:
+    # 7.0 mm". The previous version invented an 8.0 mm width and derived the
+    # radial extent from a clearance guess.
+    inner_t = geo.pole_body_width_mm / 2.0
+    return (geo.field_coil_inner_radius_mm, geo.field_coil_outer_radius_mm,
+            inner_t, inner_t + geo.field_coil_width_mm)
 
 
 # ---------------------------------------------------------------------------
@@ -234,6 +245,13 @@ def section_region_labels(cfg: FemmConfig = DEFAULT_CONFIG
         ("stator_steel", (slot_bottom + outer) / 2.0, axis,
          cfg.materials.steel_material, cfg.api.group_stator_steel),
     ]
+    # Spec 3 puts the solution region at 135 mm, past the 90 mm stator OD, so
+    # there is an exterior air annulus that needs its own label. With
+    # outer_boundary_scale = 1.0 there is no such region and no label.
+    exterior = outer * cfg.geometry.outer_boundary_scale
+    if exterior - outer > 1e-9:
+        entries.append(("exterior_air", (outer + exterior) / 2.0, axis,
+                        cfg.materials.air_material, cfg.api.group_airgap))
     labels: List[Dict[str, Any]] = []
     for name, radius, angle, material, group in entries:
         x, y = polar_to_xy(radius, angle)
@@ -311,20 +329,27 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     _arc(handle, rotor_od, axis - shoe_half, axis + shoe_half, max_seg)
     drawn.append("pole_shoe_arc")
 
-    # -- field coil rectangles ---------------------------------------------
+    # -- field coil windows -------------------------------------------------
+    # Spec 3.2 says "coil window RADIAL SPAN: RADIUS 36.0 to 47.0 mm", so the
+    # window is bounded by ARCS at those radii, not by straight lines at
+    # constant along-axis distance. Read the other way it is a rectangle whose
+    # outer corner sits at radius 49.98 and punches through the pole shoe's
+    # inner surface at 49.0.
+    #
+    # The inner tangential boundary is the pole body side, already drawn.
     r_in, r_out, t_in, t_out = field_coil_extent_mm(cfg)
     for sign in (-1.0, +1.0):
-        corners = [
-            (r_in, sign * t_in), (r_in, sign * t_out),     # bottom
-            (r_in, sign * t_out), (r_out, sign * t_out),   # outer side
-            (r_in, sign * t_in), (r_out, sign * t_in),     # inner side
-            (r_out, sign * t_in), (r_out, sign * t_out),   # top
-        ]
-        for index in range(0, len(corners), 2):
-            (ra, ta), (rb, tb) = corners[index], corners[index + 1]
-            x0, y0 = offset_polar_to_xy(ra, ta, axis)
-            x1, y1 = offset_polar_to_xy(rb, tb, axis)
-            handle.mi_drawline(x0, y0, x1, y1)
+        for radius in (r_in, r_out):
+            a_in = math.degrees(math.asin(min(t_in / radius, 1.0)))
+            a_out = math.degrees(math.asin(min(t_out / radius, 1.0)))
+            lo, hi = sorted((axis + sign * a_in, axis + sign * a_out))
+            _arc(handle, radius, lo, hi, max_seg)
+        # Outer tangential side, spanning the two arcs.
+        x0, y0 = offset_polar_to_xy(
+            math.sqrt(max(r_in * r_in - t_out * t_out, 0.0)), sign * t_out, axis)
+        x1, y1 = offset_polar_to_xy(
+            math.sqrt(max(r_out * r_out - t_out * t_out, 0.0)), sign * t_out, axis)
+        handle.mi_drawline(x0, y0, x1, y1)
     drawn.append("field_coil_cavities")
 
     # -- stator bore, in segments between slot mouths -----------------------
@@ -352,9 +377,12 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
                 x0, y0 = offset_polar_to_xy(ra, sign * ha, angle)
                 x1, y1 = offset_polar_to_xy(rb, sign * hb, angle)
                 handle.mi_drawline(x0, y0, x1, y1)
-        # Wedge top: separates wedge/mouth air from the lower coil sheet.
-        wx0, wy0 = offset_polar_to_xy(profile[2][0], -profile[2][1], angle)
-        wx1, wy1 = offset_polar_to_xy(profile[2][0], +profile[2][1], angle)
+        # Throat: closes the opening off from the coil body. It spans ONLY the
+        # opening width -- the tooth-tip steps either side of it are already
+        # drawn by the profile loop above, and a full-width line here would lie
+        # on top of them.
+        wx0, wy0 = offset_polar_to_xy(profile[1][0], -profile[1][1], angle)
+        wx1, wy1 = offset_polar_to_xy(profile[1][0], +profile[1][1], angle)
         handle.mi_drawline(wx0, wy0, wx1, wy1)
         # Mid-body split: lower sheet from upper sheet.
         sx0, sy0 = offset_polar_to_xy(split_r, -split_hw, angle)
@@ -366,7 +394,16 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
         handle.mi_drawline(bx0, by0, bx1, by1)
     drawn.append("stator_slots")
 
-    # -- outer boundary -----------------------------------------------------
+    # -- stator OD, then the exterior boundary ------------------------------
+    # The stator OD needs its own arc now that the solution region extends
+    # past it (spec 3: exterior radius 135.0). Without it the stator iron and
+    # the exterior air are ONE region and whichever label lands there decides
+    # the material for both.
+    stator_od = geo.stator_outer_diameter_mm / 2.0
+    if abs(outer - stator_od) > 1e-9:
+        _arc(handle, stator_od, 0.0, span, max_seg)
+        drawn.append("stator_od_arc")
+
     _arc(handle, outer, 0.0, span, max_seg)
     drawn.append("outer_arc")
 

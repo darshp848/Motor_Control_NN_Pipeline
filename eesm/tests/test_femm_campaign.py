@@ -330,9 +330,13 @@ def test_status_carries_the_unverified_config_findings(paths):
     """A run's own evidence must state which constants were never confirmed."""
     status, _ = run(paths)
     unverified = status["config_provenance"]["unverified"]
-    for key in ("geometry.airgap_mm", "materials.steel_material",
-                "api.boundary_format_antiperiodic", "api.block_integral_torque"):
+    # A run's own evidence must still name what was never confirmed. The
+    # airgap, the API enums and the BH curve were all settled 2026-08-12 and
+    # are deliberately no longer in this list; the synthetic electrical
+    # parameters and the FEMM library names remain.
+    for key in ("materials.air_material", "domain.rs_ohm"):
         assert key in unverified
+    assert "materials.steel_material" not in unverified
 
 
 def test_provenance_id_is_tied_to_the_exact_points_file():

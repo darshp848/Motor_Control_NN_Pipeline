@@ -210,6 +210,7 @@ FEMM_CALL_SURFACE: List[str] = [
     "mi_probdef",
     "mi_getmaterial",
     "mi_addmaterial",
+    "mi_addbhpoint",
     "mi_addcircprop",
     "mi_addboundprop",
     "mi_drawline",

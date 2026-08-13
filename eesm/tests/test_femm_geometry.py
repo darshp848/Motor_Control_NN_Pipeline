@@ -66,12 +66,28 @@ def test_every_config_field_has_provenance():
 def test_known_unknowns_are_flagged_unverified():
     """The values we could not confirm must be flagged, not quietly used."""
     unverified = cfg_mod.unverified_fields()
-    for key in ("geometry.airgap_mm",
-                "materials.steel_material",
-                "extraction.d_axis_electrical_deg",
-                "api.boundary_format_antiperiodic",
-                "api.block_integral_torque"):
+    for key in ("materials.air_material",      # library name, never read back
+                "domain.rs_ohm",               # parameter_status synthetic
+                "domain.rf_ohm"):
         assert key in unverified, "%s must be flagged unverified" % key
+
+    # Settled since, and no longer flagged. Each is asserted here so that
+    # re-flagging one is a deliberate act rather than a silent regression.
+    for key, why in (
+        ("geometry.airgap_mm",
+         "0.6 mm, read from eesm_pilot_source_01.aedt and matching spec 3"),
+        ("geometry.pole_arc_ratio",
+         "0.65, frozen by spec 3 and protected by spec 7"),
+        ("extraction.d_axis_electrical_deg",
+         "150 deg, DERIVED from the winding map, FEMM measures 149.999"),
+        ("api.boundary_format_antiperiodic",
+         "BdryFormat 5, verified against the shipped FEMM 4.2 manual"),
+        ("api.block_integral_torque",
+         "type 22, verified against the shipped FEMM 4.2 manual"),
+        ("materials.steel_material",
+         "steel_1008 BH table extracted verbatim from the pinned revision"),
+    ):
+        assert key not in unverified, "%s is settled: %s" % (key, why)
 
 
 def test_d_axis_angle_is_not_inherited_from_the_aedt_model():
@@ -231,8 +247,11 @@ def test_every_radius_band_of_both_edges_is_antiperiodic(built):
     """
     from eesm.femm import geometry, section
     handle, report = built
+    # shaft / hub / bore / stator OD / exterior. The stator OD only became an
+    # edge once spec 3's 135 mm solution region separated it from the outer
+    # boundary; before that there were four.
     bands = section.sector_edge_bands(DEFAULT_CONFIG)
-    assert len(bands) == 4
+    assert len(bands) == 5
 
     for index in range(len(bands)):
         name = geometry.antiperiodic_band_name(index)
@@ -323,8 +342,10 @@ def test_steel_is_assigned_to_the_steel_regions_and_flagged_placeholder(built):
                     if block["material"] == steel}
     assert DEFAULT_CONFIG.api.group_stator_steel in steel_groups
     assert DEFAULT_CONFIG.api.group_rotor_steel in steel_groups
-    # The BH curve is NOT the real one. This must stay visible in the report.
-    assert report.steel_is_placeholder is True
+    # No longer a placeholder: the BH table is the spec's own pinned revision,
+    # extracted from the AEDT material block. The report must say so, and this
+    # assertion flips back the moment anyone reflags the material.
+    assert report.steel_is_placeholder is False
 
 
 def test_expected_material_regions_are_present(built):
@@ -392,15 +413,20 @@ def test_pole_shoe_has_constant_radial_thickness(built):
     cfg = DEFAULT_CONFIG
     r_od = cfg.geometry.rotor_outer_diameter_mm / 2.0
     r_in = section.pole_shoe_inner_radius_mm(cfg)
-    assert r_od - r_in == pytest.approx(cfg.geometry.pole_shoe_height_mm)
-    # Thickness is the same at the tips as on the axis, which is what
-    # "constant radial thickness" means and what the segment shape violated.
-    half = section.shoe_half_angle_deg(cfg)
-    assert half == pytest.approx(math.degrees(math.asin(
-        (cfg.geometry.pole_shoe_width_mm / 2.0) / r_od)))
-    # The field bundle must stay clear of that inner arc.
+    # Spec 3: shoe spans radius 49.0 to 54.4, i.e. 5.4 mm thick everywhere.
+    assert r_in == pytest.approx(49.0)
+    assert r_od - r_in == pytest.approx(5.4)
+    # Span comes from the spec's pole-arc RATIO, not from a chord width.
+    assert section.shoe_half_angle_deg(cfg) == pytest.approx(58.5 / 2.0)
+    # The field window is bounded by ARCS (spec 3.2: "radial span: radius 36.0
+    # to 47.0"), so every point of it is at radius <= 47 and it cannot punch
+    # through the shoe. Read as a rectangle instead, its outer corner lands at
+    # radius 49.98 and does.
     _, r_out, _, t_out = section.field_coil_extent_mm(cfg)
-    assert math.hypot(r_out, t_out) < r_in
+    assert r_out < r_in
+    assert math.hypot(r_out, t_out) > r_in, (
+        "the rectangle reading really would collide -- this is why the arc "
+        "reading is the right one")
 
 
 def test_every_block_label_is_uniquely_placed(built):
@@ -411,8 +437,10 @@ def test_every_block_label_is_uniquely_placed(built):
     points = [(round(block["position"][0], 9), round(block["position"][1], 9))
               for block in handle.blocks]
     assert len(points) == len(set(points))
-    # 4 non-winding regions + 12 coil sheets + 2 field bundles
-    assert len(points) == 18
+    # 5 non-winding regions + 12 coil sheets + 2 field bundles. The fifth is
+    # exterior_air, which exists only because spec 3 puts the solution region
+    # at 135 mm past the 90 mm stator OD.
+    assert len(points) == 19
 
 
 def test_slot_mouths_leave_the_bore_arc_open(built):

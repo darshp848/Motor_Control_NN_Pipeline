@@ -104,6 +104,7 @@ class MockFemm:
         self.boundary_props: List[Dict[str, Any]] = []
         self.circuits: List[Dict[str, Any]] = []
         self.materials: List[str] = []
+        self.bh_points: Dict[str, List[Tuple[float, float]]] = {}
         self.problem: Optional[Dict[str, Any]] = None
         self.documents: List[str] = []
 
@@ -164,6 +165,12 @@ class MockFemm:
     def mi_getmaterial(self, name: str) -> None:
         self._record("mi_getmaterial", name)
         self.materials.append(name)
+
+    def mi_addbhpoint(self, name: str, b_tesla: float,
+                      h_amp_per_m: float) -> None:
+        """FEMM's argument order is (blockname, B, H) -- B first."""
+        self._record("mi_addbhpoint", name, b_tesla, h_amp_per_m)
+        self.bh_points.setdefault(name, []).append((b_tesla, h_amp_per_m))
 
     def mi_addmaterial(self, name: str, *args: Any) -> None:
         self._record("mi_addmaterial", name, *args)

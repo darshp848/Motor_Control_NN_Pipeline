@@ -91,67 +91,116 @@ class MachineConfig:
 
 @dataclass(frozen=True)
 class GeometryConfig:
-    """Sector geometry in millimetres (FEMM's native unit for this model).
+    """Sector geometry in millimetres, DERIVED FROM THE FROZEN SPEC.
 
-    Every dimension is an RMxprt scalar transcribed from
-    eesm/aedt/build_canonical_eesm.py. There is no DXF or native geometry to
-    check the reconstructed SHAPES against -- see the geometry_reconstruction
-    provenance note, which is the highest-risk assumption in this package.
+    Source of every value below:
+    docs/superpowers/specs/2026-07-12-canonical-academic-eesm-geometry-design.md
+    sections 3, 3.1 and 3.2. Section references are given per field.
+
+    Rebuilt 2026-08-12. These values were previously transcribed from RMxprt
+    scalars in eesm/aedt/build_canonical_eesm.py, and the RMxprt implementation
+    drifts from the spec it was meant to realise. Six deviations were found by
+    measurement before anyone compared the two documents:
+
+        model depth        77.0793 mm   vs spec 120 mm
+        field turns/pole   20 (Cond/Pole 40)  vs spec 80
+        pole-arc ratio     0.543        vs spec 0.65
+        rotor hub radius   24.4 mm      vs spec 34.0
+        pole body span     24.4->49.4   vs spec 34.0->49.0
+        exterior region    90 mm        vs spec 135 mm
+
+    plus the stator slot template and the field-coil window, corrected here.
+    Where RMxprt and the spec disagree, THE SPEC IS THE CONTRACT: it is the
+    design document, the RMxprt model is one (defective) implementation of it,
+    and spec section 7 forbids changing "air gap, pole arc, slot count, current
+    domains, or material" to suit the mesher.
     """
 
+    # -- spec section 3, frozen radial geometry ------------------------------
     stator_outer_diameter_mm: float = 180.0
     stator_inner_diameter_mm: float = 110.0
-
-    #: Stator slot profile (RMxprt Hs0/Hs1/Hs2, Bs0/Bs1/Bs2).
-    slot_opening_height_mm: float = 0.8      # Hs0
-    slot_wedge_height_mm: float = 1.2        # Hs1
-    slot_body_height_mm: float = 15.0        # Hs2
-    slot_opening_width_mm: float = 3.0       # Bs0
-    slot_wedge_width_mm: float = 5.0         # Bs1
-    slot_body_width_mm: float = 7.0          # Bs2
-
     rotor_outer_diameter_mm: float = 108.8
     shaft_diameter_mm: float = 40.0
 
-    pole_body_height_mm: float = 25.0
-    pole_body_width_mm: float = 20.0
-    pole_shoe_height_mm: float = 5.0
-    pole_shoe_width_mm: float = 45.0
-    field_winding_clearance_mm: float = 2.0
-
-    #: Tangential width of one field bundle, measured outward from the
-    #: clearance. UNVERIFIED and NEW (2026-08-11): nothing in the RMxprt
-    #: scalars fixes the field-winding footprint -- only its 2 mm clearance
-    #: from the pole body is given. The section has to enclose the bundle
-    #: somehow, and a bundle needs a width. It sets the field slot area and
-    #: therefore the achievable current density, not the pole MMF (which is
-    #: field_turns_per_pole * If regardless).
-    field_coil_width_mm: float = 8.0
-
-    #: Radial airgap = (stator_id - rotor_od) / 2 = (110 - 108.8) / 2.
-    #: UNVERIFIED: RMxprt DiaGap also appeared as 109.4 mm in other VBS
-    #: blocks, which would give 0.3 mm. Confirm against the real geometry
-    #: before any production run.
+    #: Spec 3: "Radial airgap 0.6". Confirmed against eesm_pilot_source_01.aedt,
+    #: whose bore and rotor OD read 110.0 and 108.8. The 0.3 mm alternative,
+    #: from a stray DiaGap=109.4 in some VBS blocks, is settled: it is not this
+    #: machine.
     airgap_mm: float = 0.6
 
-    #: Outer air boundary radius, as a multiple of the stator outer radius.
-    outer_boundary_scale: float = 1.0
+    #: Spec 3: "Pole-arc ratio 0.65", "Pole-shoe angular span 58.5 mechanical
+    #: degrees". The shoe span is DERIVED from this ratio, not from a chord
+    #: width -- see section.shoe_half_angle_deg. RMxprt's PoleShoeWidth = 45 mm
+    #: gives 48.86 deg and does not implement the spec.
+    pole_arc_ratio: float = 0.65
+
+    #: Spec 3: "Rotor hub outer radius 34.0". RMxprt's pole body height of
+    #: 25 mm put this at 24.4, leaving a 4.4 mm hub against the spec's 14 mm --
+    #: 3.2x less return-path area for the entire pole flux.
+    rotor_hub_outer_radius_mm: float = 34.0
+
+    #: Spec 3: "Pole body radial span radius 34.0 to 49.0", tangential width
+    #: 20.0. "Pole-shoe radial span radius 49.0 to 54.4."
+    pole_body_outer_radius_mm: float = 49.0
+    pole_body_width_mm: float = 20.0
+
+    # -- spec section 3.1, stator slot template ------------------------------
+    #: "one parallel-sided open-slot template": opening 2.0 mm wide at the bore,
+    #: tooth-tip/wedge depth 1.5 mm, then a PARALLEL body 7.0 mm wide and
+    #: 18.5 mm deep, 20.0 mm total. RMxprt's tapered Hs0/Hs1/Hs2 = 0.8/1.2/15.0
+    #: with Bs0/Bs1/Bs2 = 3.0/5.0/7.0 is a different slot: shallower (17.0 mm),
+    #: wider-mouthed (3.0 mm) and tapered rather than parallel.
+    slot_opening_width_mm: float = 2.0
+    slot_tooth_tip_depth_mm: float = 1.5
+    slot_body_width_mm: float = 7.0
+    slot_body_depth_mm: float = 18.5
+
+    # -- spec section 3.2, rotor pole and field-coil template ----------------
+    #: "coil window radial span: radius 36.0 to 47.0 mm; coil window tangential
+    #: width per side of pole body: 7.0 mm". This replaces the invented
+    #: field_coil_width_mm = 8.0 and the 2 mm clearance guess: the spec gives
+    #: the window outright. Clearance follows as 36.0 - 34.0 = 2.0 mm radially
+    #: and (20/2) to the window's inner edge tangentially.
+    field_coil_inner_radius_mm: float = 36.0
+    field_coil_outer_radius_mm: float = 47.0
+    field_coil_width_mm: float = 7.0
+
+    #: Spec 3: "Exterior solution-region radius 135.0", as a multiple of the
+    #: stator outer radius: 135 / 90 = 1.5. Was 1.0, which put the Dirichlet
+    #: boundary directly on the stator OD with no exterior air at all.
+    outer_boundary_scale: float = 1.5
 
 
 @dataclass(frozen=True)
 class MaterialConfig:
-    """Material assignment. The steel is a documented PLACEHOLDER.
+    """Material assignment. The steel is the SPEC'S OWN BH TABLE.
 
-    The real BH curve has not been supplied. Until it is, every nonlinear
-    result from this package is qualitative. Points the manifest would label
-    'saturation' are physically meaningless with a placeholder curve.
+    Spec section 5 pins a REVISION, not just a name: "AEDT built-in
+    `steel_1008`, material revision `rmxprt-steel_1008-r1` ... Do not silently
+    substitute another steel. Any substitute requires a new
+    `material_revision` and an updated specification."
+
+    Matching FEMM's library entry by name would not satisfy that -- a library
+    grade called "1008 Steel" is not automatically the same point table as the
+    pinned revision. So the table is not name-matched, it is EXTRACTED: .aedt
+    files are plain text and readable without a licence, and
+    eesm_pilot_source_01.aedt carries the material block verbatim. The 19
+    points below are that block, loaded into FEMM with mi_addmaterial +
+    mi_addbhpoint rather than mi_getmaterial.
+
+    That makes the material checkable against the pinned revision instead of
+    trusted by name, and it removes the last placeholder from this package.
     """
 
-    #: FEMM material-library name for the nonlinear laminated steel.
-    #: PLACEHOLDER pending the real BH curve.
-    steel_material: str = "M-19 Steel"
+    #: Name given to the material we BUILD (not a library lookup).
+    steel_material: str = "steel_1008"
+    #: The pinned revision this table was extracted from.
+    steel_material_revision: str = "rmxprt-steel_1008-r1"
     air_material: str = "Air"
     coil_material: str = "Copper"
+
+    #: Bulk conductivity, MS/m. AEDT block: conductivity='2000000' S/m.
+    steel_conductivity_ms_per_m: float = 2.0
 
     #: Lamination stacking factor and thickness are RMxprt defaults, not
     #: measured values.
@@ -162,6 +211,39 @@ class MaterialConfig:
 # ---------------------------------------------------------------------------
 # Winding map -- verbatim from RMxprt Maxwl2DV.vbs AssignCoil
 # ---------------------------------------------------------------------------
+
+#: The steel_1008 BH curve, revision rmxprt-steel_1008-r1, as (B tesla,
+#: H A/m) pairs in FEMM's mi_addbhpoint argument order.
+#:
+#: EXTRACTED VERBATIM 2026-08-12 from the 'BHCoordinates' Points[38] array in
+#: the $begin 'steel_1008' block of
+#: aedt_mcp/tmp/aedt_projects/eesm_pilot_source_01/eesm_pilot_source_01.aedt
+#: (AEDT stores them H-first; the order is swapped here to match FEMM).
+#: ModTime=1499970477.
+#:
+#: This is the spec's own material, not a library grade with a similar name.
+STEEL_1008_BH_POINTS: Tuple[Tuple[float, float], ...] = (
+    (0.0, 0.0),
+    (0.2402, 159.2),
+    (0.8654, 318.3),
+    (1.1106, 477.5),
+    (1.2458, 636.6),
+    (1.3310, 795.8),
+    (1.5000, 1591.5),
+    (1.6000, 3183.1),
+    (1.6830, 4774.6),
+    (1.7410, 6366.2),
+    (1.7800, 7957.7),
+    (1.9050, 15915.5),
+    (2.0250, 31831.0),
+    (2.0850, 47746.5),
+    (2.1300, 63662.0),
+    (2.1650, 79577.5),
+    (2.2800, 159155.0),
+    (2.4850, 318310.0),
+    (2.5851, 397887.0),
+)
+
 
 #: (coil sheet name, circuit name, polarity sign).
 #:
@@ -401,6 +483,11 @@ DEFAULT_CONFIG = FemmConfig()
 # Provenance table -- one entry per config field, enforced by test
 # ---------------------------------------------------------------------------
 
+#: The frozen geometry spec. Where this and _RMXPRT disagree, THIS WINS: it is
+#: the design document and the RMxprt model is one implementation of it, found
+#: to drift from it in at least eight places.
+_SPEC = ("docs/superpowers/specs/"
+         "2026-07-12-canonical-academic-eesm-geometry-design.md")
 _RMXPRT = "RMxprt via eesm/aedt/build_canonical_eesm.py"
 _CONTRACT = "r2 winding contract, eesm/docs/MAXWELL_EESM_QUALIFICATION.md"
 _MANIFEST = "eesm/configs/eesm_experiment_manifest.json"
@@ -431,32 +518,42 @@ PROVENANCE: Dict[str, Provenance] = {
     # -- geometry -----------------------------------------------------------
     "geometry.stator_outer_diameter_mm": Provenance(_RMXPRT),
     "geometry.stator_inner_diameter_mm": Provenance(
-        _RMXPRT,
-        unverified=True,
-        note="Ties to the airgap ambiguity: DiaGap appeared as 110, 108.8 "
-             "and 109.4 mm across VBS blocks.",
-    ),
-    "geometry.slot_opening_height_mm": Provenance(_RMXPRT, note="Hs0"),
-    "geometry.slot_wedge_height_mm": Provenance(_RMXPRT, note="Hs1"),
-    "geometry.slot_body_height_mm": Provenance(_RMXPRT, note="Hs2"),
-    "geometry.slot_opening_width_mm": Provenance(_RMXPRT, note="Bs0"),
-    "geometry.slot_wedge_width_mm": Provenance(_RMXPRT, note="Bs1"),
-    "geometry.slot_body_width_mm": Provenance(_RMXPRT, note="Bs2"),
+        _SPEC, note="Section 3: stator bore diameter 110.0."),
+    "geometry.slot_opening_width_mm": Provenance(
+        _SPEC, note="Section 3.1: slot opening at the bore, 2.0 mm."),
+    "geometry.slot_tooth_tip_depth_mm": Provenance(
+        _SPEC, note="Section 3.1: tooth-tip / wedge radial depth 1.5 mm."),
+    "geometry.slot_body_width_mm": Provenance(
+        _SPEC, note="Section 3.1: slot body tangential width 7.0 mm, "
+                    "parallel-sided."),
+    "geometry.slot_body_depth_mm": Provenance(
+        _SPEC, note="Section 3.1: 18.5 mm below the tooth tip, 20.0 total, "
+                    "leaving the specified 15 mm minimum back iron."),
     "geometry.rotor_outer_diameter_mm": Provenance(
-        _RMXPRT, unverified=True, note="See stator_inner_diameter_mm."
-    ),
-    "geometry.shaft_diameter_mm": Provenance(_RMXPRT, note="Rotor inner diameter"),
-    "geometry.pole_body_height_mm": Provenance(_RMXPRT),
-    "geometry.pole_body_width_mm": Provenance(_RMXPRT),
-    "geometry.pole_shoe_height_mm": Provenance(_RMXPRT),
-    "geometry.pole_shoe_width_mm": Provenance(_RMXPRT),
-    "geometry.field_winding_clearance_mm": Provenance(_RMXPRT),
+        _SPEC, note="Section 3: rotor outer diameter 108.8."),
+    "geometry.shaft_diameter_mm": Provenance(
+        _SPEC, note="Section 3: shaft diameter 40.0."),
+    "geometry.pole_arc_ratio": Provenance(
+        _SPEC, note="Section 3: pole-arc ratio 0.65, span 58.5 mech deg. "
+                    "Section 7 forbids changing it to suit the mesher."),
+    "geometry.rotor_hub_outer_radius_mm": Provenance(
+        _SPEC, note="Section 3: rotor hub outer radius 34.0."),
+    "geometry.pole_body_outer_radius_mm": Provenance(
+        _SPEC, note="Section 3: pole body spans radius 34.0 to 49.0."),
+    "geometry.pole_body_width_mm": Provenance(
+        _SPEC, note="Section 3: pole body tangential width 20.0."),
+    "geometry.field_coil_inner_radius_mm": Provenance(
+        _SPEC, note="Section 3.2: coil window radial span 36.0 to 47.0."),
+    "geometry.field_coil_outer_radius_mm": Provenance(_SPEC, note="Section 3.2."),
+    "geometry.field_coil_width_mm": Provenance(
+        _SPEC, note="Section 3.2: coil window tangential width per side of "
+                    "the pole body, 7.0 mm."),
     "geometry.airgap_mm": Provenance(
-        _RMXPRT,
-        unverified=True,
-        note="(110 - 108.8)/2 = 0.6 mm. RMxprt DiaGap also appeared as "
-             "109.4 mm elsewhere, which would give 0.3 mm -- a factor of 2 "
-             "on the dominant reluctance. CONFIRM BEFORE ANY PRODUCTION RUN.",
+        _SPEC,
+        note="Section 3: air gap 0.6. Settled 2026-08-12 -- "
+             "eesm_pilot_source_01.aedt reads bore 110.0 and rotor OD 108.8 "
+             "directly, so the 0.3 mm alternative from a stray DiaGap=109.4 "
+             "is not this machine.",
     ),
     "geometry.outer_boundary_scale": Provenance(
         "modelling choice",
@@ -464,16 +561,19 @@ PROVENANCE: Dict[str, Provenance] = {
     ),
     # -- materials ----------------------------------------------------------
     "materials.steel_material": Provenance(
-        "PLACEHOLDER",
-        unverified=True,
-        note="Real BH curve not supplied. M-19 is a documented stand-in. "
-             "Saturation-region results are meaningless until replaced.",
+        _SPEC,
+        note="Section 5: steel_1008, revision rmxprt-steel_1008-r1. The BH "
+             "table is EXTRACTED verbatim from the material block in "
+             "eesm_pilot_source_01.aedt and loaded with mi_addbhpoint, not "
+             "name-matched against a FEMM library grade -- section 5 pins a "
+             "revision, and a library entry with a similar name is not the "
+             "same point table. Was M-19 Steel, a substitution section 5 "
+             "explicitly forbids.",
     ),
-    "geometry.field_coil_width_mm": Provenance(
-        "section.py modelling choice", unverified=True,
-        note="NEW 2026-08-11. No RMxprt scalar fixes the field bundle "
-             "footprint. Sets field slot area, not pole MMF.",
-    ),
+    "materials.steel_material_revision": Provenance(
+        _SPEC, note="Section 5 pins this revision."),
+    "materials.steel_conductivity_ms_per_m": Provenance(
+        _SPEC, note="AEDT block: conductivity='2000000' S/m = 2 MS/m."),
     "materials.air_material": Provenance(_FEMM_MANUAL, unverified=True,
                                          note="Library name not read back."),
     "materials.coil_material": Provenance(_FEMM_MANUAL, unverified=True,
@@ -486,10 +586,13 @@ PROVENANCE: Dict[str, Provenance] = {
     ),
     # -- extraction ---------------------------------------------------------
     "extraction.d_axis_electrical_deg": Provenance(
-        "construction of geometry.build_sector()",
-        unverified=True,
-        note="Deliberately NOT the AEDT model's 330.01 deg. Needs a "
-             "field-only FEMM probe to confirm.",
+        "derived from STATOR_COIL_MAP, confirmed by a field-only FEMM probe",
+        note="150 deg exactly. A_z = sin(2*theta - 90) for a pole at 45 deg "
+             "gives lambda_abc proportional to (-1, +1, 0), and phase C -- "
+             "which straddles the pole axis -- contributes zero. FEMM "
+             "measures 149.999 with lambda_C at 2e-7 and shrinking under "
+             "refinement. Not the AEDT model's 330.01 deg, which belongs to "
+             "a different winding frame.",
     ),
     "extraction.flux_multiplier": Provenance(_V2, note="NOTE 1: x1, terminal flux."),
     "extraction.torque_sector_multiplier": Provenance(_V2, note="NOTE 1: x4."),
@@ -533,15 +636,23 @@ PROVENANCE: Dict[str, Provenance] = {
     "api.problem_type": Provenance(_FEMM_MANUAL, unverified=True),
     "api.problem_precision": Provenance(_FEMM_MANUAL, unverified=True),
     "api.problem_min_angle_deg": Provenance(_FEMM_MANUAL, unverified=True),
+    # The four silent-failure enums, all VERIFIED 2026-08-12 against the manual
+    # FEMM ships with itself, C:\femm42\bin\manual.pdf. None was wrong.
     "api.boundary_format_antiperiodic": Provenance(
-        _FEMM_MANUAL, unverified=True,
-        note="BdryFormat 5. Recalled, not read back. CONFIRM FIRST on Windows."
+        _FEMM_MANUAL,
+        note="BdryFormat 5. Manual, mi_addboundprop: \"For an 'Anti-Perodic' "
+             "boundary condition, set BdryFormat to 5\" (sic)."
     ),
-    "api.boundary_format_prescribed_a": Provenance(_FEMM_MANUAL, unverified=True),
-    "api.circuit_type_series": Provenance(_FEMM_MANUAL, unverified=True),
+    "api.boundary_format_prescribed_a": Provenance(
+        _FEMM_MANUAL, note="BdryFormat 0 = Prescribed A."),
+    "api.circuit_type_series": Provenance(
+        _FEMM_MANUAL,
+        note="Manual, mi_addcircprop: \"0 for a parallel-connected circuit "
+             "and 1 for a series-connected circuit\"."),
     "api.block_integral_torque": Provenance(
-        _FEMM_MANUAL, unverified=True,
-        note="Type 22 = weighted stress tensor torque. CONFIRM FIRST."
+        _FEMM_MANUAL,
+        note="Manual, mo_blockintegral type table: 22 = 'Steady-state "
+             "weighted stress tensor torque'."
     ),
     "api.airgap_mesh_fraction": Provenance(
         "eesm/aedt/flux_extraction_v2.py NOTE 4",

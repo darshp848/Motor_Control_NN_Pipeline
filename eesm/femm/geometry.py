@@ -89,8 +89,7 @@ def shaft_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
 def slot_bottom_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
     """Radius of the deepest point of the stator slot."""
     geo = cfg.geometry
-    return (stator_bore_radius_mm(cfg) + geo.slot_opening_height_mm
-            + geo.slot_wedge_height_mm + geo.slot_body_height_mm)
+    return section.slot_profile_mm(cfg)[3][0]
 
 
 def airgap_mid_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
@@ -103,11 +102,11 @@ def pole_axis_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
 
 
 def pole_shoe_inner_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    return rotor_outer_radius_mm(cfg) - cfg.geometry.pole_shoe_height_mm
+    return section.pole_shoe_inner_radius_mm(cfg)
 
 
 def pole_body_inner_radius_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    return pole_shoe_inner_radius_mm(cfg) - cfg.geometry.pole_body_height_mm
+    return section.pole_body_inner_radius_mm(cfg)
 
 
 def stator_slot_center_angles_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> List[float]:
@@ -125,9 +124,8 @@ def stator_slot_center_angles_deg(cfg: FemmConfig = DEFAULT_CONFIG) -> List[floa
 def layer_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> Tuple[float, float]:
     """Label radii of the (lower, upper) coil sheet of a double-layer slot."""
     geo = cfg.geometry
-    body_start = (stator_bore_radius_mm(cfg) + geo.slot_opening_height_mm
-                  + geo.slot_wedge_height_mm)
-    quarter = geo.slot_body_height_mm / 4.0
+    body_start = section.slot_profile_mm(cfg)[2][0]
+    quarter = geo.slot_body_depth_mm / 4.0
     return body_start + quarter, body_start + 3.0 * quarter
 
 
@@ -173,12 +171,15 @@ def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
     """
     geo = cfg.geometry
     axis = pole_axis_deg(cfg)
-    radial = (pole_body_inner_radius_mm(cfg) + pole_shoe_inner_radius_mm(cfg)) / 2.0
-    # Centre of the drawn bundle, not its inner edge. Before section.py drew
-    # the cavities, this sat at the clearance line -- which is now the coil's
-    # boundary, and a label on a boundary belongs to no region.
-    offset = (geo.pole_body_width_mm / 2.0 + geo.field_winding_clearance_mm
-              + geo.field_coil_width_mm / 2.0)
+    # Centre of the spec's coil window (3.2: radius 36.0 to 47.0, 7.0 mm wide
+    # per side of the pole body). A label on a boundary belongs to no region,
+    # so this must be the centre, not an edge.
+    r_in, r_out, t_in, t_out = section.field_coil_extent_mm(cfg)
+    r_mid = (r_in + r_out) / 2.0
+    offset = (t_in + t_out) / 2.0
+    # The window is bounded by arcs, so the label sits at mid-RADIUS, which
+    # means solving for the along-axis distance rather than averaging it.
+    radial = math.sqrt(max(r_mid * r_mid - offset * offset, 0.0))
     turns = cfg.machine.field_turns_per_pole
     labels: List[Dict[str, Any]] = []
     for (name, sign) in FIELD_COIL_MAP:
@@ -298,12 +299,32 @@ def define_problem(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> None:
 
 
 def define_materials(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
-    """Pull the library materials. The steel is a flagged PLACEHOLDER."""
-    materials = [cfg.materials.air_material, cfg.materials.coil_material,
-                 cfg.materials.steel_material]
-    for name in materials:
+    """Air and copper from the library; the steel BUILT from the spec's table.
+
+    Spec section 5 pins `steel_1008` at revision `rmxprt-steel_1008-r1` and
+    forbids silent substitution. A FEMM library grade with a similar name is
+    not the same point table, so the steel is not looked up -- it is
+    constructed from STEEL_1008_BH_POINTS, extracted verbatim from the AEDT
+    material block. mi_getmaterial would reintroduce exactly the substitution
+    section 5 prohibits.
+    """
+    library = [cfg.materials.air_material, cfg.materials.coil_material]
+    for name in library:
         handle.mi_getmaterial(name)
-    return materials
+
+    steel = cfg.materials.steel_material
+    # mi_addmaterial(name, mu_x, mu_y, H_c, J, Cduct, Lam_d, Phi_hmax,
+    #                LamFill, LamType, Phi_hx, Phi_hy, NStrands, WireD)
+    # mu_x = mu_y = 0 tells FEMM the permeability comes from the BH curve.
+    handle.mi_addmaterial(steel, 0.0, 0.0, 0.0, 0.0,
+                          cfg.materials.steel_conductivity_ms_per_m,
+                          cfg.materials.lamination_thickness_mm, 0.0,
+                          cfg.materials.lamination_stacking_factor, 0,
+                          0.0, 0.0, 0, 0)
+    for b_tesla, h_amp_per_m in cfg_mod.STEEL_1008_BH_POINTS:
+        handle.mi_addbhpoint(steel, b_tesla, h_amp_per_m)
+
+    return library + [steel]
 
 
 def define_circuits(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
