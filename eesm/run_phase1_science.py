@@ -383,7 +383,7 @@ def main() -> int:
             "diagnostics_are_not_gates": True,
         },
         "artifacts": [
-            {"path": os.path.relpath(study_path, REPO_ROOT).replace("\\", "/"),
+            {"path": study_path.name,
              "sha256": _sha256_file(study_path)},
         ],
     }
