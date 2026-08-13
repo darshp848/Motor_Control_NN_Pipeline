@@ -1,0 +1,19 @@
+{
+  "design": "EESM_2D_Qual", 
+  "maxwell_solve_attempted": false, 
+  "percent_error": 1, 
+  "stage": "idle", 
+  "geometry_rebuilt": false, 
+  "setup": "Setup_Qual", 
+  "errors": [], 
+  "project": "eesm_qual", 
+  "status": "updated", 
+  "maximum_passes_after": 3, 
+  "maximum_passes_before": 2, 
+  "validation": {
+    "_raw": True, 
+    "value": True, 
+    "ok": true
+  }, 
+  "failure": null
+}

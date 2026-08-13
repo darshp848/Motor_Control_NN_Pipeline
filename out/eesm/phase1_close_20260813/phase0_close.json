@@ -1,0 +1,4595 @@
+{
+  "audit": {
+    "gate_values": {
+      "boundary": 0.0,
+      "data_qa": 0.0,
+      "feasibility": 0.0,
+      "field_weakening": 0.0019855001223887366,
+      "interior": 0.0008912238420984222,
+      "saturation": 0.0013310637791622284,
+      "torque": 0.3337799173494979,
+      "voltage": 2.2875890328219897
+    },
+    "gates": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0019855001223887366
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0008912238420984222
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0013310637791622284
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.3337799173494979
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.2875890328219897
+        }
+      },
+      "required": [
+        "data_qa",
+        "interior",
+        "boundary",
+        "saturation",
+        "field_weakening",
+        "torque",
+        "voltage",
+        "feasibility"
+      ],
+      "status": "passed"
+    },
+    "n": 256,
+    "role": "scheduler_audit",
+    "used_before_promotion": false
+  },
+  "campaign": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_20260813\\femm_results.csv",
+  "created_utc": "2026-08-13T15:49:26.188521+00:00",
+  "gate_results": {
+    "latin_hypercube|128|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.00158185083125635
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0018289717204727914
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.00158472363478395
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.4967309838952528
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.9237237840010617
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|128|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0029464577028035523
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.002091815613887554
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0032586596976787773
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.6638975442196696
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.869573208711159
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|128|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.008676899962448005
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.008105655996397305
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.010250160203237695
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.3227937647267634
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 13.88463776310086
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|128|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.009145041083547308
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.01510183880639539
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.012711415648775983
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 3.777261562093408
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 15.507153951062275
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|128|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.002480984524018888
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0039328608715805
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0025754021046892352
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.6254482728592303
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 6.552082040788484
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|128|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0164837343878016
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0245754200403371
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.03557473952961093
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 4.254150414460242
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 32.812444705675034
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0019627770452313956
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0021707755252561955
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0018140321260365672
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.4948681424659228
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 3.105923085781158
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.003695397604168119
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0015128481290756597
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0029927698518096356
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5830862412856731
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.776114269421167
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.00828862283359356
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.00785822227886189
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.008769485967134906
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.3668316619416172
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 13.36181710666651
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.011901490124737325
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.009560723945781995
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.015444380758652418
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 2.6902240195619336
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 16.570550328139564
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0019236191966351928
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0008922370858593842
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0012943607483839022
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.3669369657117543
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.296099205283584
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|256|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.020320821791176683
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.01566596584179329
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.026951469363337064
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 3.7778252760686897
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 25.50150466393334
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0020688618990741003
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.003763579344481616
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0019324805309566305
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.7928551373204921
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.521356510844935
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.022494926142676026
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.00980316854519843
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.012683299452259399
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 2.791065756108543
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 30.789081135547708
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.005545098127938017
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.009937670687244307
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.013905289855050447
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.8627113123365158
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 14.763282511993118
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.018330531714263933
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.019686568414971104
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.033056057825106344
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 4.54582830936955
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 34.942859682687875
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.014818537444298086
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.007854343759494323
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.009025348585445283
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 2.316269628284433
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 16.788542443922708
+        }
+      },
+      "status": "passed"
+    },
+    "latin_hypercube|64|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.03536261945811815
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.03637650556299201
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.04886313983580139
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 7.651280072895153
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 49.94329775409105
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0016993847732990875
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0018527223186438348
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0022196747075092526
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5623952326104202
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 3.1831012983121347
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0043057863168421496
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.003341386212021522
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.00373334389751881
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.9704922354549399
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 5.854228300049708
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.006912929251168697
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.008394109409730307
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.010865840908601971
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.5408012864675624
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 13.286441444969455
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.00967170834837849
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.012543372969549684
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.017732647700431866
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 2.9941407903739115
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 18.07035725973584
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.002984771786535217
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0032194137609492606
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.003826645633191743
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.8157959834533506
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 5.021350037446674
+        }
+      },
+      "status": "passed"
+    },
+    "random|128|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.023615295449084146
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.031248424995070554
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.04945788075486292
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 6.264993724806883
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 39.47271313739053
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0014149408435552644
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.001861693089047066
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.002062198900266915
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.4914488076228684
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.8543748655647794
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0024776040715959323
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.001421075261662456
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.002579869047488596
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5037942101485366
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 3.3050678694941737
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.007671918961938655
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.007829649383533975
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.012622471984085403
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.4427641812450644
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 13.28213040129891
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.004759398997778023
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.012037192110944476
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.01280322490881018
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.5124632193553345
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 15.488472970501833
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0023571948937693957
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0010927623139153722
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0020180501826813713
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.4144459905258336
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 3.1765390832622953
+        }
+      },
+      "status": "passed"
+    },
+    "random|256|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.01686185536750158
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.021814962070586637
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.045843940292831314
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 4.884625223099355
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 34.41385574989782
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0031241420307138415
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.003035194979856676
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0016770908645036046
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.6598221653049672
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.164573112871292
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.009879059163840787
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.004140597148003952
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.004677582495411792
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.2309574556431517
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 12.745519151524844
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.010153420306245756
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.00805710682456129
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.009662405069050936
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.4827650654676137
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 15.076327084038592
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.01680155934621952
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.012969703554001273
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.01955182805890109
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 3.7824913225939243
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 23.237954440415304
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.008674118557674372
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0058350323197986905
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.004836380363461151
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.6278931859497325
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 11.233163901633398
+        }
+      },
+      "status": "passed"
+    },
+    "random|64|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.02618732277872147
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.027668162342182813
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.02222283245287775
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 4.948830963774147
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 38.47607445011908
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.001817041227657277
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0021343647414073905
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0018392209409379846
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5328994752301931
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.785236154540119
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.003722059883201686
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.004079626393934193
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.004026259256032115
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.860121483553316
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 6.726661709551403
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.008929474138361655
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.01147796354368907
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.011939620278304128
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.495318882118767
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 17.67145981981545
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.004166847686985023
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0032481961441620426
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.002744135681642281
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5760597587707215
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 7.021413305806275
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.002835331245324649
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0023738134111155546
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.004017621153241473
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.8508721732112033
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.753867131747764
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|128|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.014452721283362486
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.019417128550984996
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.017672708785363717
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 4.3040727031607
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 24.796466291105865
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0012476067617780914
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.001947131308047381
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.001485666839531601
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.412348209279198
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.4511673722888214
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.001963178035019886
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0012831444678367662
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0013583998834189618
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.39199776825374444
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.5601974501298246
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.008773289790055691
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.011178089987856066
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.011634203602548687
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.4992215575657035
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 17.00761124472169
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0021130598159368684
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0024938589966590832
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0033534282751706405
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.41661748181092895
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 4.966467683078709
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0018177969058481062
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.001509678112765521
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0028880391601961404
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.4648603579036906
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.7747489191490726
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|256|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.01363624722044862
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.020178930686727894
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.017221029319618306
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 3.444581015058225
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 21.97565853633959
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|compact_mlp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.0017900819222983954
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0024113667823236424
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0020071354975659942
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.5580595594101607
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 2.9987793817691384
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|energy_gradient_net": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.007230171473083461
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.005333613498543692
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.005166970484474322
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.3721752104873635
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 10.009705135412522
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|physics_polynomial": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.009308822321556642
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.012861073642358892
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.01478288684466706
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.7357145283300146
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 19.98359596717816
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|pwa": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.006716978328943604
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.005210706214922845
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.005436574114063134
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 0.851977646346264
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 11.273219877493686
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|rbf_or_gp": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.004257310723921911
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.0038513507639356573
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0052696418588004884
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 1.123580648311484
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 6.810076136575182
+        }
+      },
+      "status": "passed"
+    },
+    "tensor_grid|64|tree_ensemble": {
+      "all_required_pass": true,
+      "gates": {
+        "boundary": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05580556892824304,
+          "value": 0.0
+        },
+        "data_qa": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.0,
+          "value": 0.0
+        },
+        "feasibility": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.02,
+          "value": 0.0
+        },
+        "field_weakening": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05121253119353738,
+          "value": 0.017505327486191144
+        },
+        "interior": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.03937430873722512,
+          "value": 0.03110973416430105
+        },
+        "saturation": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 0.05890606707606628,
+          "value": 0.0362245108033005
+        },
+        "torque": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 9.65519376554659,
+          "value": 6.6289321994301265
+        },
+        "voltage": {
+          "available": true,
+          "passed": true,
+          "reason": "within_threshold",
+          "threshold": 73.32389575047401,
+          "value": 32.60820340535412
+        }
+      },
+      "status": "passed"
+    }
+  },
+  "manifest_sha256": "e3dbacb9db090550fdf8d88327c165a9d5246c84f2593afac142fb04dde472eb",
+  "promotion": {
+    "budget": 256,
+    "candidate_id": "latin_hypercube|256|rbf_or_gp",
+    "family": "rbf_or_gp",
+    "ranking": {
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.0011286493657131362,
+      "scheduler_loss_regret_w": 0.0,
+      "torque_rmse_nm": 0.3669369657117543,
+      "training_runtime_s": 0.006098000012570992
+    },
+    "rejected_candidates": [],
+    "status": "promoted",
+    "strategy": "latin_hypercube"
+  },
+  "ranking_runs": [
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.00894872853564175,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.009308822321556642,
+        "interior": 0.012861073642358892,
+        "saturation": 0.01478288684466706,
+        "torque": 1.7357145283300146,
+        "voltage": 19.98359596717816
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 1.7357145283300146,
+      "training_runtime_s": 0.0028337000112514943
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.0035902941852113774,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.004257310723921911,
+        "interior": 0.0038513507639356573,
+        "saturation": 0.0052696418588004884,
+        "torque": 1.123580648311484,
+        "voltage": 6.810076136575182
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 1.123580648311484,
+      "training_runtime_s": 0.0039035999798215926
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.021827947476448607,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.017505327486191144,
+        "interior": 0.03110973416430105,
+        "saturation": 0.0362245108033005,
+        "torque": 6.6289321994301265,
+        "voltage": 32.60820340535412
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 6.6289321994301265,
+      "training_runtime_s": 0.1341485000157263
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0019764305742632636,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0017900819222983954,
+        "interior": 0.0024113667823236424,
+        "saturation": 0.0020071354975659942,
+        "torque": 0.5580595594101607,
+        "voltage": 2.9987793817691384
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.5580595594101607,
+      "training_runtime_s": 4.162888099992415
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.00459796314035885,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.007230171473083461,
+        "interior": 0.005333613498543692,
+        "saturation": 0.005166970484474322,
+        "torque": 1.3721752104873635,
+        "voltage": 10.009705135412522
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 1.3721752104873635,
+      "training_runtime_s": 0.6745708000089508
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "tensor_grid|64|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.004740147617898169,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.006716978328943604,
+        "interior": 0.005210706214922845,
+        "saturation": 0.005436574114063134,
+        "torque": 0.851977646346264,
+        "voltage": 11.273219877493686
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.851977646346264,
+      "training_runtime_s": 0.007711500016739592
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.008061636409399362,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.008929474138361655,
+        "interior": 0.01147796354368907,
+        "saturation": 0.011939620278304128,
+        "torque": 1.495318882118767,
+        "voltage": 17.67145981981545
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 1.495318882118767,
+      "training_runtime_s": 0.001956899999640882
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.002608940587296808,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.002835331245324649,
+        "interior": 0.0023738134111155546,
+        "saturation": 0.004017621153241473,
+        "torque": 0.8508721732112033,
+        "voltage": 4.753867131747764
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.8508721732112033,
+      "training_runtime_s": 0.002845999988494441
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.015878770130066788,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.014452721283362486,
+        "interior": 0.019417128550984996,
+        "saturation": 0.017672708785363717,
+        "torque": 4.3040727031607,
+        "voltage": 24.796466291105865
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 4.3040727031607,
+      "training_runtime_s": 0.06551449999096803
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.00184627028412415,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.001817041227657277,
+        "interior": 0.0021343647414073905,
+        "saturation": 0.0018392209409379846,
+        "torque": 0.5328994752301931,
+        "voltage": 2.785236154540119
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.5328994752301931,
+      "training_runtime_s": 0.4579839000070933
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.00299520788779166,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.003722059883201686,
+        "interior": 0.004079626393934193,
+        "saturation": 0.004026259256032115,
+        "torque": 0.860121483553316,
+        "voltage": 6.726661709551403
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.860121483553316,
+      "training_runtime_s": 0.7700999000226147
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "tensor_grid|128|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.003151583398652582,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.004166847686985023,
+        "interior": 0.0032481961441620426,
+        "saturation": 0.002744135681642281,
+        "torque": 0.5760597587707215,
+        "voltage": 7.021413305806275
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.5760597587707215,
+      "training_runtime_s": 0.015486999996937811
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.007743119124758794,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.008773289790055691,
+        "interior": 0.011178089987856066,
+        "saturation": 0.011634203602548687,
+        "torque": 1.4992215575657035,
+        "voltage": 17.00761124472169
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 1.4992215575657035,
+      "training_runtime_s": 0.0017720999894663692
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.0015261349991543317,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0018177969058481062,
+        "interior": 0.001509678112765521,
+        "saturation": 0.0028880391601961404,
+        "torque": 0.4648603579036906,
+        "voltage": 2.7747489191490726
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.4648603579036906,
+      "training_runtime_s": 0.0060418999928515404
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.01248830255179745,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.01363624722044862,
+        "interior": 0.020178930686727894,
+        "saturation": 0.017221029319618306,
+        "torque": 3.444581015058225,
+        "voltage": 21.97565853633959
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 3.444581015058225,
+      "training_runtime_s": 0.08553270000265911
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0015026233985974396,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0012476067617780914,
+        "interior": 0.001947131308047381,
+        "saturation": 0.001485666839531601,
+        "torque": 0.412348209279198,
+        "voltage": 2.4511673722888214
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.412348209279198,
+      "training_runtime_s": 0.5695347999862861
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.0013347325691201802,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.001963178035019886,
+        "interior": 0.0012831444678367662,
+        "saturation": 0.0013583998834189618,
+        "torque": 0.39199776825374444,
+        "voltage": 2.5601974501298246
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.39199776825374444,
+      "training_runtime_s": 0.9777778999996372
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "tensor_grid|256|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.002253665165044599,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0021130598159368684,
+        "interior": 0.0024938589966590832,
+        "saturation": 0.0033534282751706405,
+        "torque": 0.41661748181092895,
+        "voltage": 4.966467683078709
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "tensor_grid",
+      "torque_rmse_nm": 0.41661748181092895,
+      "training_runtime_s": 0.03785459999926388
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.0065558266956949815,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.010153420306245756,
+        "interior": 0.00805710682456129,
+        "saturation": 0.009662405069050936,
+        "torque": 1.4827650654676137,
+        "voltage": 15.076327084038592
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.4827650654676137,
+      "training_runtime_s": 0.001867999992100522
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.005180005709595536,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.008674118557674372,
+        "interior": 0.0058350323197986905,
+        "saturation": 0.004836380363461151,
+        "torque": 1.6278931859497325,
+        "voltage": 11.233163901633398
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.6278931859497325,
+      "training_runtime_s": 0.00229350000154227
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.018321979881497454,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.02618732277872147,
+        "interior": 0.027668162342182813,
+        "saturation": 0.02222283245287775,
+        "torque": 4.948830963774147,
+        "voltage": 38.47607445011908
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 4.948830963774147,
+      "training_runtime_s": 0.07241789999534376
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0024202751614296647,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0031241420307138415,
+        "interior": 0.003035194979856676,
+        "saturation": 0.0016770908645036046,
+        "torque": 0.6598221653049672,
+        "voltage": 4.164573112871292
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.6598221653049672,
+      "training_runtime_s": 0.22526259999722242
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.005470597882911437,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.009879059163840787,
+        "interior": 0.004140597148003952,
+        "saturation": 0.004677582495411792,
+        "torque": 1.2309574556431517,
+        "voltage": 12.745519151524844
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.2309574556431517,
+      "training_runtime_s": 0.48054710001451895
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "random|64|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.011841495404620768,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.01680155934621952,
+        "interior": 0.012969703554001273,
+        "saturation": 0.01955182805890109,
+        "torque": 3.7824913225939243,
+        "voltage": 23.237954440415304
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 3.7824913225939243,
+      "training_runtime_s": 0.008908099989639595
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.00667358258003615,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.006912929251168697,
+        "interior": 0.008394109409730307,
+        "saturation": 0.010865840908601971,
+        "torque": 1.5408012864675624,
+        "voltage": 13.286441444969455
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.5408012864675624,
+      "training_runtime_s": 0.001731099997414276
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.002680656677372096,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.002984771786535217,
+        "interior": 0.0032194137609492606,
+        "saturation": 0.003826645633191743,
+        "torque": 0.8157959834533506,
+        "voltage": 5.021350037446674
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.8157959834533506,
+      "training_runtime_s": 0.002845300012268126
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.02191991063441606,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.023615295449084146,
+        "interior": 0.031248424995070554,
+        "saturation": 0.04945788075486292,
+        "torque": 6.264993724806883,
+        "voltage": 39.47271313739053
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 6.264993724806883,
+      "training_runtime_s": 0.11420939999516122
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.001758620498196716,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0016993847732990875,
+        "interior": 0.0018527223186438348,
+        "saturation": 0.0022196747075092526,
+        "torque": 0.5623952326104202,
+        "voltage": 3.1831012983121347
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.5623952326104202,
+      "training_runtime_s": 0.5053182000119705
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.002965734984286014,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0043057863168421496,
+        "interior": 0.003341386212021522,
+        "saturation": 0.00373334389751881,
+        "torque": 0.9704922354549399,
+        "voltage": 5.854228300049708
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.9704922354549399,
+      "training_runtime_s": 0.6719880999880843
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "random|128|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.00989489029264725,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.00967170834837849,
+        "interior": 0.012543372969549684,
+        "saturation": 0.017732647700431866,
+        "torque": 2.9941407903739115,
+        "voltage": 18.07035725973584
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 2.9941407903739115,
+      "training_runtime_s": 0.016677500010700896
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.006595333706172313,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.007671918961938655,
+        "interior": 0.007829649383533975,
+        "saturation": 0.012622471984085403,
+        "torque": 1.4427641812450644,
+        "voltage": 13.28213040129891
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.4427641812450644,
+      "training_runtime_s": 0.0022282999998424202
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.0015565719733895817,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0023571948937693957,
+        "interior": 0.0010927623139153722,
+        "saturation": 0.0020180501826813713,
+        "torque": 0.4144459905258336,
+        "voltage": 3.1765390832622953
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.4144459905258336,
+      "training_runtime_s": 0.005448000010801479
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.0166872958213048,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.01686185536750158,
+        "interior": 0.021814962070586637,
+        "saturation": 0.045843940292831314,
+        "torque": 4.884625223099355,
+        "voltage": 34.41385574989782
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 4.884625223099355,
+      "training_runtime_s": 0.08134889998473227
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0016357867431555182,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0014149408435552644,
+        "interior": 0.001861693089047066,
+        "saturation": 0.002062198900266915,
+        "torque": 0.4914488076228684,
+        "voltage": 2.8543748655647794
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.4914488076228684,
+      "training_runtime_s": 0.5132899000018369
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.0017007329552781321,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0024776040715959323,
+        "interior": 0.001421075261662456,
+        "saturation": 0.002579869047488596,
+        "torque": 0.5037942101485366,
+        "voltage": 3.3050678694941737
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 0.5037942101485366,
+      "training_runtime_s": 1.1261945000151172
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "random|256|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.007892825654559593,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.004759398997778023,
+        "interior": 0.012037192110944476,
+        "saturation": 0.01280322490881018,
+        "torque": 1.5124632193553345,
+        "voltage": 15.488472970501833
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "random",
+      "torque_rmse_nm": 1.5124632193553345,
+      "training_runtime_s": 0.0690214000060223
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.007640377428467309,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.005545098127938017,
+        "interior": 0.009937670687244307,
+        "saturation": 0.013905289855050447,
+        "torque": 1.8627113123365158,
+        "voltage": 14.763282511993118
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 1.8627113123365158,
+      "training_runtime_s": 0.0029414000164251775
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.007768753041220329,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.014818537444298086,
+        "interior": 0.007854343759494323,
+        "saturation": 0.009025348585445283,
+        "torque": 2.316269628284433,
+        "voltage": 16.788542443922708
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 2.316269628284433,
+      "training_runtime_s": 0.002833900012774393
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.023877172499925478,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.03536261945811815,
+        "interior": 0.03637650556299201,
+        "saturation": 0.04886313983580139,
+        "torque": 7.651280072895153,
+        "voltage": 49.94329775409105
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 7.651280072895153,
+      "training_runtime_s": 0.1195577000034973
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0028950794211656436,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0020688618990741003,
+        "interior": 0.003763579344481616,
+        "saturation": 0.0019324805309566305,
+        "torque": 0.7928551373204921,
+        "voltage": 4.521356510844935
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.7928551373204921,
+      "training_runtime_s": 0.4434905999805778
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.013152620650951921,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.022494926142676026,
+        "interior": 0.00980316854519843,
+        "saturation": 0.012683299452259399,
+        "torque": 2.791065756108543,
+        "voltage": 30.789081135547708
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 2.791065756108543,
+      "training_runtime_s": 0.8404986999812536
+    },
+    {
+      "all_required_pass": true,
+      "budget": 64,
+      "candidate_id": "latin_hypercube|64|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.016041096033454855,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.018330531714263933,
+        "interior": 0.019686568414971104,
+        "saturation": 0.033056057825106344,
+        "torque": 4.54582830936955,
+        "voltage": 34.942859682687875
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 4.54582830936955,
+      "training_runtime_s": 0.016254100017249584
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.006504681071170305,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.008676899962448005,
+        "interior": 0.008105655996397305,
+        "saturation": 0.010250160203237695,
+        "torque": 1.3227937647267634,
+        "voltage": 13.88463776310086
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 1.3227937647267634,
+      "training_runtime_s": 0.0029596000094898045
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.003054218855688772,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.002480984524018888,
+        "interior": 0.0039328608715805,
+        "saturation": 0.0025754021046892352,
+        "torque": 0.6254482728592303,
+        "voltage": 6.552082040788484
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.6254482728592303,
+      "training_runtime_s": 0.004355799988843501
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.01656497212643033,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0164837343878016,
+        "interior": 0.0245754200403371,
+        "saturation": 0.03557473952961093,
+        "torque": 4.254150414460242,
+        "voltage": 32.812444705675034
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 4.254150414460242,
+      "training_runtime_s": 0.12412620001123287
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0016109119517586732,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.00158185083125635,
+        "interior": 0.0018289717204727914,
+        "saturation": 0.00158472363478395,
+        "torque": 0.4967309838952528,
+        "voltage": 2.9237237840010617
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.4967309838952528,
+      "training_runtime_s": 0.45516509999288246
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.0022909412973658714,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0029464577028035523,
+        "interior": 0.002091815613887554,
+        "saturation": 0.0032586596976787773,
+        "torque": 0.6638975442196696,
+        "voltage": 4.869573208711159
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.6638975442196696,
+      "training_runtime_s": 0.8980617999914102
+    },
+    {
+      "all_required_pass": true,
+      "budget": 128,
+      "candidate_id": "latin_hypercube|128|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.009988767558649365,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.009145041083547308,
+        "interior": 0.01510183880639539,
+        "saturation": 0.012711415648775983,
+        "torque": 3.777261562093408,
+        "voltage": 15.507153951062275
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 3.777261562093408,
+      "training_runtime_s": 0.027379599981941283
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|physics_polynomial",
+      "family": "physics_polynomial",
+      "flux_rmse_wb": 0.0061880881907192915,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.00828862283359356,
+        "interior": 0.00785822227886189,
+        "saturation": 0.008769485967134906,
+        "torque": 1.3668316619416172,
+        "voltage": 13.36181710666651
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 1.3668316619416172,
+      "training_runtime_s": 0.002266099996631965
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "flux_rmse_wb": 0.0011286493657131362,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0019236191966351928,
+        "interior": 0.0008922370858593842,
+        "saturation": 0.0012943607483839022,
+        "torque": 0.3669369657117543,
+        "voltage": 2.296099205283584
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.3669369657117543,
+      "training_runtime_s": 0.006098000012570992
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|tree_ensemble",
+      "family": "tree_ensemble",
+      "flux_rmse_wb": 0.012487369247727167,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.020320821791176683,
+        "interior": 0.01566596584179329,
+        "saturation": 0.026951469363337064,
+        "torque": 3.7778252760686897,
+        "voltage": 25.50150466393334
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 3.7778252760686897,
+      "training_runtime_s": 0.1544119000027422
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|compact_mlp",
+      "family": "compact_mlp",
+      "flux_rmse_wb": 0.0017222277505354964,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.0019627770452313956,
+        "interior": 0.0021707755252561955,
+        "saturation": 0.0018140321260365672,
+        "torque": 0.4948681424659228,
+        "voltage": 3.105923085781158
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.4948681424659228,
+      "training_runtime_s": 0.48121870000613853
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|energy_gradient_net",
+      "family": "energy_gradient_net",
+      "flux_rmse_wb": 0.002132859324930318,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.003695397604168119,
+        "interior": 0.0015128481290756597,
+        "saturation": 0.0029927698518096356,
+        "torque": 0.5830862412856731,
+        "voltage": 4.776114269421167
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 0.5830862412856731,
+      "training_runtime_s": 1.0591959000157658
+    },
+    {
+      "all_required_pass": true,
+      "budget": 256,
+      "candidate_id": "latin_hypercube|256|pwa",
+      "family": "pwa",
+      "flux_rmse_wb": 0.008109328841405085,
+      "gate_values": {
+        "boundary": 0.0,
+        "data_qa": 0.0,
+        "feasibility": 0.0,
+        "field_weakening": 0.011901490124737325,
+        "interior": 0.009560723945781995,
+        "saturation": 0.015444380758652418,
+        "torque": 2.6902240195619336,
+        "voltage": 16.570550328139564
+      },
+      "scheduler_loss_regret_w": 0.0,
+      "strategy": "latin_hypercube",
+      "torque_rmse_nm": 2.6902240195619336,
+      "training_runtime_s": 0.06853389999014325
+    }
+  ],
+  "scheduler_loss_regret_note": "Ranking uses 0 W copper-loss regret; commands were not re-optimized. Torque RMSE is the first discriminating key.",
+  "study": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\equal_budget_femm_v2_20260813"
+}

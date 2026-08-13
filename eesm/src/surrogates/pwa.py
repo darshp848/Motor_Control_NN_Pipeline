@@ -41,7 +41,9 @@ class PWASurrogate(FluxSurrogate):
         if self.tri_ is None or self.affines_ is None:
             return self._nearest(query)
         simplex_id = self.tri_.find_simplex(query)
-        out = np.empty((query.shape[0], 2), dtype=np.float64)
+        out = np.empty(
+            (query.shape[0], self.values_.shape[1]), dtype=np.float64
+        )
         for index, sid in enumerate(simplex_id):
             if sid < 0:
                 out[index] = self._nearest(query[index:index + 1])[0]
@@ -51,7 +53,9 @@ class PWASurrogate(FluxSurrogate):
         return out
 
     def _nearest(self, query: np.ndarray) -> np.ndarray:
-        out = np.empty((query.shape[0], 2), dtype=np.float64)
+        out = np.empty(
+            (query.shape[0], self.values_.shape[1]), dtype=np.float64
+        )
         for i, point in enumerate(query):
             nearest = int(np.argmin(np.linalg.norm(self.points_ - point, axis=1)))
             out[i] = self.values_[nearest]

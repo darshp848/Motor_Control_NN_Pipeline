@@ -20,6 +20,24 @@ __pycache__/
 !/out/eesm/task9_baseline/canonical_campaign.csv
 !/out/eesm/task9_baseline/campaign_report.json
 !/out/eesm/task9_baseline/setup_remediation_status.json
+!/out/eesm/phase0_close_20260813/
+!/out/eesm/phase1_close_20260813/
+!/out/eesm/phase1_science_20260813/
+
+# Local leftovers that must not dirty a foundry bundle
+/batch.log
+/eesm/outputs/
+/out/models/
+/eesm/docs/FEMM_MIGRATION_PROMPT.md
+/eesm/aedt/failed_runs/
+/eesm/aedt/point_exports/
+/eesm/aedt/solver_evidence/
+/eesm/aedt/eesm_model_build_status.json
+/eesm/aedt/eesm_qualification_export_status.json
+/eesm/aedt/eesm_qualification_progress.csv
+/eesm/aedt/analyze_mesh_torque.py
+/eesm/aedt/validate_mesh_torque.py
+/eesm/aedt/run_validate_mesh_torque.ps1
 
 # Local / machine-specific
 .DS_Store

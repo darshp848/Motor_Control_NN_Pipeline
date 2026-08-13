@@ -17,8 +17,9 @@ class CompactMLPSurrogate(FluxSurrogate):
         hidden = int(self.config.get("hidden_width", 32))
         learning_rate = float(self.config.get("learning_rate", 0.01))
         epochs = int(self.config.get("epochs", 300))
+        n_out = int(y.shape[1])
         self.hyperparameters_ = {
-            "architecture": [3, hidden, hidden, 2],
+            "architecture": [3, hidden, hidden, n_out],
             "activation": "tanh",
             "dtype": "float64",
             "loss": "mean_squared_error",
@@ -33,7 +34,7 @@ class CompactMLPSurrogate(FluxSurrogate):
         self.model_ = nn.Sequential(
             nn.Linear(3, hidden), nn.Tanh(),
             nn.Linear(hidden, hidden), nn.Tanh(),
-            nn.Linear(hidden, 2),
+            nn.Linear(hidden, n_out),
         ).to(dtype=torch.float64)
         inputs = torch.as_tensor(X, dtype=torch.float64)
         targets = torch.as_tensor(y, dtype=torch.float64)

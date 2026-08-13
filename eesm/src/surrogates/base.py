@@ -51,9 +51,18 @@ def _package_versions() -> dict[str, str]:
 
 
 class FluxSurrogate(ABC):
-    """Base class for `(id, iq, if) -> (lambda_d, lambda_q)` models."""
+    """Base class for `(id, iq, if) -> (lambda_d, lambda_q[, lambda_f])` models.
+
+    Phase 0 fitted two outputs. Phase 1 adds the terminal field flux linkage as
+    an optional third. `n_outputs` is set from the training data in `fit`, so a
+    two-column call behaves exactly as it did before.
+    """
 
     family: str
+
+    #: Supervised output channels. 2 = (lambda_d, lambda_q), the Phase 0
+    #: contract. 3 adds lambda_f_terminal_wb.
+    n_outputs: int = 2
 
     #: Whether this family exposes a predictive standard deviation via
     #: predict_std(). Only probabilistic families (e.g. the GP) set this True;
@@ -71,8 +80,13 @@ class FluxSurrogate(ABC):
         y_array = np.asarray(y, dtype=np.float64)
         if X_array.ndim != 2 or X_array.shape[1] != 3:
             raise ValueError("X must have shape (n, 3)")
-        if y_array.ndim != 2 or y_array.shape != (X_array.shape[0], 2):
-            raise ValueError("y must have shape (n, 2)")
+        if (
+            y_array.ndim != 2
+            or y_array.shape[0] != X_array.shape[0]
+            or y_array.shape[1] not in (2, 3)
+        ):
+            raise ValueError("y must have shape (n, 2) or (n, 3)")
+        self.n_outputs = int(y_array.shape[1])
         if X_array.shape[0] == 0 or not (
             np.isfinite(X_array).all() and np.isfinite(y_array).all()
         ):
@@ -105,8 +119,10 @@ class FluxSurrogate(ABC):
             self._predict_normalized((X_array - self.x_mean_) / self.x_scale_),
             dtype=np.float64,
         )
-        if normalized.shape != (X_array.shape[0], 2):
-            raise ValueError("surrogate prediction must have shape (n, 2)")
+        if normalized.shape != (X_array.shape[0], self.n_outputs):
+            raise ValueError(
+                f"surrogate prediction must have shape (n, {self.n_outputs})"
+            )
         return normalized * self.y_scale_ + self.y_mean_
 
     def predict_std(self, X: np.ndarray) -> np.ndarray:
@@ -133,9 +149,13 @@ class FluxSurrogate(ABC):
         )
         # Accept (n,) shared-std or (n, 2) per-output std across sklearn versions.
         if std_normalized.ndim == 1:
-            std_normalized = np.column_stack([std_normalized, std_normalized])
-        if std_normalized.shape != (X_array.shape[0], 2):
-            raise ValueError("predictive std must have shape (n,) or (n, 2)")
+            std_normalized = np.column_stack(
+                [std_normalized] * self.n_outputs
+            )
+        if std_normalized.shape != (X_array.shape[0], self.n_outputs):
+            raise ValueError(
+                f"predictive std must have shape (n,) or (n, {self.n_outputs})"
+            )
         if np.any(std_normalized < 0.0):
             raise ValueError("predictive std must be non-negative")
         return std_normalized * self.y_scale_

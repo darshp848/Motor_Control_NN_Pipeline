@@ -1,0 +1,57 @@
+{
+  "artifacts": [
+    {
+      "path": "out/eesm/phase0_close_20260813/phase0_close.json",
+      "sha256": "97bd54c97f0ba7c7b0f6d88dedac77f87223f16fdb73421b3644152d127acd38"
+    },
+    {
+      "path": "out/eesm/femm_equal_budget_20260813/femm_results.csv",
+      "sha256": "c623d14b9afb294847261291b45c739517096d42669d88eea274b8838c2c05a2"
+    },
+    {
+      "path": "out/eesm/equal_budget_femm_20260813/equal_budget_summary.json",
+      "sha256": "ef59a2466b5fb2400041d9142d56c8cdcbf22c76319907f9b8995fe52d3de73c"
+    }
+  ],
+  "bundle_version": "1.0.0",
+  "created_utc": "2026-08-13T15:19:13.654825+00:00",
+  "decisions": {
+    "promotion": {
+      "candidate": "latin_hypercube|256|rbf_or_gp",
+      "family": "rbf_or_gp",
+      "reason": null,
+      "status": "promoted"
+    }
+  },
+  "environment": {
+    "python": "3.11.9",
+    "working_tree_may_be_dirty": true
+  },
+  "experiment_id": "eesm_foundry_first_20260710",
+  "foundry_commit": "2d6304f9090d51b604e26a64d1ff2b6a3379c51d",
+  "gates": {
+    "threshold_status": "frozen",
+    "thresholds": {
+      "boundary": 0.05580556892824304,
+      "data_qa": 0.0,
+      "feasibility": 0.02,
+      "field_weakening": 0.05121253119353738,
+      "interior": 0.03937430873722512,
+      "saturation": 0.05890606707606628,
+      "torque": 9.65519376554659,
+      "voltage": 73.32389575047401
+    }
+  },
+  "inputs": {
+    "campaign": "out/eesm/femm_equal_budget_20260813/femm_results.csv",
+    "study": "out/eesm/equal_budget_femm_20260813",
+    "threshold_method": "eesm/docs/THRESHOLD_FREEZE_METHOD.md"
+  },
+  "manifest_sha256": "b5b73faa19898acac1ddbf046b039f2cd2abfecbbd10efd50cc183e071a116fe",
+  "stages": {
+    "equal_budget_fit": "complete",
+    "fem_campaign": "complete",
+    "promotion": "promoted",
+    "scheduler_audit": "passed"
+  }
+}
