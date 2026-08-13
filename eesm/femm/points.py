@@ -117,6 +117,54 @@ def _guard_destination(source: str, dest: str) -> None:
         )
 
 
+def copy_femm_points_file(source: str, dest: str) -> Dict[str, Any]:
+    """Copy an already-FEMM-dialect points file into a new campaign root.
+
+    Bytes are copied verbatim so the destination SHA-256 matches the source.
+    The source freeze is not opened for writing.
+    """
+    if dialect_of(source) != "femm":
+        raise PointsRefusal(
+            "Refusing copy: %s is not in the FEMM campaign dialect." % source
+        )
+    _guard_destination(source, dest)
+    source_hash = sha256_file(source)
+    with open(source, "r", encoding="utf-8", newline="") as stream:
+        rows = [dict(row) for row in csv.DictReader(stream)]
+    if not rows:
+        raise PointsRefusal("Refusing copy: source file has no rows")
+
+    os.makedirs(os.path.dirname(os.path.abspath(dest)), exist_ok=True)
+    with open(source, "rb") as incoming, open(dest, "wb") as outgoing:
+        outgoing.write(incoming.read())
+    dest_hash = sha256_file(dest)
+    if dest_hash != source_hash:
+        os.remove(dest)
+        raise PointsRefusal(
+            "Refusing copy: destination hash drifted from source %s" % source_hash
+        )
+
+    payload: Dict[str, Any] = {
+        "copied_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "source_path": os.path.abspath(source),
+        "source_sha256": source_hash,
+        "source_columns": read_header(source),
+        "column_mapping": {name: name for name in FROZEN_POINT_FIELDS},
+        "dropped_columns": [],
+        "rows": len(rows),
+        "dest_path": os.path.abspath(dest),
+        "dest_sha256": dest_hash,
+        "note": (
+            "Verbatim copy of a FEMM-dialect freeze. Identities, roles and "
+            "regions are unchanged; the source file and its hash remain "
+            "the authority."
+        ),
+    }
+    with open(sidecar_path(dest), "w", encoding="utf-8") as stream:
+        json.dump(payload, stream, indent=2, sort_keys=True)
+    return payload
+
+
 def adapt_points_file(source: str, dest: str,
                       mapping: Optional[Mapping[str, str]] = None,
                       ) -> Dict[str, Any]:

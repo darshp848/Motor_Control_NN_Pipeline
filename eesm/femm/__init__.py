@@ -16,13 +16,11 @@ sliding-band rotor-motion model.
 
 Scope guard
 -----------
-This package is qualified for CONVENTION AND PLUMBING only. It is NOT
-authorised for dataset generation, promotion, or training. Two inputs are
-still missing (see eesm/docs/FEMM_MIGRATION.md):
-
-  - the real BH curve (a documented placeholder steel is used), which makes
-    any point the manifest would label 'saturation' physically meaningless;
-  - a confirmed airgap dimension (RMxprt emitted conflicting DiaGap values).
+Geometry, steel, and F1 (360 deg model) are closed. See
+eesm/docs/PHASE0_TORQUE_CONVENTION.md. This package may generate the 90 deg
+FEMM baseline. It is NOT authorised to freeze thresholds, promote a
+surrogate, or start training until that baseline exists and the eight
+manifest gates are committed.
 
 The AEDT path under eesm/aedt/ is untouched and remains the parallel history.
 """

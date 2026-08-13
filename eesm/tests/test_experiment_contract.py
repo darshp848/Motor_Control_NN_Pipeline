@@ -125,15 +125,25 @@ def test_manifest_distinguishes_required_roles_and_isolates_scheduler_audit():
     }
 
 
-def test_manifest_blocks_promotion_until_required_thresholds_are_frozen():
+def test_manifest_thresholds_are_frozen_to_the_20260813_proposal():
     manifest = _load_contract(MANIFEST_PATH)
     gates = manifest["gates"]
+    proposal_path = (
+        EESM_ROOT.parent / "out" / "eesm" / "threshold_proposal_20260813.json"
+    )
+    proposal = _load_contract(proposal_path)
 
-    assert gates["status"] == "baseline_required"
-    assert gates["promotion_blocked_until_frozen"] is True
+    assert gates["status"] == "frozen"
+    assert gates["promotion_blocked_until_frozen"] is False
     assert gates["required"] == EXPECTED_REQUIRED_GATES
     assert set(gates["thresholds"]) == set(gates["required"])
-    assert all(value is None for value in gates["thresholds"].values())
+    assert all(
+        isinstance(value, (int, float)) and value >= 0.0
+        for value in gates["thresholds"].values()
+    )
+    assert gates["thresholds"] == proposal["proposed_thresholds"]
+    assert gates["frozen_from"] == "out/eesm/threshold_proposal_20260813.json"
+    assert gates["method"] == "eesm/docs/THRESHOLD_FREEZE_METHOD.md"
     assert gates["promotion_policy"] == {
         "unfrozen_threshold_action": "reject",
         "required_gate_policy": "all_must_pass",

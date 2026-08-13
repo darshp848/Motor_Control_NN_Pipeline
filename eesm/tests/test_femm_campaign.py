@@ -42,7 +42,7 @@ REPO_ROOT = os.path.abspath(
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from eesm.femm import campaign, points, runtime  # noqa: E402
+from eesm.femm import campaign, campaign_sanity, points, runtime  # noqa: E402
 from eesm.femm.campaign import (  # noqa: E402
     CampaignPaths,
     CampaignRefusal,
@@ -133,6 +133,38 @@ def test_completed_points_are_never_resolved(paths):
     assert status["status"] == "complete"
     assert fourth.analyze_count == 0  # nothing left: the solver is never called
     assert fourth.call_count("mi_setcurrent") == 0
+
+
+def test_campaign_torque_is_the_identity_not_sector_wst():
+    """Phase 0: 90 deg WST is diagnostic; identity is the campaign torque."""
+    from eesm.femm.campaign import CAMPAIGN_TORQUE_FIELD, campaign_torque_nm
+
+    assert CAMPAIGN_TORQUE_FIELD == "torque_identity_nm"
+    assert "campaign_torque_nm" in RESULT_FIELDS
+    row = {
+        "torque_fem_nm": 2.77,
+        "torque_identity_nm": 2.74,
+        "campaign_torque_nm": 2.74,
+    }
+    assert campaign_torque_nm(row) == pytest.approx(2.74)
+    assert campaign_torque_nm(row) != row["torque_fem_nm"]
+    with pytest.raises(CampaignRefusal, match="dq identity"):
+        campaign_torque_nm({"torque_fem_nm": 2.77})
+
+
+def test_campaign_sanity_summarizes_the_live_64_without_writing_thresholds():
+    root = os.path.join(REPO_ROOT, "out", "eesm", "femm_baseline_64_20260812")
+    results = os.path.join(root, "femm_results.csv")
+    if not os.path.isfile(results):
+        pytest.skip("64-point live campaign results not present")
+    payload = campaign_sanity.summarize_campaign(root)
+    assert payload["verdict"] == "schema_valid_live_rows"
+    assert payload["rows"] == 64
+    assert payload["all_converged"] is True
+    assert payload["not_a_threshold_freeze"] is True
+    assert payload["not_a_fit"] is True
+    assert payload["schema_failures"] == 0
+    assert payload["identity_equals_campaign_torque"] is True
 
 
 def test_lambda_f_wb_is_forbidden_by_the_schema():
@@ -384,6 +416,31 @@ def test_conversion_preserves_frozen_identities(tmp_path):
     assert row["region"] == "saturation"
     assert row["point_name"] == "p_one"
     assert (row["id_a"], row["iq_a"], row["if_a"]) == ("-40.5", "60.25", "6.125")
+
+
+def test_femm_dialect_source_is_copied_verbatim(tmp_path):
+    source = str(tmp_path / "freeze" / "frozen_points.csv")
+    write_points(source)
+    dest = str(tmp_path / "campaign" / "frozen_points.csv")
+    payload = points.copy_femm_points_file(source, dest)
+    assert payload["source_sha256"] == payload["dest_sha256"]
+    assert open(source, "rb").read() == open(dest, "rb").read()
+    assert campaign.read_points(dest)[0]["point_id"] == SAMPLE_POINTS[0]["point_id"]
+    with pytest.raises(PointsRefusal, match="already exists"):
+        points.copy_femm_points_file(source, dest)
+
+
+def test_runner_copies_a_femm_dialect_source(runner, tmp_path):
+    source = str(tmp_path / "freeze" / "frozen_points.csv")
+    write_points(source)
+    root = str(tmp_path / "campaign")
+    status = runner.run_femm_campaign(
+        output_dir=root, points_source=source, use_mock=True,
+    )
+    assert status["points_preparation"]["action"] == "copied"
+    assert status["status"] == "complete"
+    copied = os.path.join(root, "frozen_points.csv")
+    assert open(source, "rb").read() == open(copied, "rb").read()
 
 
 def test_conversion_refuses_to_write_into_the_source_directory(tmp_path):

@@ -66,7 +66,11 @@ RESULT_FIELDS: Sequence[str] = (
     "lambda_a_wb", "lambda_b_wb", "lambda_c_wb", "lambda_field_wb",
     "zero_sequence_ratio",
     "torque_sector_nm", "torque_fem_nm", "torque_identity_nm",
+    "campaign_torque_nm",
     "torque_residual_nm", "torque_residual_rel", "torque_residual_suspect",
+    "torque_gap_sector_nm", "torque_gap_nm",
+    "torque_gap_residual_nm", "torque_gap_residual_rel",
+    "torque_gap_residual_suspect",
     "flux_multiplier", "torque_sector_multiplier",
     "rotor_angle_deg", "theta_electrical_deg",
     "pole_pairs", "model_depth_m",
@@ -74,6 +78,28 @@ RESULT_FIELDS: Sequence[str] = (
 )
 
 FORBIDDEN_ROW_KEYS = ("lambda_f_wb", "roles")
+
+#: Phase 0 torque convention (2026-08-12). F1 is closed by the 360 deg
+#: model. The 90 deg campaign's primary torque is the dq identity from
+#: (lambda_d, lambda_q). Sector WST (torque_fem_nm) is diagnostic only:
+#: its ~0.04 N.m even residual is an antiperiodic-cut artifact.
+CAMPAIGN_TORQUE_FIELD = "torque_identity_nm"
+
+
+def campaign_torque_nm(row: Dict[str, Any]) -> float:
+    """Return the campaign-authoritative torque for a result row.
+
+    Refuses WST-only rows so a later session cannot silently treat
+    torque_fem_nm as the Phase 0 torque.
+    """
+    value = row.get(CAMPAIGN_TORQUE_FIELD)
+    if value is None or value == "":
+        raise CampaignRefusal(
+            "Refusing torque read: row is missing %s. Phase 0 campaign "
+            "torque is the dq identity, not torque_fem_nm (sector WST)."
+            % CAMPAIGN_TORQUE_FIELD
+        )
+    return float(value)
 
 
 @dataclass(frozen=True)
@@ -299,10 +325,17 @@ def build_row(point: Dict[str, Any], result: Dict[str, Any], points_hash: str,
         "zero_sequence_ratio": result.get("zero_sequence_ratio"),
         "torque_sector_nm": result.get("torque_sector_nm"),
         "torque_fem_nm": result.get("torque_fem_nm"),
+        "torque_gap_sector_nm": result.get("torque_gap_sector_nm"),
+        "torque_gap_nm": result.get("torque_gap_nm"),
         "torque_identity_nm": result.get("torque_identity_nm"),
+        "campaign_torque_nm": result.get("torque_identity_nm"),
         "torque_residual_nm": result.get("torque_residual_nm"),
         "torque_residual_rel": result.get("torque_residual_rel"),
         "torque_residual_suspect": result.get("torque_residual_suspect"),
+        "torque_gap_residual_nm": result.get("torque_gap_residual_nm"),
+        "torque_gap_residual_rel": result.get("torque_gap_residual_rel"),
+        "torque_gap_residual_suspect": result.get(
+            "torque_gap_residual_suspect"),
         "flux_multiplier": result.get("flux_multiplier"),
         "torque_sector_multiplier": result.get("torque_sector_multiplier"),
         "rotor_angle_deg": result.get("rotor_angle_deg"),
@@ -383,6 +416,12 @@ def run_campaign(handle: Any, paths: CampaignPaths,
                 "written for this point."
                 % (point["point_name"], result.get("solver_status"))
             )
+        closer = getattr(handle, "mo_close", None)
+        if callable(closer):
+            try:
+                closer()
+            except BaseException:
+                pass
         row = build_row(point, result, points_hash, solver_backend)
         validate_row(row, schema)          # validate BEFORE writing
         append_row(paths.results_csv, row)

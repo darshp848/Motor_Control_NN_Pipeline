@@ -4,8 +4,10 @@
 
 The EESM foundry supports deterministic synthetic studies, four surrogate
 families, controller-aware metrics, frozen promotion gates, constrained
-scheduling, and prospective LUT audit joins. Numerical thresholds remain
-`baseline_required`, so promotion and real-release claims remain blocked.
+scheduling, and prospective LUT audit joins. Numerical thresholds were
+frozen on 2026-08-13 from `out/eesm/threshold_proposal_20260813.json`.
+Promotion still requires a completed equal-budget fit; no LUT or
+release claim is made.
 Task 9 collected all 64 frozen real-FEM rows with complete evidence, no
 adaptive non-convergence warnings, and at most 1,826 mesh elements. Canonical
 normalization completed, but the Task 9 report fails the frozen torque-closure

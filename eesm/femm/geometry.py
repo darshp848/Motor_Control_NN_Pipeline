@@ -39,6 +39,7 @@ from . import section
 from .config import (
     BOUNDARY_ANTIPERIODIC_NAME,
     BOUNDARY_OUTER_NAME,
+    BOUNDARY_SLIDING_BAND_NAME,
     FIELD_CIRCUIT,
     FIELD_COIL_MAP,
     FemmConfig,
@@ -129,8 +130,10 @@ def layer_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> Tuple[float, float]:
     return body_start + quarter, body_start + 3.0 * quarter
 
 
-def stator_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG
-                       ) -> List[Dict[str, Any]]:
+def stator_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG,
+                       origin_deg: float = 0.0,
+                       sign_flip: float = 1.0,
+                       suffix: str = "") -> List[Dict[str, Any]]:
     """One entry per coil sheet: where it sits, its circuit, its signed turns.
 
     Sheet naming follows RMxprt: Coil_k is the lower layer of slot k and
@@ -139,9 +142,11 @@ def stator_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG
 
     All four sheets of a phase carry the SAME sign -- see the STATOR_COIL_MAP
     comment in config.py. The return conductors are in the adjacent sector and
-    the antiperiodic boundary supplies their inversion.
+    the antiperiodic boundary supplies their inversion. On a 360 deg model
+    that inversion is explicit: odd sectors pass sign_flip=-1.
     """
-    angles = stator_slot_center_angles_deg(cfg)
+    angles = [origin_deg + angle
+              for angle in stator_slot_center_angles_deg(cfg)]
     lower_radius, upper_radius = layer_radii_mm(cfg)
     turns = cfg.machine.conductors_per_sheet
     labels: List[Dict[str, Any]] = []
@@ -150,9 +155,9 @@ def stator_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG
         radius = upper_radius if sheet_name.startswith("CoilRe") else lower_radius
         x, y = polar_to_xy(radius, angles[index])
         labels.append({
-            "name": sheet_name,
+            "name": sheet_name + suffix,
             "circuit": circuit,
-            "turns": sign * turns,
+            "turns": sign * sign_flip * turns,
             "x": x,
             "y": y,
             "slot_index": index,
@@ -162,7 +167,10 @@ def stator_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG
     return labels
 
 
-def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
+def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG,
+                      origin_deg: float = 0.0,
+                      sign_flip: float = 1.0,
+                      suffix: str = "") -> List[Dict[str, Any]]:
     """The two field bundles flanking the pole body.
 
     OPPOSITE signs, unlike the stator. Both bundles are inside the model, so
@@ -170,7 +178,7 @@ def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
     MMF instead of building it. See FIELD_COIL_MAP in config.py.
     """
     geo = cfg.geometry
-    axis = pole_axis_deg(cfg)
+    axis = pole_axis_deg(cfg) + origin_deg
     # Centre of the spec's coil window (3.2: radius 36.0 to 47.0, 7.0 mm wide
     # per side of the pole body). A label on a boundary belongs to no region,
     # so this must be the centre, not an edge.
@@ -186,9 +194,9 @@ def field_coil_labels(cfg: FemmConfig = DEFAULT_CONFIG) -> List[Dict[str, Any]]:
         tangential = offset if sign > 0 else -offset
         x, y = offset_polar_to_xy(radial, tangential, axis)
         labels.append({
-            "name": name,
+            "name": name + suffix,
             "circuit": FIELD_CIRCUIT,
-            "turns": sign * turns,
+            "turns": sign * sign_flip * turns,
             "x": x,
             "y": y,
             "group": cfg.api.group_field_coils,
@@ -356,9 +364,18 @@ def define_boundaries(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> None:
     """
     api = cfg.api
     zeros = [0.0] * 8
-    for index in range(len(section.sector_edge_bands(cfg))):
-        handle.mi_addboundprop(antiperiodic_band_name(index), *zeros,
-                               api.boundary_format_antiperiodic)
+    if not cfg.geometry.full_machine:
+        for index in range(len(section.sector_edge_bands(cfg))):
+            handle.mi_addboundprop(antiperiodic_band_name(index), *zeros,
+                                   api.boundary_format_antiperiodic)
+    if cfg.geometry.use_sliding_band:
+        handle.mi_addboundprop(
+            BOUNDARY_SLIDING_BAND_NAME,
+            *zeros,
+            api.boundary_format_antiperiodic_airgap,
+            0.0,
+            0.0,
+        )
     handle.mi_addboundprop(BOUNDARY_OUTER_NAME, *zeros,
                            api.boundary_format_prescribed_a)
 
@@ -384,13 +401,35 @@ def apply_antiperiodic_edges(handle: Any,
     return applied
 
 
+def apply_sliding_band(handle: Any,
+                       cfg: FemmConfig = DEFAULT_CONFIG) -> str:
+    """Assign one Anti-periodic Air Gap property to both band faces."""
+    angle = cfg.machine.sector_span_deg / 2.0
+    for radius in section.sliding_band_radii_mm(cfg):
+        x, y = polar_to_xy(radius, angle)
+        handle.mi_clearselected()
+        handle.mi_selectarcsegment(x, y)
+        handle.mi_setarcsegmentprop(
+            cfg.api.problem_min_angle_deg,
+            BOUNDARY_SLIDING_BAND_NAME,
+            0,
+            0,
+        )
+        handle.mi_clearselected()
+    return BOUNDARY_SLIDING_BAND_NAME
+
+
 def _place_label(handle: Any, x: float, y: float, material: str,
-                 circuit: str, turns: float, group: int) -> None:
+                 circuit: str, turns: float, group: int,
+                 mesh_size_mm: float = 0.0) -> None:
     handle.mi_addblocklabel(x, y)
     handle.mi_clearselected()
     handle.mi_selectlabel(x, y)
     # mi_setblockprop(blockname, automesh, meshsize, incircuit, magdir, group, turns)
-    handle.mi_setblockprop(material, 1, 0, circuit, 0, group, turns)
+    # FEMM 4.2 manual 3.3.3: automesh=0 makes the mesher defer to meshsize.
+    automesh = 0 if mesh_size_mm > 0.0 else 1
+    handle.mi_setblockprop(material, automesh, mesh_size_mm,
+                           circuit, 0, group, turns)
     handle.mi_clearselected()
 
 
@@ -419,9 +458,15 @@ def build_sector(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> BuildReport:
     # labels below had no regions to land in and FEMM refused to solve.
     outer_radius = stator_outer_radius_mm(cfg) * cfg.geometry.outer_boundary_scale
     span = cfg.machine.sector_span_deg
-    report.section_features = section.draw_section(handle, cfg)
+    copies = cfg.machine.sectors if cfg.geometry.full_machine else 1
+    for index in range(copies):
+        report.section_features.extend(
+            section.draw_section(handle, cfg, origin_deg=index * span))
 
-    report.antiperiodic_edges = apply_antiperiodic_edges(handle, cfg)
+    if not cfg.geometry.full_machine:
+        report.antiperiodic_edges = apply_antiperiodic_edges(handle, cfg)
+        if cfg.geometry.use_sliding_band:
+            apply_sliding_band(handle, cfg)
 
     # Outer ARC gets the Dirichlet condition. It is an arc, so it needs
     # mi_selectarcsegment / mi_setarcsegmentprop -- mi_selectsegment only ever
@@ -441,27 +486,35 @@ def build_sector(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> BuildReport:
     # to a geometry mirror check because a boundary assignment is not a drawn
     # primitive, and mesh-independent because it is a boundary condition --
     # lambda_C held to 4 digits across a 20x element sweep.
-    mx, my = polar_to_xy(outer_radius, span / 2.0)  # a point ON the arc
-    handle.mi_clearselected()
-    handle.mi_selectarcsegment(mx, my)
-    handle.mi_setarcsegmentprop(cfg.api.problem_min_angle_deg,
-                                BOUNDARY_OUTER_NAME, 0, 0)
-    handle.mi_clearselected()
+    for index in range(copies):
+        mid = index * span + span / 2.0
+        mx, my = polar_to_xy(outer_radius, mid)
+        handle.mi_clearselected()
+        handle.mi_selectarcsegment(mx, my)
+        handle.mi_setarcsegmentprop(cfg.api.problem_min_angle_deg,
+                                    BOUNDARY_OUTER_NAME, 0, 0)
+        handle.mi_clearselected()
 
     for entry in region_labels(cfg):
         _place_label(handle, entry["x"], entry["y"], entry["material"],
-                     "<None>", 0, entry["group"])
+                     "<None>", 0, entry["group"],
+                     entry.get("mesh_size_mm", 0.0))
         report.material_regions.append(entry["name"])
 
-    for entry in stator_coil_labels(cfg):
-        _place_label(handle, entry["x"], entry["y"], cfg.materials.coil_material,
-                     entry["circuit"], entry["turns"], entry["group"])
-        report.coil_sheets.append(entry["name"])
-
-    for entry in field_coil_labels(cfg):
-        _place_label(handle, entry["x"], entry["y"], cfg.materials.coil_material,
-                     entry["circuit"], entry["turns"], entry["group"])
-        report.field_coils.append(entry["name"])
+    for index in range(copies):
+        flip = -1.0 if index % 2 else 1.0
+        suffix = "" if index == 0 else "_s%d" % index
+        origin = index * span
+        for entry in stator_coil_labels(cfg, origin, flip, suffix):
+            _place_label(handle, entry["x"], entry["y"],
+                         cfg.materials.coil_material,
+                         entry["circuit"], entry["turns"], entry["group"])
+            report.coil_sheets.append(entry["name"])
+        for entry in field_coil_labels(cfg, origin, flip, suffix):
+            _place_label(handle, entry["x"], entry["y"],
+                         cfg.materials.coil_material,
+                         entry["circuit"], entry["turns"], entry["group"])
+            report.field_coils.append(entry["name"])
 
     return report
 

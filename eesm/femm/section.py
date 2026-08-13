@@ -181,10 +181,14 @@ def sector_edge_split_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> List[float]:
     The pole shoe arc spans 20.2-69.8 deg and does not touch either edge.
     """
     geo = cfg.geometry
-    return [
+    radii = [
         0.0,
         geo.shaft_diameter_mm / 2.0,
         pole_body_inner_radius_mm(cfg),
+    ]
+    if geo.use_sliding_band:
+        radii.extend(sliding_band_radii_mm(cfg))
+    radii.extend([
         geo.stator_inner_diameter_mm / 2.0,
         # The stator OD. Only an edge once the exterior region exists: with
         # outer_boundary_scale = 1.0 the outer arc WAS the stator OD, so this
@@ -192,14 +196,36 @@ def sector_edge_split_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG) -> List[float]:
         # region at 135 mm, which separates them and adds a fifth band.
         geo.stator_outer_diameter_mm / 2.0,
         geo.stator_outer_diameter_mm / 2.0 * geo.outer_boundary_scale,
-    ]
+    ])
+    return radii
 
 
 def sector_edge_bands(cfg: FemmConfig = DEFAULT_CONFIG
                       ) -> List[Tuple[float, float]]:
-    """Consecutive (inner, outer) radius pairs of the split sector edge."""
+    """Meshed (inner, outer) pairs of a sector edge.
+
+    The unmeshed sliding-band span is omitted so it is not given an
+    antiperiodic line property. Type-7 plus <No Mesh> owns that interval.
+    """
     radii = sector_edge_split_radii_mm(cfg)
-    return [(radii[index], radii[index + 1]) for index in range(len(radii) - 1)]
+    band = sliding_band_radii_mm(cfg)
+    return [
+        pair for pair in zip(radii[:-1], radii[1:])
+        if pair != band
+    ]
+
+
+def sliding_band_radii_mm(cfg: FemmConfig = DEFAULT_CONFIG
+                          ) -> Tuple[float, float]:
+    """Inner and outer radii of FEMM's unmeshed sliding band (2:3:2)."""
+    rotor = cfg.geometry.rotor_outer_diameter_mm / 2.0
+    bore = cfg.geometry.stator_inner_diameter_mm / 2.0
+    physical_gap = bore - rotor
+    band_thickness = (
+        physical_gap * cfg.geometry.sliding_band_thickness_fraction
+    )
+    side_air = (physical_gap - band_thickness) / 2.0
+    return rotor + side_air, bore - side_air
 
 
 def field_coil_extent_mm(cfg: FemmConfig = DEFAULT_CONFIG
@@ -231,20 +257,33 @@ def section_region_labels(cfg: FemmConfig = DEFAULT_CONFIG
     slot_bottom = slot_profile_mm(cfg)[3][0]
     outer = geo.stator_outer_diameter_mm / 2.0
 
-    # Air probe: an angle clear of the pole shoe, at airgap radius.
     air_angle = (axis - shoe_half_angle_deg(cfg)) / 2.0
-    air_radius = (bore + geo.rotor_outer_diameter_mm / 2.0) / 2.0
-
+    rotor_od = geo.rotor_outer_diameter_mm / 2.0
     entries = [
         ("shaft", shaft_r / 2.0, axis,
          cfg.materials.steel_material, cfg.api.group_shaft),
         ("rotor_steel", (shaft_r + hub_r) / 2.0, axis,
          cfg.materials.steel_material, cfg.api.group_rotor_steel),
-        ("air", air_radius, air_angle,
-         cfg.materials.air_material, cfg.api.group_airgap),
+    ]
+    if geo.use_sliding_band:
+        band_inner, band_outer = sliding_band_radii_mm(cfg)
+        entries.extend([
+            ("rotor_air", (rotor_od + band_inner) / 2.0, air_angle,
+             cfg.materials.air_material, cfg.api.group_airgap),
+            ("stator_air", (band_outer + bore) / 2.0, air_angle,
+             cfg.materials.air_material, cfg.api.group_airgap),
+            ("sliding_band", 0.5 * (band_inner + band_outer), axis,
+             cfg_mod.NO_MESH_BLOCK, 0),
+        ])
+    else:
+        entries.append(
+            ("air", (bore + rotor_od) / 2.0, air_angle,
+             cfg.materials.air_material, cfg.api.group_airgap),
+        )
+    entries.append(
         ("stator_steel", (slot_bottom + outer) / 2.0, axis,
          cfg.materials.steel_material, cfg.api.group_stator_steel),
-    ]
+    )
     # Spec 3 puts the solution region at 135 mm, past the 90 mm stator OD, so
     # there is an exterior air annulus that needs its own label. With
     # outer_boundary_scale = 1.0 there is no such region and no label.
@@ -255,8 +294,13 @@ def section_region_labels(cfg: FemmConfig = DEFAULT_CONFIG
     labels: List[Dict[str, Any]] = []
     for name, radius, angle, material, group in entries:
         x, y = polar_to_xy(radius, angle)
-        labels.append({"name": name, "material": material,
-                       "x": x, "y": y, "group": group})
+        label = {"name": name, "material": material,
+                 "x": x, "y": y, "group": group}
+        # Constrain the connected machine-air region. Do not apply the same
+        # small elements to the 90--135 mm exterior annulus.
+        if name in ("air", "rotor_air", "stator_air"):
+            label["mesh_size_mm"] = geo.airgap_mm * cfg.api.airgap_mesh_fraction
+        labels.append(label)
     return labels
 
 
@@ -272,11 +316,12 @@ def _arc(handle: Any, radius: float, angle_from: float, angle_to: float,
     handle.mi_drawarc(x0, y0, x1, y1, angle_to - angle_from, max_seg_deg)
 
 
-def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
-    """Emit every curve of the cross-section. Returns the feature names drawn."""
+def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG,
+                 origin_deg: float = 0.0) -> List[str]:
+    """Emit every curve of one 90 deg sector starting at origin_deg."""
     geo = cfg.geometry
     span = cfg.machine.sector_span_deg
-    axis = span / 2.0
+    axis = origin_deg + span / 2.0
     max_seg = cfg.api.problem_min_angle_deg
     drawn: List[str] = []
 
@@ -288,13 +333,13 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     outer = geo.stator_outer_diameter_mm / 2.0 * geo.outer_boundary_scale
 
     # -- shaft boundary ----------------------------------------------------
-    _arc(handle, shaft_r, 0.0, span, max_seg)
+    _arc(handle, shaft_r, origin_deg, origin_deg + span, max_seg)
     drawn.append("shaft_arc")
 
     # -- rotor hub, drawn only between the pole feet ------------------------
     foot_half = pole_body_foot_half_angle_deg(cfg)
-    _arc(handle, hub_r, 0.0, axis - foot_half, max_seg)
-    _arc(handle, hub_r, axis + foot_half, span, max_seg)
+    _arc(handle, hub_r, origin_deg, axis - foot_half, max_seg)
+    _arc(handle, hub_r, axis + foot_half, origin_deg + span, max_seg)
     drawn.append("hub_arc_low")
     drawn.append("hub_arc_high")
 
@@ -329,6 +374,12 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     _arc(handle, rotor_od, axis - shoe_half, axis + shoe_half, max_seg)
     drawn.append("pole_shoe_arc")
 
+    if geo.use_sliding_band:
+        band_inner, band_outer = sliding_band_radii_mm(cfg)
+        _arc(handle, band_inner, origin_deg, origin_deg + span, max_seg)
+        _arc(handle, band_outer, origin_deg, origin_deg + span, max_seg)
+        drawn.append("sliding_band_arcs")
+
     # -- field coil windows -------------------------------------------------
     # Spec 3.2 says "coil window RADIAL SPAN: RADIUS 36.0 to 47.0 mm", so the
     # window is bounded by ARCS at those radii, not by straight lines at
@@ -353,14 +404,14 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     drawn.append("field_coil_cavities")
 
     # -- stator bore, in segments between slot mouths -----------------------
-    slot_angles = [(index + 0.5) * cfg_mod.slot_pitch_deg(cfg)
+    slot_angles = [origin_deg + (index + 0.5) * cfg_mod.slot_pitch_deg(cfg)
                    for index in range(cfg_mod.slots_in_sector(cfg))]
     mouth_half = slot_opening_half_angle_deg(cfg)
-    cursor = 0.0
+    cursor = origin_deg
     for angle in slot_angles:
         _arc(handle, bore, cursor, angle - mouth_half, max_seg)
         cursor = angle + mouth_half
-    _arc(handle, bore, cursor, span, max_seg)
+    _arc(handle, bore, cursor, origin_deg + span, max_seg)
     drawn.append("bore_arc_segments")
 
     # -- slots --------------------------------------------------------------
@@ -401,10 +452,10 @@ def draw_section(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> List[str]:
     # the material for both.
     stator_od = geo.stator_outer_diameter_mm / 2.0
     if abs(outer - stator_od) > 1e-9:
-        _arc(handle, stator_od, 0.0, span, max_seg)
+        _arc(handle, stator_od, origin_deg, origin_deg + span, max_seg)
         drawn.append("stator_od_arc")
 
-    _arc(handle, outer, 0.0, span, max_seg)
+    _arc(handle, outer, origin_deg, origin_deg + span, max_seg)
     drawn.append("outer_arc")
 
     return drawn

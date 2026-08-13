@@ -443,6 +443,34 @@ def test_every_block_label_is_uniquely_placed(built):
     assert len(points) == 19
 
 
+def test_only_machine_air_uses_the_configured_airgap_mesh_limit():
+    """Regression: airgap_mesh_fraction used to be dead configuration."""
+    from dataclasses import replace
+    from eesm.femm import section
+
+    cfg = replace(
+        DEFAULT_CONFIG,
+        api=replace(DEFAULT_CONFIG.api, airgap_mesh_fraction=1.0 / 6.0),
+    )
+    handle = MockFemm(cfg=cfg)
+    geometry.build_sector(handle, cfg)
+    labels = {entry["name"]: entry for entry in section.section_region_labels(cfg)}
+
+    def block_for(name):
+        label = labels[name]
+        return next(
+            block for block in handle.blocks
+            if block["position"] == (label["x"], label["y"])
+        )
+
+    air = block_for("air")
+    assert air["automesh"] == 0
+    assert air["meshsize"] == pytest.approx(0.1)
+    exterior = block_for("exterior_air")
+    assert exterior["automesh"] == 1
+    assert exterior["meshsize"] == pytest.approx(0.0)
+
+
 def test_slot_mouths_leave_the_bore_arc_open(built):
     """Slot openings must not be sealed by a continuous bore arc: the mouth
     air, wedge air, interpolar air and airgap are one region on purpose."""
@@ -455,6 +483,43 @@ def test_slot_mouths_leave_the_bore_arc_open(built):
     # the last: slots + 1 segments, never a single unbroken circle.
     assert len(bore_arcs) == cfg_mod.slots_in_sector(DEFAULT_CONFIG) + 1
     assert section.slot_opening_half_angle_deg(DEFAULT_CONFIG) > 0.0
+
+
+def _full_cfg():
+    from dataclasses import replace
+    return replace(
+        DEFAULT_CONFIG,
+        geometry=replace(DEFAULT_CONFIG.geometry, full_machine=True),
+    )
+
+
+def test_full_machine_has_four_poles_no_antiperiodic():
+    cfg = _full_cfg()
+    handle = MockFemm(cfg=cfg)
+    report = geometry.build_sector(handle, cfg)
+    assert report.antiperiodic_edges == []
+    assert len(report.coil_sheets) == 48
+    assert len(report.field_coils) == 8
+    for name in ("shaft", "rotor_steel", "air", "stator_steel"):
+        assert name in report.material_regions
+    assert report.section_features.count("outer_arc") == 4
+    ap = [seg for seg in handle.segments
+          if seg["boundary"] and str(seg["boundary"]).startswith(
+              BOUNDARY_ANTIPERIODIC_NAME)]
+    assert ap == []
+    outer = [arc for arc in handle.arc_segments
+             if arc["boundary"] == BOUNDARY_OUTER_NAME]
+    assert len(outer) == 4
+
+
+def test_full_machine_odd_poles_flip_winding_signs():
+    cfg = _full_cfg()
+    even = geometry.stator_coil_labels(cfg, origin_deg=0.0, sign_flip=1.0)
+    odd = geometry.stator_coil_labels(cfg, origin_deg=90.0, sign_flip=-1.0)
+    by_even = {e["name"]: e["turns"] for e in even}
+    for sheet in odd:
+        base = sheet["name"]
+        assert sheet["turns"] == -by_even[base]
 
 
 def test_build_never_imports_femm():

@@ -94,8 +94,11 @@
     "unsupported_policy": "report_separately"
   },
   "gates": {
-    "status": "baseline_required",
-    "promotion_blocked_until_frozen": true,
+    "status": "frozen",
+    "promotion_blocked_until_frozen": false,
+    "frozen_at": "2026-08-13",
+    "method": "eesm/docs/THRESHOLD_FREEZE_METHOD.md",
+    "frozen_from": "out/eesm/threshold_proposal_20260813.json",
     "required": [
       "data_qa",
       "interior",
@@ -107,14 +110,14 @@
       "feasibility"
     ],
     "thresholds": {
-      "data_qa": null,
-      "interior": null,
-      "boundary": null,
-      "saturation": null,
-      "field_weakening": null,
-      "torque": null,
-      "voltage": null,
-      "feasibility": null
+      "data_qa": 0.0,
+      "interior": 0.03937430873722512,
+      "boundary": 0.05580556892824304,
+      "saturation": 0.05890606707606628,
+      "field_weakening": 0.05121253119353738,
+      "torque": 9.65519376554659,
+      "voltage": 73.32389575047401,
+      "feasibility": 0.02
     },
     "promotion_policy": {
       "unfrozen_threshold_action": "reject",

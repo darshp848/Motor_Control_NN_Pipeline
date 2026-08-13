@@ -35,9 +35,19 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--config", default=DEFAULT_CONFIG)
     parser.add_argument("--out", default=DEFAULT_OUTPUT)
     parser.add_argument("--truth-config", default=DEFAULT_TRUTH_CONFIG)
+    parser.add_argument(
+        "--truth-csv",
+        default=None,
+        help="FEMM campaign femm_results.csv. When set, synthetic truth is not used.",
+    )
     args = parser.parse_args(argv)
 
-    truth_provider = build_synthetic_truth_provider(args.truth_config)
+    if args.truth_csv:
+        from data.femm_truth import FemmCampaignTruth
+
+        truth_provider = FemmCampaignTruth(args.truth_csv)
+    else:
+        truth_provider = build_synthetic_truth_provider(args.truth_config)
     summary = run_equal_budget_study(
         manifest_path=args.config,
         output_dir=args.out,

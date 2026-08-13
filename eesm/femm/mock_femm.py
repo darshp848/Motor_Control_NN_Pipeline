@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from .config import (
+    BOUNDARY_SLIDING_BAND_NAME,
     DEFAULT_CONFIG,
     FIELD_CIRCUIT,
     FemmConfig,
@@ -184,8 +185,20 @@ class MockFemm:
 
     def mi_addboundprop(self, name: str, *args: Any) -> None:
         self._record("mi_addboundprop", name, *args)
-        self.boundary_props.append({"name": name,
-                                    "format": args[-1] if args else None})
+        self.boundary_props.append({
+            "name": name,
+            "format": args[8] if len(args) >= 9 else (
+                args[-1] if args else None),
+            "inner_angle": args[9] if len(args) >= 10 else 0.0,
+            "outer_angle": args[10] if len(args) >= 11 else 0.0,
+        })
+
+    def mi_modifyboundprop(self, name: str, propnum: int,
+                           value: float) -> None:
+        self._record("mi_modifyboundprop", name, propnum, value)
+        if (name == BOUNDARY_SLIDING_BAND_NAME
+                and propnum == self.cfg.api.boundary_parameter_inner_angle):
+            self.rotor_angle_deg = float(value)
 
     # -- drawing -----------------------------------------------------------
 
@@ -239,6 +252,8 @@ class MockFemm:
                      magdir, group, turns)
         self.blocks.append({
             "material": material,
+            "automesh": automesh,
+            "meshsize": meshsize,
             "circuit": circuit,
             "group": group,
             "turns": turns,
@@ -353,10 +368,38 @@ class MockFemm:
     def mo_blockintegral(self, integral_type: int) -> float:
         self._record("mo_blockintegral", integral_type)
         solution = self._require_solution()
+        if integral_type == 17:
+            return 0.0
         if integral_type != self.cfg.api.block_integral_torque:
             raise RuntimeError(
                 "mock only implements block integral type %d (torque), got %d"
                 % (self.cfg.api.block_integral_torque, integral_type)
+            )
+        return solution["torque_sector"]
+
+    def mo_gapintegral(self, boundary: str, integral_type: int) -> float:
+        self._record("mo_gapintegral", boundary, integral_type)
+        solution = self._require_solution()
+        if boundary != BOUNDARY_SLIDING_BAND_NAME:
+            raise RuntimeError("unknown mock air-gap boundary %r" % boundary)
+        return solution["torque_sector"]
+
+    def mo_clearcontour(self) -> None:
+        self._record("mo_clearcontour")
+
+    def mo_addcontour(self, x: float, y: float) -> None:
+        self._record("mo_addcontour", x, y)
+
+    def mo_bendcontour(self, angle: float, maxseg: float) -> None:
+        self._record("mo_bendcontour", angle, maxseg)
+
+    def mo_lineintegral(self, integral_type: int) -> float:
+        self._record("mo_lineintegral", integral_type)
+        solution = self._require_solution()
+        if integral_type != 4:
+            raise RuntimeError(
+                "mock only implements line integral type 4 (stress-tensor "
+                "torque), got %d" % integral_type
             )
         return solution["torque_sector"]
 

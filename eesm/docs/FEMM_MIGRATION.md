@@ -1,5 +1,48 @@
 # FEMM migration
 
+## Current status — 2026-08-12
+
+This block supersedes conflicting historical status text below. The live branch
+is `femm-migration` at `2d6304f` plus uncommitted FEMM-path work (mesh control,
+360° builder, Phase 0 torque convention). Real FEMM solves have run. The model
+is rebuilt from the frozen spec with the pinned `rmxprt-steel_1008-r1` BH table.
+
+**F1 is closed on the 360° model.** Evidence:
+`out/eesm/femm_f1_360_20260812/f1_360.json` — 285,339 elements, |T| asymmetry
+0.168%, k = 1.0235 / 1.0255, field λq = −3.3e-6 Wb. The 90° sector's ~3% WST
+mirror miss is an antiperiodic-cut artifact (T_even −0.043 → −0.002 N·m).
+
+**Phase 0 torque convention** is `eesm/docs/PHASE0_TORQUE_CONVENTION.md`:
+baseline stays on the 90° sector; campaign torque is the dq identity;
+`torque_fem_nm` is diagnostic only.
+
+**The 64-point live baseline exists.** Evidence:
+`out/eesm/femm_baseline_64_20260812/` — 64/64 converged, backend
+`femm_4.2`, 73,904 elements, Task 9 identities converted not rewritten,
+`campaign_torque_nm` = identity. Sanity:
+`out/eesm/femm_baseline_64_20260812/campaign_sanity.json`.
+
+**128/256 identities are frozen** at
+`out/eesm/femm_equal_budget_points_20260813/`. These are the
+manifest equal-budget designs (3 strategies × {64,128,256} train,
+shared 256 selection, sealed 256 scheduler_audit). They are not a
+Task 9 expansion. Origin `(0,0,0)` A is analytic and is not in the
+FEMM points file. Threshold freeze, fitting, and the 1759-point
+FEMM solve is complete at `out/eesm/femm_equal_budget_20260813/`
+(1759/1759, `campaign_sanity.json`). Thresholds are **frozen** in
+the manifest from `threshold_proposal_20260813.json`. The 36-cell
+FEMM fit, promotion (`latin_hypercube|256|rbf_or_gp`), and
+post-promotion scheduler-audit are in
+`out/eesm/phase0_close_20260813/`.
+
+Earlier 90° WST diagnostics (r2 refine 3.19%, line integral k≈−0.78, type-7
+refusal) are preserved under `out/eesm/femm_f1_*` and
+`eesm/docs/TORQUE_INSTRUMENT_REVIEW.md`. They do not reopen F1.
+
+The remainder of this document is retained as migration history. Where it says
+that no solve has run, that F1 is open, or that spec defects later closed by
+`2d6304f` remain, this current-status block controls.
+
 Authority for the scope, blocking inputs, and Windows confirmation checklist of
 `eesm/femm/`. Cited by `eesm/femm/__init__.py`, `runtime.py`, `config.py`,
 `mock_femm.py`, and both FEMM test files. If this document and a docstring

@@ -170,6 +170,20 @@ class GeometryConfig:
     #: boundary directly on the stator OD with no exterior air at all.
     outer_boundary_scale: float = 1.5
 
+    #: Fraction of the physical radial airgap occupied by FEMM's UNMESHED
+    #: sliding band. FEMM's official Antunes.fem rotor-motion example uses a
+    #: 0.3 mm band with 0.2 mm of meshed air on either side in a 0.7 mm gap,
+    #: i.e. the exact 2:3:2 radial ratio retained here.
+    sliding_band_thickness_fraction: float = 3.0 / 7.0
+
+    #: Type-7 band is optional. Default off: a 90° band without a valid
+    #: air-gap element refuses to solve. Enable only for an explicit diagnostic.
+    use_sliding_band: bool = False
+
+    #: Draw all four poles with no antiperiodic cuts. Used to test whether
+    #: the locked-rotor T_even residual is a sector-boundary artifact.
+    full_machine: bool = False
+
 
 @dataclass(frozen=True)
 class MaterialConfig:
@@ -420,7 +434,12 @@ class FemmApiConfig:
     #: Property": 0=Prescribed A, 1=Small skin depth, 2=Mixed,
     #: 3=Strategic dual image, 4=Periodic, 5=Antiperiodic.
     boundary_format_antiperiodic: int = 5
+    boundary_format_antiperiodic_airgap: int = 7
     boundary_format_prescribed_a: int = 0
+
+    #: mi_modifyboundprop(name, propnum, value): 10 = inner angle. The inner
+    #: side is the rotor for this inner-rotor machine.
+    boundary_parameter_inner_angle: int = 10
 
     #: mi_addcircprop(name, current, circuittype): 0=parallel, 1=series.
     #: SERIES is correct here: the turns are in series within one branch.
@@ -429,6 +448,9 @@ class FemmApiConfig:
     #: mo_blockintegral(type). FEMM 4.2 manual, "Block Integrals":
     #: 22 = steady-state weighted stress tensor torque.
     block_integral_torque: int = 22
+
+    #: mo_gapintegral(boundary, type): 0 = DC torque.
+    gap_integral_dc_torque: int = 0
 
     #: Mesh size hint for the airgap, as a fraction of the radial gap.
     airgap_mesh_fraction: float = 0.3333333333333333
@@ -451,6 +473,12 @@ class FemmApiConfig:
 
 BOUNDARY_ANTIPERIODIC_NAME: str = "SectorAntiperiodic"
 BOUNDARY_OUTER_NAME: str = "OuterDirichlet"
+BOUNDARY_SLIDING_BAND_NAME: str = "SlidingBand"
+
+#: FEMM's reserved block name for an unmeshed sliding-band annulus.
+#: Official sliding-band benchmark: the region between the two air-gap
+#: faces is labeled "<No Mesh>", not left unlabeled.
+NO_MESH_BLOCK: str = "<No Mesh>"
 
 #: The two radial edges of the 90 deg sector. They are DISTINCT edges; the
 #: antiperiodic boundary must be applied to both, and applying it twice to
@@ -559,6 +587,21 @@ PROVENANCE: Dict[str, Provenance] = {
         "modelling choice",
         note="Stator OD is the model boundary; no external air region.",
     ),
+    "geometry.sliding_band_thickness_fraction": Provenance(
+        "https://www.femm.info/wiki/RotorMotion and official Antunes.fem",
+        note="Official 0.7 mm-gap example uses 0.2 mm meshed air, 0.3 mm "
+             "unmeshed band, 0.2 mm meshed air; preserve its 2:3:2 ratio.",
+    ),
+    "geometry.use_sliding_band": Provenance(
+        "https://www.femm.info/wiki/SlidingBandBenchmark",
+        note="Default off. Type-7 on this 90 deg sector refused twice "
+             "without a working air-gap element.",
+    ),
+    "geometry.full_machine": Provenance(
+        "modelling choice",
+        note="360 deg, no antiperiodic cuts. Odd poles flip winding signs "
+             "to realise the AP image. Torque x1, flux x1/4.",
+    ),
     # -- materials ----------------------------------------------------------
     "materials.steel_material": Provenance(
         _SPEC,
@@ -643,8 +686,17 @@ PROVENANCE: Dict[str, Provenance] = {
         note="BdryFormat 5. Manual, mi_addboundprop: \"For an 'Anti-Perodic' "
              "boundary condition, set BdryFormat to 5\" (sic)."
     ),
+    "api.boundary_format_antiperiodic_airgap": Provenance(
+        _FEMM_MANUAL,
+        note="BdryFormat 7 = Anti-periodic Air Gap; verified against the "
+             "installed FEMM 4.2 manual and official Antunes.fem example.",
+    ),
     "api.boundary_format_prescribed_a": Provenance(
         _FEMM_MANUAL, note="BdryFormat 0 = Prescribed A."),
+    "api.boundary_parameter_inner_angle": Provenance(
+        _FEMM_MANUAL,
+        note="mi_modifyboundprop propnum 10 sets the Inner Angle.",
+    ),
     "api.circuit_type_series": Provenance(
         _FEMM_MANUAL,
         note="Manual, mi_addcircprop: \"0 for a parallel-connected circuit "
@@ -653,6 +705,10 @@ PROVENANCE: Dict[str, Provenance] = {
         _FEMM_MANUAL,
         note="Manual, mo_blockintegral type table: 22 = 'Steady-state "
              "weighted stress tensor torque'."
+    ),
+    "api.gap_integral_dc_torque": Provenance(
+        _FEMM_MANUAL,
+        note="Manual, mo_gapintegral type table: 0 = DC torque.",
     ),
     "api.airgap_mesh_fraction": Provenance(
         "eesm/aedt/flux_extraction_v2.py NOTE 4",

@@ -28,7 +28,7 @@ _REPO_ROOT = os.path.dirname(_EESM_ROOT)
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from eesm.femm import campaign, points, runtime  # noqa: E402
+from eesm.femm import campaign, geometry, points, runtime  # noqa: E402
 from eesm.femm.campaign import CampaignPaths, CampaignRefusal  # noqa: E402
 from eesm.femm.config import DEFAULT_CONFIG  # noqa: E402
 from eesm.femm.points import PointsRefusal  # noqa: E402
@@ -74,6 +74,10 @@ def prepare_points(paths: CampaignPaths, source: Optional[str]) -> Dict[str, Any
         )
     dialect = points.dialect_of(source)
     paths.ensure()
+    if dialect == "femm":
+        payload = points.copy_femm_points_file(source, paths.points_csv)
+        return {"action": "copied", "source_dialect": dialect,
+                "path": paths.points_csv, "provenance": payload}
     payload = points.adapt_points_file(source, paths.points_csv)
     return {"action": "converted", "source_dialect": dialect,
             "path": paths.points_csv, "provenance": payload}
@@ -100,13 +104,24 @@ def run_femm_campaign(output_dir: str = DEFAULT_OUTPUT,
 
     prepared = prepare_points(paths, points_source)
     handle, backend = resolve_handle(use_mock)
+    if not use_mock:
+        document = os.path.join(paths.root, "eesm_sector.fem")
+        geometry.open_and_build(handle, document, DEFAULT_CONFIG)
 
-    status = campaign.run_campaign(
-        handle, paths, cfg=DEFAULT_CONFIG,
-        max_new_points=max_new_points,
-        rotor_angle_deg=rotor_angle_deg,
-        solver_backend=backend,
-    )
+    try:
+        status = campaign.run_campaign(
+            handle, paths, cfg=DEFAULT_CONFIG,
+            max_new_points=max_new_points,
+            rotor_angle_deg=rotor_angle_deg,
+            solver_backend=backend,
+        )
+    finally:
+        closer = getattr(handle, "closefemm", None)
+        if callable(closer):
+            try:
+                closer()
+            except BaseException:
+                pass
     status["points_preparation"] = prepared
     campaign.write_status(paths.status_json, status)
     return status
@@ -123,9 +138,10 @@ def print_report(status: Dict[str, Any], paths: CampaignPaths) -> None:
     print("this run:  %d solved" % len(status.get("solved_this_run", [])))
     print("status:    %s" % status.get("status"))
     prepared = status.get("points_preparation", {})
-    if prepared.get("action") == "converted":
-        print("converted: %s -> %s"
-              % (prepared["provenance"]["source_path"], prepared["path"]))
+    if prepared.get("action") in ("converted", "copied"):
+        print("%s: %s -> %s"
+              % (prepared["action"], prepared["provenance"]["source_path"],
+                 prepared["path"]))
     if status.get("solver_backend") == "mock_femm":
         print("")
         print("  *** MOCK RUN. These numbers came from a closed-form stand-in,")

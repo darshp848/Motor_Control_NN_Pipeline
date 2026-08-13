@@ -103,6 +103,8 @@ def test_controller_metrics_keep_unsupported_errors_out_of_interior(
             "rmse"
         ]
     )
+    # Empty regional slices are a vacuous pass (0.0), not NaN-fail.
+    assert metrics["gate_values"]["saturation"] == 0.0
     assert np.isnan(metrics["gate_values"]["data_qa"])
 
 
@@ -185,16 +187,20 @@ def test_gate_evaluation_reports_unavailable_and_exceeded_metrics() -> None:
     assert result["gates"]["boundary"]["reason"] == "threshold_exceeded"
 
 
-def test_canonical_unfrozen_manifest_cannot_evaluate_gates() -> None:
+def test_canonical_frozen_manifest_can_evaluate_gates() -> None:
     manifest = json.loads(
         (EESM_ROOT / "configs" / "eesm_experiment_manifest.json").read_text(
             encoding="utf-8"
         )
     )
     values = {gate: 0.0 for gate in REQUIRED_GATES}
+    result = evaluate_gates({"gate_values": values}, manifest["gates"])
+    assert result["all_required_pass"] is True
 
+    unfrozen = dict(manifest["gates"])
+    unfrozen["status"] = "baseline_required"
     with pytest.raises(ValueError, match="thresholds not frozen"):
-        evaluate_gates({"gate_values": values}, manifest["gates"])
+        evaluate_gates({"gate_values": values}, unfrozen)
 
 
 def test_promotion_uses_family_name_as_the_final_stable_tie_break() -> None:

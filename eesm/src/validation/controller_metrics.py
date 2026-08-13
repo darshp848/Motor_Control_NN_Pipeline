@@ -441,12 +441,14 @@ def evaluate_controller_metrics(
     gate_values = {
         "data_qa": data_qa["failure_rate"],
         **{
-            region: max(
-                by_region[region]["flux"]["lambda_d_wb"]["rmse"],
-                by_region[region]["flux"]["lambda_q_wb"]["rmse"],
+            region: (
+                max(
+                    by_region[region]["flux"]["lambda_d_wb"]["rmse"],
+                    by_region[region]["flux"]["lambda_q_wb"]["rmse"],
+                )
+                if by_region[region]["n"]
+                else 0.0
             )
-            if by_region[region]["n"]
-            else float("nan")
             for region in REGIONS
             if region != "unsupported"
         },

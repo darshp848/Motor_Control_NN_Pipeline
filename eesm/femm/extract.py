@@ -26,6 +26,7 @@ import math
 from typing import Any, Dict, Optional, Tuple
 
 from .config import (
+    BOUNDARY_SLIDING_BAND_NAME,
     DEFAULT_CONFIG,
     FIELD_CIRCUIT,
     FemmConfig,
@@ -33,6 +34,9 @@ from .config import (
     field_branch_current,
     stator_branch_current,
 )
+
+#: FEMM mo_lineintegral type 4 = "Stress Tensor Torque: DC torque, 2X torque".
+_LINE_INTEGRAL_STRESS_TORQUE = 4
 
 _TWO_THIRDS_PI = 2.0 * math.pi / 3.0
 
@@ -112,16 +116,56 @@ def torque_from_dq(lambda_d: float, lambda_q: float, id_a: float, iq_a: float,
             * (lambda_d * iq_a - lambda_q * id_a))
 
 
+def torque_scale(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """WST is per-sector on the 90 deg model and already full-machine at 360."""
+    if cfg.geometry.full_machine:
+        return 1.0
+    return cfg.extraction.torque_sector_multiplier
+
+
+def flux_scale(cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """Four explicit poles in series on one circuit are 4x terminal flux."""
+    if cfg.geometry.full_machine:
+        return 1.0 / float(cfg.machine.sectors)
+    return cfg.extraction.flux_multiplier
+
+
 def full_machine_torque(sector_torque_nm: float,
                         cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    """Sector block-integral torque -> full-machine torque (x4)."""
-    return sector_torque_nm * cfg.extraction.torque_sector_multiplier
+    """Block-integral torque -> full-machine torque."""
+    return sector_torque_nm * torque_scale(cfg)
+
+
+def decompose_mirror_torque(torque_positive_nm: float,
+                            torque_negative_nm: float) -> Dict[str, float]:
+    """Split a d-axis mirror pair into even (bias) and odd (physical) parts.
+
+    A geometrically symmetric lossless machine requires
+    T(id, iq, If) = -T(id, -iq, If). The even remainder (T+ + T-)/2 does
+    not reverse with current and cannot be electromagnetic torque of the pair.
+    """
+    even_nm = 0.5 * (torque_positive_nm + torque_negative_nm)
+    odd_nm = 0.5 * (torque_positive_nm - torque_negative_nm)
+    mean_abs_nm = 0.5 * (abs(torque_positive_nm) + abs(torque_negative_nm))
+    if mean_abs_nm > 0.0:
+        asymmetry_pct = (
+            100.0 * abs(abs(torque_positive_nm) - abs(torque_negative_nm))
+            / mean_abs_nm
+        )
+    else:
+        asymmetry_pct = 0.0
+    return {
+        "even_nm": even_nm,
+        "odd_nm": odd_nm,
+        "mean_abs_nm": mean_abs_nm,
+        "asymmetry_pct": asymmetry_pct,
+    }
 
 
 def terminal_flux(circuit_flux_wb: float,
                   cfg: FemmConfig = DEFAULT_CONFIG) -> float:
-    """Circuit flux linkage -> terminal flux linkage (x1)."""
-    return circuit_flux_wb * cfg.extraction.flux_multiplier
+    """Circuit flux linkage -> terminal flux linkage."""
+    return circuit_flux_wb * flux_scale(cfg)
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +223,51 @@ def read_sector_torque(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> float:
     return torque
 
 
+def set_rotor_angle(handle: Any, rotor_angle_deg: float,
+                    cfg: FemmConfig = DEFAULT_CONFIG) -> None:
+    """Set the sliding band's absolute inner (rotor) angle, degrees."""
+    handle.mi_modifyboundprop(
+        BOUNDARY_SLIDING_BAND_NAME,
+        cfg.api.boundary_parameter_inner_angle,
+        rotor_angle_deg,
+    )
+
+
+def read_sector_gap_torque(handle: Any,
+                           cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """Raw mo_gapintegral DC torque on the type-7 band.
+
+    FEMM's sliding-band benchmark returns FULL-machine torque from this
+    call on a half-model. Do not assume a sector factor here; the
+    diagnostic reports k for both raw and x4 scalings.
+    """
+    raw = handle.mo_gapintegral(
+        BOUNDARY_SLIDING_BAND_NAME,
+        cfg.api.gap_integral_dc_torque,
+    )
+    if isinstance(raw, (list, tuple)):
+        return float(raw[0])
+    return float(raw)
+
+
+def read_sector_coenergy(handle: Any, cfg: FemmConfig = DEFAULT_CONFIG) -> float:
+    """Magnetic field coenergy (block integral 17) over every labeled group."""
+    handle.mo_clearblock()
+    groups = (
+        cfg.api.group_stator_steel,
+        cfg.api.group_rotor_steel,
+        cfg.api.group_airgap,
+        cfg.api.group_shaft,
+        cfg.api.group_stator_coils,
+        cfg.api.group_field_coils,
+    )
+    for group in groups:
+        handle.mo_groupselectblock(group)
+    energy = float(handle.mo_blockintegral(17))
+    handle.mo_clearblock()
+    return energy
+
+
 def read_mesh_elements(handle: Any) -> Optional[int]:
     """Element count, for provenance. None if FEMM will not report it."""
     try:
@@ -207,6 +296,8 @@ def extract_point(handle: Any, id_a: float, iq_a: float, if_a: float,
     solver_status = "converged"
     converged = True
     try:
+        if cfg.geometry.use_sliding_band:
+            set_rotor_angle(handle, rotor_angle_deg, cfg)
         handle.mi_analyze(1)  # 1 = non-verbose
         handle.mi_loadsolution()
     except BaseException as exc:
@@ -235,10 +326,28 @@ def extract_point(handle: Any, id_a: float, iq_a: float, if_a: float,
 
     sector_torque = read_sector_torque(handle, cfg)
     torque_fem = full_machine_torque(sector_torque, cfg)
+    if cfg.geometry.use_sliding_band:
+        gap_sector_torque = read_sector_gap_torque(handle, cfg)
+        torque_gap = full_machine_torque(gap_sector_torque, cfg)
+    else:
+        gap_sector_torque = None
+        torque_gap = None
     torque_identity = torque_from_dq(lambda_d, lambda_q, id_a, iq_a, cfg)
     residual = torque_fem - torque_identity
     scale = max(abs(torque_fem), abs(torque_identity))
     residual_rel = abs(residual) / scale if scale > 0.0 else 0.0
+    if torque_gap is None:
+        gap_residual = None
+        gap_residual_rel = None
+        gap_suspect = None
+    else:
+        gap_residual = torque_gap - torque_identity
+        gap_scale = max(abs(torque_gap), abs(torque_identity))
+        gap_residual_rel = (
+            abs(gap_residual) / gap_scale if gap_scale > 0.0 else 0.0
+        )
+        gap_suspect = int(
+            gap_residual_rel > cfg.extraction.torque_residual_report_threshold)
 
     return {
         "id_a": id_a,
@@ -259,13 +368,18 @@ def extract_point(handle: Any, id_a: float, iq_a: float, if_a: float,
         "zero_sequence_ratio": zero_sequence_ratio(*flux_abc),
         "torque_sector_nm": sector_torque,
         "torque_fem_nm": torque_fem,
+        "torque_gap_sector_nm": gap_sector_torque,
+        "torque_gap_nm": torque_gap,
         "torque_identity_nm": torque_identity,
         "torque_residual_nm": residual,
         "torque_residual_rel": residual_rel,
         "torque_residual_suspect": int(
             residual_rel > cfg.extraction.torque_residual_report_threshold),
-        "flux_multiplier": cfg.extraction.flux_multiplier,
-        "torque_sector_multiplier": cfg.extraction.torque_sector_multiplier,
+        "torque_gap_residual_nm": gap_residual,
+        "torque_gap_residual_rel": gap_residual_rel,
+        "torque_gap_residual_suspect": gap_suspect,
+        "flux_multiplier": flux_scale(cfg),
+        "torque_sector_multiplier": torque_scale(cfg),
         "pole_pairs": cfg.machine.pole_pairs,
         "model_depth_m": cfg.machine.model_depth_m,
         "mesh_elements": read_mesh_elements(handle),

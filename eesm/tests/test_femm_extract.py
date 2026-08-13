@@ -87,6 +87,44 @@ def test_inverse_park_produces_a_balanced_three_phase_set():
     assert a + b + c == pytest.approx(0.0, abs=ROUND_TRIP_TOLERANCE)
 
 
+def test_coenergy_scaling_implies_three_halves_field_reciprocity():
+    """Amplitude-invariant W′ must not use naive ∂λf/∂id = ∂λd/∂If.
+
+    W′ = (3/2)(½ Ld id² + ½ Lq iq² + M If id) + ½ Lf If²
+    recovers λd = Ld id + M If and λf = (3/2) M id + Lf If.
+    """
+    ld_h, lq_h, mutual, lf_h = 4.0e-3, 2.0e-3, 5.0e-3, 8.0e-3
+    id_a, iq_a, if_a = -100.0, 80.0, 10.0
+
+    def coenergy(id_value, iq_value, if_value):
+        magnetic = (
+            0.5 * ld_h * id_value ** 2
+            + 0.5 * lq_h * iq_value ** 2
+            + mutual * if_value * id_value
+        )
+        return 1.5 * magnetic + 0.5 * lf_h * if_value ** 2
+
+    step = 1.0e-4
+    lambda_d = (2.0 / 3.0) * (
+        coenergy(id_a + step, iq_a, if_a) - coenergy(id_a - step, iq_a, if_a)
+    ) / (2.0 * step)
+    lambda_q = (2.0 / 3.0) * (
+        coenergy(id_a, iq_a + step, if_a) - coenergy(id_a, iq_a - step, if_a)
+    ) / (2.0 * step)
+    lambda_f = (
+        coenergy(id_a, iq_a, if_a + step) - coenergy(id_a, iq_a, if_a - step)
+    ) / (2.0 * step)
+
+    assert lambda_d == pytest.approx(ld_h * id_a + mutual * if_a, rel=1e-8)
+    assert lambda_q == pytest.approx(lq_h * iq_a, rel=1e-8)
+    assert lambda_f == pytest.approx(1.5 * mutual * id_a + lf_h * if_a, rel=1e-8)
+
+    d_lambda_f_d_id = 1.5 * mutual
+    d_lambda_d_d_if = mutual
+    assert d_lambda_f_d_id == pytest.approx(1.5 * d_lambda_d_d_if)
+    assert d_lambda_f_d_id != pytest.approx(d_lambda_d_d_if)
+
+
 def test_zero_sequence_ratio_is_zero_for_a_balanced_set():
     a, b, c = extract.abc_from_dq(-40.0, 30.0, 17.0)
     assert extract.zero_sequence_ratio(a, b, c) == pytest.approx(0.0, abs=1e-12)
@@ -183,6 +221,41 @@ def test_extracted_torque_matches_the_hand_computed_literal():
     assert result["torque_residual_nm"] == pytest.approx(0.0, abs=1e-12)
     assert result["torque_residual_rel"] == pytest.approx(0.0, abs=1e-12)
     assert result["torque_residual_suspect"] == 0
+
+
+def test_full_machine_scales_flux_by_quarter_and_torque_by_one():
+    from dataclasses import replace
+    cfg = replace(
+        DEFAULT_CONFIG,
+        geometry=replace(DEFAULT_CONFIG.geometry, full_machine=True),
+    )
+    assert extract.flux_scale(cfg) == pytest.approx(0.25)
+    assert extract.torque_scale(cfg) == pytest.approx(1.0)
+
+
+def test_even_torque_component_is_the_instrument_bias():
+    """The r2 F1 miss is 2*T_even/mean|T|, not a scale error.
+
+    Numbers copied from out/eesm/femm_f1_refined_r2_20260812/f1_refined_r2.json.
+    """
+    parts = extract.decompose_mirror_torque(
+        2.856908408390477, -2.767250014389566)
+    assert parts["even_nm"] == pytest.approx(0.04482919700045551)
+    assert parts["odd_nm"] == pytest.approx(2.8120792113900217)
+    assert parts["asymmetry_pct"] == pytest.approx(3.1883310270123055)
+    identity = extract.decompose_mirror_torque(
+        2.7461209297242672, -2.7445074511927134)
+    assert identity["even_nm"] == pytest.approx(0.0008067392657769, abs=1e-12)
+    assert identity["asymmetry_pct"] < 0.1
+
+
+def test_airgap_torque_is_an_independent_readout_with_the_same_scaling():
+    handle = _pinned_handle()
+    result = extract.extract_point(handle, *PINNED_POINT, cfg=DEFAULT_CONFIG)
+    assert result["torque_gap_sector_nm"] is None
+    assert result["torque_gap_nm"] is None
+    assert handle.call_count("mo_gapintegral") == 0
+    assert handle.call_count("mo_blockintegral") == 1
 
 
 def test_extracted_torque_matches_an_independent_closed_form():

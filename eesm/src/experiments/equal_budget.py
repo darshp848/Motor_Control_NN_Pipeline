@@ -8,6 +8,7 @@ import json
 import math
 from datetime import datetime, timezone
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Mapping
 
 import numpy as np
@@ -344,7 +345,9 @@ def run_equal_budget_study(
                 model = build_surrogate(
                     family, seeds["model"], family_configs[family]
                 )
+                started = perf_counter()
                 model.fit(train_X, train_y)
+                fit_s = perf_counter() - started
                 predicted = model.predict(selection_X)
                 metrics = _flux_metrics(selection_truth, predicted)
 
@@ -384,6 +387,7 @@ def run_equal_budget_study(
                     "family": family,
                     "sample_seed": sample_seed,
                     "model_seed": seeds["model"],
+                    "training_runtime_s": float(fit_s),
                     "manifest_sha256": manifest_hash,
                     "training_point_ids": train_ids,
                     "training_point_ids_sha256": _point_ids_sha256(train_ids),
