@@ -165,6 +165,9 @@ def main() -> int:
         help="also run the stator-only lambda_f ablation and its If-only control",
     )
     args = parser.parse_args()
+    # Snapshot before any output is written. A whitelisted out/ root would
+    # otherwise mark this bundle dirty because it contains its own artifacts.
+    tree_dirty = _git_is_dirty()
 
     out_root = Path(args.out).resolve()
     if out_root.exists() and any(out_root.iterdir()):
@@ -351,8 +354,8 @@ def main() -> int:
         "manifest_sha256": manifest_sha,
         "environment": {
             "python": sys.version.split()[0],
-            "working_tree_may_be_dirty": _git_is_dirty(),
-            "git_dirty": _git_is_dirty(),
+            "working_tree_may_be_dirty": tree_dirty,
+            "git_dirty": tree_dirty,
         },
         "inputs": {
             "campaign": str(campaign_path),
@@ -389,7 +392,7 @@ def main() -> int:
     )
     print(f"\nwrote {study_path}")
     print(f"wrote {out_root / 'result_bundle.json'}")
-    if bundle["environment"]["working_tree_may_be_dirty"]:
+    if tree_dirty:
         print("WARNING: working tree is dirty; commit before treating this "
               "bundle as evidence.")
     return 0
