@@ -89,3 +89,46 @@ def test_git_helper_never_raises_where_git_is_absent(monkeypatch):
         raise FileNotFoundError("no git")
     monkeypatch.setattr(ret.subprocess, "run", boom)
     assert ret._git("rev-parse", "HEAD") is None
+
+
+# ---------------------------------------------------------------- placement
+@pytest.mark.parametrize("spec,expected", [
+    ("8-19", list(range(8, 20))),
+    ("0,2,4", [0, 2, 4]),
+    ("8-11,16-19", [8, 9, 10, 11, 16, 17, 18, 19]),
+    (" 3 , 1 ", [1, 3]),
+    ("5-5", [5]),
+])
+def test_cpu_list_parsing(spec, expected):
+    assert ret.parse_cpu_list(spec) == expected
+
+
+@pytest.mark.parametrize("bad", ["", "19-8", "x", ",", "3-"])
+def test_bad_cpu_specs_are_rejected_not_guessed(bad):
+    with pytest.raises(ValueError):
+        ret.parse_cpu_list(bad)
+
+
+def test_placement_is_a_noop_when_nothing_is_requested():
+    r = ret.apply_cpu_placement(None, None)
+    assert "applied" not in r
+
+
+def test_placement_records_what_it_actually_got():
+    r = ret.apply_cpu_placement([0], None)
+    assert r["requested_cpus"] == [0]
+    if r.get("applied"):
+        assert r["effective_cpus"] == [0]
+    else:
+        assert r["reason"]           # must explain itself rather than pass silently
+
+
+def test_placement_never_raises_on_an_impossible_request():
+    """A bad affinity must not destroy a run that is otherwise fine."""
+    r = ret.apply_cpu_placement([999999], None)
+    assert r["applied"] is False and r["reason"]
+
+
+def test_unknown_priority_is_reported_not_applied():
+    r = ret.apply_cpu_placement(None, "turbo")
+    assert r["applied"] is False and "turbo" in r["reason"]

@@ -135,7 +135,53 @@ would contend for the same cores and slow the campaign.
 `--workers N` parallelises the inner cross-validation across processes. The
 inner fits are independent and individually seeded, so this changes wall time
 only: a 2-worker smoke run reproduces the serial run's medians and selected
-configurations exactly. Use roughly (physical cores - 2) to leave headroom.
+configurations exactly.
+
+### Running beside a FEMM campaign
+
+FEMM 4.2 is single-threaded, so a campaign occupies one core and leaves the rest
+idle. `--cpu-affinity` places this study on a chosen set of logical CPUs and
+`--priority below-normal` makes it yield, so the two can share a machine.
+
+The workstation used here is an **Intel Core Ultra 7 255HX: 8 P-cores + 12
+E-cores, 20 threads, no hyper-threading**. With no SMT there is one logical CPU
+per core, so the usual enumeration is P-cores on CPUs 0-7 and E-cores on 8-19.
+**Confirm before relying on it** — enumeration order is a firmware choice:
+
+```
+python eesm/studies/cpu_topology.py
+```
+
+which splits P from E by per-CPU maximum turbo and prints a ready-made mask.
+
+Then, to leave all eight P-cores to FEMM and run the study entirely on the
+twelve E-cores:
+
+```
+python eesm/run_equal_tuning.py --manifest eesm/configs/eesm_experiment_manifest_v3_0.json \
+  --campaign out/eesm/femm_equal_budget_20260813/femm_results.csv \
+  --out out/eesm/equal_tuning_YYYYMMDD --workers 12 --cpu-affinity 8-19 \
+  --priority below-normal
+```
+
+Equivalent without the `psutil` dependency, applied at process creation so every
+child inherits it:
+
+```
+start /affinity FFF00 /belownormal python eesm\run_equal_tuning.py ...
+```
+
+E-cores have lower single-thread throughput than P-cores, which does not matter
+here: the work is 3888 independent fits, so aggregate throughput is what counts,
+and twelve E-cores comfortably beat one P-core. Expect roughly 10-20 minutes
+rather than the 1-1.5 hours a single core needs.
+
+Placement is a scheduling concern only. Each fit is single-threaded — the
+determinism pin sets `num_threads=1` — and independently seeded, so which core
+runs it cannot change a result; a pinned 2-worker smoke run reproduces the
+unpinned serial run exactly. The effective CPU set and priority are recorded
+under `cpu_placement` in the study JSON, because they are part of the compute
+environment even though they are not part of the result.
 
 ### Why this runs on CPU and not on a GPU
 

@@ -108,6 +108,73 @@ def kfold_indices(n: int, k: int, seed: int) -> list[np.ndarray]:
 
 
 
+def parse_cpu_list(spec: str) -> list[int]:
+    """Parse "8-19" / "0,2,4" / "8-11,16-19" into a sorted list of logical CPUs."""
+    out: set[int] = set()
+    for part in str(spec).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            lo, hi = part.split("-", 1)
+            lo, hi = int(lo), int(hi)
+            if hi < lo:
+                raise ValueError(f"bad cpu range: {part}")
+            out.update(range(lo, hi + 1))
+        else:
+            out.add(int(part))
+    if not out:
+        raise ValueError(f"no CPUs parsed from {spec!r}")
+    return sorted(out)
+
+
+def apply_cpu_placement(cpus: list[int] | None, priority: str | None) -> dict[str, Any]:
+    """Pin this process to `cpus` and set its scheduling priority.
+
+    Placement is a scheduling concern only: every fit is single-threaded and
+    independently seeded, so which core runs it cannot change a result. The
+    chosen placement is recorded in the bundle because it is part of the
+    compute environment, not because it affects the numbers.
+
+    Degrades to a no-op with an explanatory record if psutil is unavailable.
+    """
+    record: dict[str, Any] = {"requested_cpus": cpus, "requested_priority": priority}
+    if cpus is None and priority is None:
+        return record
+    try:
+        import psutil
+    except ImportError:
+        record["applied"] = False
+        record["reason"] = "psutil not installed; run unpinned or pip install psutil"
+        return record
+    proc = psutil.Process()
+    try:
+        if cpus is not None:
+            proc.cpu_affinity(cpus)
+            record["effective_cpus"] = proc.cpu_affinity()
+        if priority is not None:
+            levels = {
+                "idle": getattr(psutil, "IDLE_PRIORITY_CLASS", 19),
+                "below-normal": getattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS", 10),
+                "normal": getattr(psutil, "NORMAL_PRIORITY_CLASS", 0),
+            }
+            if priority not in levels:
+                raise ValueError(f"unknown priority {priority!r}")
+            proc.nice(levels[priority])
+            record["effective_priority"] = str(proc.nice())
+        record["applied"] = True
+    except Exception as exc:                      # never fatal
+        record["applied"] = False
+        record["reason"] = f"{type(exc).__name__}: {exc}"
+    return record
+
+
+def _worker_init(cpus: list[int] | None, priority: str | None) -> None:
+    """Re-apply placement inside each worker, for spawn contexts that do not
+    inherit the parent's affinity."""
+    apply_cpu_placement(cpus, priority)
+
+
 def _score_config(task):
     """Inner CV score for one configuration. Module level so it is picklable.
 
@@ -154,7 +221,22 @@ def main() -> int:
                     help=("parallel worker processes for the inner CV. The 3888 "
                           "inner fits are independent and each is seeded, so this "
                           "changes wall time only, never a number."))
+    ap.add_argument("--cpu-affinity", default=None, metavar="SPEC",
+                    help=("logical CPUs to run on, e.g. '8-19'. Use this to keep "
+                          "the run off cores another job needs. On an Intel "
+                          "hybrid part the efficient cores are the high-numbered "
+                          "ones; see EQUAL_TUNING_PROTOCOL.md."))
+    ap.add_argument("--priority", default=None,
+                    choices=["idle", "below-normal", "normal"],
+                    help="scheduling priority; below-normal yields to a foreground job")
     args = ap.parse_args()
+
+    cpus = parse_cpu_list(args.cpu_affinity) if args.cpu_affinity else None
+    placement = apply_cpu_placement(cpus, args.priority)
+    if cpus is not None or args.priority is not None:
+        print(f"cpu placement: {placement}")
+        if not placement.get("applied"):
+            print(f"  WARNING: placement NOT applied -- {placement.get('reason')}")
 
     out_root = Path(args.out).resolve()
     for forbidden in ("task9_baseline", "femm_equal_budget_points_"):
@@ -209,7 +291,9 @@ def main() -> int:
 
     # One pool for the whole run. Creating one per cell would pay 54 process
     # spin-ups for no benefit.
-    pool = (_cf.ProcessPoolExecutor(max_workers=args.workers)
+    pool = (_cf.ProcessPoolExecutor(max_workers=args.workers,
+                                    initializer=_worker_init,
+                                    initargs=(cpus, args.priority))
             if args.workers > 1 else None)
     results: list[dict[str, Any]] = []
     for strategy in strategies:
@@ -298,6 +382,7 @@ def main() -> int:
         "campaign": str(camp), "campaign_sha256": _sha256_file(camp),
         "tuning": {"n_configs": n_configs, "k_inner": k_inner, "n_seeds": n_seeds,
                    "workers": int(args.workers)},
+        "cpu_placement": placement,
         "frozen_thresholds": manifest["gates"]["thresholds"],
         "note": ("Thresholds are read unchanged and gate nothing here. This "
                  "experiment promotes nothing and modifies no frozen result."),
