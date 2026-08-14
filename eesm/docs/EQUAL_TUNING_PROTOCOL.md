@@ -129,8 +129,9 @@ Inner fits: `24 configs x 3 folds x 9 cells x 6 families = 3888`, plus
 Estimated wall time on one CPU core is roughly 1-1.5 hours (measured: a reduced smoke run of 4 configs / 2 folds / 2 seeds took 4m55s). No FEMM solve is
 required — the finished 1759-point campaign supplies all truth.
 
-**Do not start this while the replicate-design FEMM campaign is running.** It
-would contend for the same cores and slow the campaign.
+Running beside a FEMM campaign is fine **provided the study is pinned off the
+cores the campaign uses** — see below. Unpinned, it would contend for the same
+cores and slow the campaign.
 
 `--workers N` parallelises the inner cross-validation across processes. The
 inner fits are independent and individually seeded, so this changes wall time
@@ -145,14 +146,24 @@ idle. `--cpu-affinity` places this study on a chosen set of logical CPUs and
 
 The workstation used here is an **Intel Core Ultra 7 255HX: 8 P-cores + 12
 E-cores, 20 threads, no hyper-threading**. With no SMT there is one logical CPU
-per core, so the usual enumeration is P-cores on CPUs 0-7 and E-cores on 8-19.
-**Confirm before relying on it** — enumeration order is a firmware choice:
+per core.
+
+**Do not assume P-cores come first.** Measured on this machine 2026-08-14, the
+fast cores are **0-1, 6-9, 18-19** and the efficient cores are **2-5, 10-17** —
+interleaved, not contiguous. The 8/12 split matches the datasheet, but the
+ordering does not match the conventional "P first, then E" layout at all, and a
+mask derived from that assumption would have placed the study on four P-cores
+while leaving four E-cores idle. Enumeration order is a firmware choice. Measure
+it:
 
 ```
 python eesm/studies/cpu_topology.py
 ```
 
-which splits P from E by per-CPU maximum turbo and prints a ready-made mask.
+which times a fixed workload pinned to each logical CPU and clusters the
+results. It refuses to guess when the split is not cleanly bimodal. Reading
+per-CPU maximum frequency does **not** work for this on Windows: psutil reports
+the same advertised maximum for every CPU.
 
 Then, to leave all eight P-cores to FEMM and run the study entirely on the
 twelve E-cores:
@@ -160,7 +171,7 @@ twelve E-cores:
 ```
 python eesm/run_equal_tuning.py --manifest eesm/configs/eesm_experiment_manifest_v3_0.json \
   --campaign out/eesm/femm_equal_budget_20260813/femm_results.csv \
-  --out out/eesm/equal_tuning_YYYYMMDD --workers 12 --cpu-affinity 8-19 \
+  --out out/eesm/equal_tuning_YYYYMMDD --workers 12 --cpu-affinity 2-5,10-17 \
   --priority below-normal
 ```
 
@@ -168,11 +179,11 @@ Equivalent without the `psutil` dependency, applied at process creation so every
 child inherits it:
 
 ```
-start /affinity FFF00 /belownormal python eesm\run_equal_tuning.py ...
+start /affinity 3FC3C /belownormal python eesm\run_equal_tuning.py ...
 ```
 
-E-cores have lower single-thread throughput than P-cores, which does not matter
-here: the work is 3888 independent fits, so aggregate throughput is what counts,
+Measured here, the E-cores run at about 55% of P-core throughput. That does not
+matter: the work is 3888 independent fits, so aggregate throughput is what counts,
 and twelve E-cores comfortably beat one P-core. Expect roughly 10-20 minutes
 rather than the 1-1.5 hours a single core needs.
 
