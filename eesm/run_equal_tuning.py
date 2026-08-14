@@ -231,6 +231,7 @@ def main() -> int:
                     help="scheduling priority; below-normal yields to a foreground job")
     args = ap.parse_args()
 
+    print(f"interpreter: {sys.executable}")
     cpus = parse_cpu_list(args.cpu_affinity) if args.cpu_affinity else None
     placement = apply_cpu_placement(cpus, args.priority)
     if cpus is not None or args.priority is not None:
@@ -397,6 +398,9 @@ def main() -> int:
         "foundry_commit": _git("rev-parse", "HEAD"),
         "environment": {
             "python": sys.version.split()[0],
+            # which interpreter produced this matters: the repo has a .venv with
+            # the pinned stack, and a bare `python` on PATH is a different one
+            "executable": sys.executable,
             # None means git was unavailable, which is NOT the same as clean
             "working_tree_may_be_dirty": (
                 None if (_status := _git("status", "--porcelain")) is None
