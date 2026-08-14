@@ -23,6 +23,23 @@ __pycache__/
 !/out/eesm/phase0_close_20260813/
 !/out/eesm/phase1_close_20260813/
 !/out/eesm/phase1_science_20260813/
+!/out/eesm/threshold_proposal_20260813.json
+!/out/eesm/femm_equal_budget_points_20260813/
+/out/eesm/femm_equal_budget_points_20260813/*
+!/out/eesm/femm_equal_budget_points_20260813/frozen_points.csv
+!/out/eesm/femm_equal_budget_points_20260813/point_freeze.json
+!/out/eesm/femm_equal_budget_points_20260813/designs/
+!/out/eesm/femm_equal_budget_points_20260813/designs/*.json
+!/out/eesm/femm_equal_budget_20260813/
+/out/eesm/femm_equal_budget_20260813/*
+!/out/eesm/femm_equal_budget_20260813/campaign_sanity.json
+!/out/eesm/femm_equal_budget_20260813/femm_results.csv
+!/out/eesm/femm_equal_budget_20260813/femm_status.json
+!/out/eesm/femm_equal_budget_20260813/frozen_points.csv
+!/out/eesm/femm_equal_budget_20260813/frozen_points.csv.provenance.json
+!/out/eesm/equal_budget_femm_20260813/
+/out/eesm/equal_budget_femm_20260813/*
+!/out/eesm/equal_budget_femm_20260813/equal_budget_summary.json
 
 # Local leftovers that must not dirty a foundry bundle
 /batch.log
@@ -54,3 +71,9 @@ aedt_mcp/.ruff_cache/
 # Optional: keep trained artifacts out of git if desired
 # out/models/
 # out/predictions/
+
+# Simulink / MATLAB build artifacts
+*.slxc
+/slprj/
+/.satk/
+/_to_delete/

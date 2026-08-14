@@ -1,0 +1,1658 @@
+{
+  "budgets": [
+    64,
+    128,
+    256
+  ],
+  "created_utc": "2026-08-13T15:18:59.816923+00:00",
+  "experiment_id": "eesm_foundry_first_20260710",
+  "families": [
+    "physics_polynomial",
+    "rbf_or_gp",
+    "tree_ensemble",
+    "compact_mlp"
+  ],
+  "manifest_sha256": "b5b73faa19898acac1ddbf046b039f2cd2abfecbbd10efd50cc183e071a116fe",
+  "role_point_ids": {
+    "scheduler_audit": [
+      "28114640f9e959ce",
+      "c02b6bdb85f1ac68",
+      "1c594069b26beb76",
+      "81cce5659b3dc353",
+      "89df5e8cb1832113",
+      "ecf9e154bf0f0e6e",
+      "cc695a6ebc925220",
+      "8d03839108d2f286",
+      "4843b6cfe15b6b2f",
+      "92400775809d0b02",
+      "ebd2166795292235",
+      "c2ac6c44b4812a0a",
+      "262f3f894110cb5d",
+      "4287c93282be3fb2",
+      "61cd9ad77d8959de",
+      "8dad361d7b5628b1",
+      "de6e35a6274fcf99",
+      "b12508563ff59390",
+      "b9cf69798461aebd",
+      "8c079e0b34e49138",
+      "1a3dfce0903d1e6a",
+      "9ec668f85dca0846",
+      "79d8e6023f91d1d1",
+      "b624fc3df008e30e",
+      "f3de141e5939e717",
+      "7a55dbeddf318746",
+      "89b33c6c2c6824dc",
+      "647ac280c9535920",
+      "d6fbe4e7a94700f9",
+      "9796f7f2a6ed67fa",
+      "480a92fc59e77b8c",
+      "c69cca2277741651",
+      "578fcbe2a3b41019",
+      "359b132f14bfc8b7",
+      "fd443f173a5f24b5",
+      "00ad99279b162214",
+      "49fb11ea8d1efdac",
+      "4da933ca211d3422",
+      "0dc7764547bf7d53",
+      "c7c9d049e7857371",
+      "0bf3e2a4d7f3a995",
+      "d5f7b898e6151c55",
+      "d87fd476c80cd6ac",
+      "ae387a20998e3192",
+      "7bf25738f9f0d97d",
+      "7789a41406dd9989",
+      "43185eee00c6663a",
+      "197251d45d126dba",
+      "d8b80a2f5169dcfc",
+      "555e40e38ed2f4af",
+      "194ddb7f73d86b58",
+      "96189adf8310c36f",
+      "df2023468b56d6ca",
+      "ec49cd890c990bf0",
+      "7e196e9e774590ed",
+      "67c8dc98bf98dcf0",
+      "78081d13610b0c15",
+      "bd1a93b7bb45dc7c",
+      "5736a1a617932545",
+      "7090b4423989d90c",
+      "c421c0012e7af28b",
+      "b2c2adbc3c61289d",
+      "23d3f81c2e529d1f",
+      "c0e1eef0243300a8",
+      "cc3dbfab855863fd",
+      "8c83a6d050f2739c",
+      "b67ed359e95fd2c2",
+      "340fd4b719cb79c6",
+      "e3be08d1e61fa4d9",
+      "1493693d5bc9c4c3",
+      "b2e5b933eb5eb27e",
+      "e0d12173c0e8d3c8",
+      "479e416b3f385ebe",
+      "3503f7ff9bcc7f9a",
+      "0ea3cc07f13dd112",
+      "24408d0b931d0271",
+      "a07cca95d215c297",
+      "2895cf755cf52256",
+      "c5b6d044a04dab63",
+      "6b645fbab144979a",
+      "2b6de2102b9268be",
+      "d43fe4977f068dd1",
+      "48e7ee4b3cf5b6a6",
+      "fc03f045e3cc0aab",
+      "03082536e762c156",
+      "0864fcdd5f79fca5",
+      "5a99ad09e095f817",
+      "4f598068dfdfa47c",
+      "779dec5fd6d7074e",
+      "e4d62fb33c486836",
+      "084552a3b2f9d8e3",
+      "6e9a031e905b9157",
+      "993840e3cd77d017",
+      "b05563afa958ea9f",
+      "69eddf3574d4aff7",
+      "0a848071c404319d",
+      "2422844807127662",
+      "ad042d3b8d668e77",
+      "da522182346b0536",
+      "8440e439164629b7",
+      "0cad9b6d9c9ba02a",
+      "0f67e5a0247bfacc",
+      "69c188f158bd0b9a",
+      "e9594b2633b334fe",
+      "6786c5b5e4d0eb09",
+      "32f941d322e68e32",
+      "724f84d54064cf8e",
+      "4b112f803e71758f",
+      "52ace97b6232190c",
+      "76cf163fc282b356",
+      "944fa6e20f29836c",
+      "b02a84b5a9e99740",
+      "729275bde63686d0",
+      "d95b4441879ae8bb",
+      "6ee15dc350d93a55",
+      "c050caf9dddafebf",
+      "e3ace2adf597e94d",
+      "9a93940463e61b33",
+      "a393d55ea7ea1c46",
+      "97111e70aab9d495",
+      "40989351d3b6ca9f",
+      "afcd712ec24f2aec",
+      "a819b4af8963d5e5",
+      "d6a1dc4a8e51dd39",
+      "6eab1e36ffba8f7b",
+      "e63829add3c1dc5c",
+      "1398d81d67d42e09",
+      "ca006195f2d34103",
+      "6a1fc0cfdb479ef2",
+      "5073dfcf09406346",
+      "d73b483d708210f9",
+      "e13aa17cdb4165aa",
+      "f7611b6a368d8bd0",
+      "6874baa9c7393c4c",
+      "c026d33378a109c0",
+      "5f56d9e7a739cf79",
+      "16c617b1a85095a6",
+      "30e534b5d50321c2",
+      "0249e0f1610d6c33",
+      "1b9617f73f315e8c",
+      "74f19ccb12674f8c",
+      "7e2540b506c43a14",
+      "e1e65246392e03b7",
+      "42b1acb14db99a37",
+      "c06a19558ccaf438",
+      "71ffebcf6b3c8ea7",
+      "673a668687380ee6",
+      "e3c9558b576a1551",
+      "e4d50422e58789e8",
+      "d6c2efc4e1674860",
+      "d705f39292eceaab",
+      "8dee2f61c7d94ac2",
+      "41f90db341b65c2a",
+      "c5e55e1cc16fb06c",
+      "acbe1939c4e85751",
+      "f48de4cf8d8a73f9",
+      "adf571c703d79cb4",
+      "c283d38173813ff2",
+      "059d13047fcd9972",
+      "f59a7db5c36987f4",
+      "46634f655fbf6056",
+      "e4dba49d92c000c3",
+      "269bb4b2c71153a6",
+      "ada9f5a11af6b199",
+      "bfbd1a2f7e7f5eb3",
+      "f2c33bc58a052bd6",
+      "48a4950a2dabdbf2",
+      "165ed2af5c7e1c6d",
+      "b84694df983abbba",
+      "0fd1ed363810fc3f",
+      "0a765d9f1b45d288",
+      "a34433347e76acae",
+      "b726042c0b3be95a",
+      "a59e4e69456502e0",
+      "c66f80b6bb50b4bd",
+      "654f6e2f23a84b69",
+      "b9eb2697f7607e82",
+      "4c20de321621555a",
+      "b17bc303c8017766",
+      "5b189177186e4907",
+      "8a8f2775ad6bc8ab",
+      "0e5aa2a8fda5d7e2",
+      "eb5750dec2df9fb5",
+      "89e45d0b6e4764e7",
+      "f31d30476f993585",
+      "d3ea54275a3a5e88",
+      "173a143017db8d4e",
+      "39dfb76cd240809e",
+      "b06f4de543f93cf1",
+      "20c11f3468650213",
+      "d8a36f4cc519034c",
+      "95f956db3178a17b",
+      "2bc235c69d4b4ea7",
+      "70008515b5d79f81",
+      "afd9b95a85d7539f",
+      "90ab8d64ffa700e9",
+      "5dc6176cfc974454",
+      "f963496ab53fd940",
+      "db820849bb002e92",
+      "5ea55a1e6334e744",
+      "fdda35988cd72e8f",
+      "b6d4306b7aa6a470",
+      "dc3ba561b47f7030",
+      "96e90b1a5c0f7e9b",
+      "ba78a7f14f83e5aa",
+      "8bd818387a2f8baf",
+      "1d722aad98fb11a8",
+      "37589463c2e60325",
+      "940f639a922a9f9b",
+      "6cbea670b70b0dd7",
+      "4f96bb91cf636e61",
+      "323ba48922253aab",
+      "386fe3c143d21bcf",
+      "ec9c9a72d33aac3f",
+      "1f50f05d57f103af",
+      "5dff40fd0981bf12",
+      "7438ce4bb32daeb9",
+      "2358418ea8a5cc7c",
+      "ed9786719ddcc364",
+      "5144e2dd7e9062d4",
+      "d9c20099b414655a",
+      "6fe878dc5cf49ee6",
+      "77232baf6f243919",
+      "ed3090d4457e1aba",
+      "aec6e0630b9ba874",
+      "af4022c0dd304799",
+      "85a6a656920b0999",
+      "1759f0d79f089bad",
+      "ce080b072491509f",
+      "a8beb80bb8df29fa",
+      "be125ff37b7a2f16",
+      "a89c73ab10c78596",
+      "361a2a54217130d9",
+      "2f5135fa97592e83",
+      "8865a2290d9b821a",
+      "26c60598c0517a9a",
+      "434f65dd56686b5e",
+      "c179ee6b9401e2b7",
+      "eb0fd2119753402f",
+      "848266e85ddb3a39",
+      "ca8def9e68c22525",
+      "a8a32879d234d7df",
+      "29fc59618024bb8c",
+      "dd5ec98e6b1213c3",
+      "340545b6e2162d1b",
+      "83db2127f7f43555",
+      "b04750e6c01961f7",
+      "cd6ad73fbd50d43b",
+      "86d46528c0df3539",
+      "2d7fa451db5ea0dd",
+      "660f09882876483e",
+      "849ca42e028c77cf",
+      "975499a34e026123",
+      "315a84e7da458eb9",
+      "c8aa93fe6e466133",
+      "d6c2fb7c59ff60b9"
+    ],
+    "selection": [
+      "1f059ccf7e3b6005",
+      "665aeb8e23b41bda",
+      "90a5cbc2dca161cb",
+      "09cc5ef9f2382cb1",
+      "6a5a3969be26c468",
+      "ef36193025b59455",
+      "81b18d5e9a54d302",
+      "ed6723a0ac66776e",
+      "aa9e84766ec6af7b",
+      "30abe63e20ff8591",
+      "aa7d6091c90223b1",
+      "a17a603b9c503d6d",
+      "bf5f583f8280dbdc",
+      "7a210333a3194b9e",
+      "320b0912cdd5feff",
+      "d9e3291ddfa3c4fd",
+      "b4e9aabd72ebd4f2",
+      "bb7717a4da81e51d",
+      "d81f553f05b95a36",
+      "4cec537b0aee45d2",
+      "79365ff5a6ab0a3c",
+      "a55aa064bf0ba3fd",
+      "8278dfb754e44012",
+      "a260b263a1ac5dac",
+      "18c74e9a341dae36",
+      "136bbd176898d0d9",
+      "56a0913d5b0a8fb5",
+      "322ecae831a8c125",
+      "f7a372a1b3ceeab7",
+      "e0226f2199f29ceb",
+      "11d635dd99a3d557",
+      "f2fc959a93178416",
+      "73a7f1442b04e773",
+      "4595e796c37043b8",
+      "75e72d6d3177834a",
+      "aa8628317f3cb7c6",
+      "4e047b355d4acaa8",
+      "0d1825dfcddef46f",
+      "15ed0f9835895e76",
+      "510560bd21abf001",
+      "6572435dd0f190bf",
+      "1d32882e010595fe",
+      "8213e4184bc2b91a",
+      "0b666d20c5a92578",
+      "17d7a830b1a689f5",
+      "760d1a8e64f61b22",
+      "89bf06e2c387854a",
+      "a0bccca9d68e3c29",
+      "ed5927f2e878d0f4",
+      "33af0b172d4d307d",
+      "0d0f57d9d822df65",
+      "72608a9a53863b4a",
+      "4156ae4f343fcfbb",
+      "7a0449ac77fdc2ba",
+      "4174248d736a73c5",
+      "2acac34127120b6b",
+      "bea9655863254076",
+      "517ee3a8bd248326",
+      "40f9ba89c88f71fa",
+      "037edaba09f638df",
+      "5eba549c9b68c999",
+      "289dd70fec4895aa",
+      "f38778650c543a7b",
+      "660a9843686f9778",
+      "361e3f14cd2d23ff",
+      "2b160fabfc865628",
+      "87698f9ce552c0f1",
+      "3bba060fb043db37",
+      "6ac25b55d7ad40aa",
+      "4c32bf766d8f8712",
+      "665db2d415a884ce",
+      "8fc4bfd217ce7ff5",
+      "1a488c7869b7b8e8",
+      "7c173cb06c7469e6",
+      "c92927b5b0d46769",
+      "721ecb0a256dcadd",
+      "7d62fe953324678d",
+      "a1c6b0fe62734941",
+      "fe4f854953fa218d",
+      "7d2f2192e5dceaa7",
+      "12337168b7ce3b10",
+      "83c837cd4611f454",
+      "cdcc564b7c43972a",
+      "2ffea2a5c8ee65af",
+      "c112fc6cea97eaf1",
+      "ed9c1ff6924c4d11",
+      "ff5954b15a0e39da",
+      "49800736dbce0ca5",
+      "391064a05c23876e",
+      "74e175fd0327b79f",
+      "b9efbe3fc7829a18",
+      "0d6caaa9bf5e34e8",
+      "371f1f19d3ed6626",
+      "35e8836e0f90fb90",
+      "8dfd23c642e2dadb",
+      "ce441f89f509f11a",
+      "235dfb2981e45901",
+      "7aaa476d9449ab7e",
+      "54ba2c871333af3f",
+      "a1b21fb0dfad74aa",
+      "1d4a5a5dccad4aea",
+      "0b2e0b07a26c028d",
+      "d261634e9918251d",
+      "1e79ebbb4634f4bc",
+      "fe5a286b2e4cf6bd",
+      "698e700e749171e8",
+      "34335d3a0b6bbb4c",
+      "054932fdfce8be00",
+      "0d962755ed6b6920",
+      "772317c7f51aa046",
+      "50a30cf17807df7b",
+      "b94d41cabb5f4098",
+      "298e56c27a63293a",
+      "235a5fb142b34a78",
+      "5a2879dad43b6b70",
+      "1ffe021b7f645dd2",
+      "c4b0b1d9e4c6e6e5",
+      "e1e9d91dc896bcd2",
+      "2793bd4a412cd673",
+      "74352598333fdd18",
+      "007f02e5a2a3a35c",
+      "20c13e3ecc6513b1",
+      "e78e750f3ac65118",
+      "fe33228f9e8dacbf",
+      "27ae3ca565590065",
+      "1a22932a61b14fd4",
+      "5f01ea45c46c8291",
+      "8598ffeca08746e7",
+      "e8fcc8e7b131f9ea",
+      "d68f805e58f8ffd2",
+      "1ebaf5a3c69b1096",
+      "5fdcbbc25b094c0e",
+      "b622d017365b022f",
+      "f0185f38936e1a6f",
+      "16c617f461d611ed",
+      "7ef2b1ac9a2ab3a6",
+      "a6c1e3afbd5dee30",
+      "3a48cf03d0e3df09",
+      "c64a24eeab2cdf6b",
+      "893c0aa33dca787f",
+      "17cb9a5507e2282a",
+      "0ed295341ea45d20",
+      "125a5be3882e5d9a",
+      "68952058bf6d89b7",
+      "4d52e7525cbb6f9b",
+      "3a97fdfe364eedce",
+      "4a4b1982c5bbc59c",
+      "a2bf5b8707cf89d5",
+      "0093f83310773b91",
+      "6dc3af829d344af7",
+      "065ab4920ab7aced",
+      "51ba8aa26e155b61",
+      "3e9fefa6096a9b74",
+      "e205408994905ade",
+      "0880555695776976",
+      "b0713b6807076ea9",
+      "135b1621249f54b7",
+      "5e2804d74d9aeacb",
+      "157ec19183ac7ef8",
+      "74d37ab78d5f1f96",
+      "73c5d72b92bc7ee7",
+      "68fb557b4c785aef",
+      "67971ba314349400",
+      "8ec72c50404bcb5a",
+      "4879abdf3413d56e",
+      "0c64247b27b7d7f9",
+      "5deefb947c303c23",
+      "49af9ca336a809af",
+      "87c267d92f8558d6",
+      "1fc307f4ed55abc5",
+      "bc3bbc6864fd40ab",
+      "7fcf53830813ebe7",
+      "7890d37be609602a",
+      "dfeb25d7ce02dcc1",
+      "023db4431e67fad8",
+      "c87f888af2120a18",
+      "633f3f13d9f1bba3",
+      "1be3b1dafc861e1f",
+      "2d23ad6ee4aac49e",
+      "b5353fbcde419b58",
+      "83b5486fb47d3c9d",
+      "a09c6dfb0ce548ca",
+      "abc142c69397b44e",
+      "bb78046d5393069a",
+      "5c27351c479388fd",
+      "6bf43ad44752ed40",
+      "1bde7ba65a3e8cf0",
+      "439e1867b44e5118",
+      "90bca594c25113a3",
+      "0012249cbdabe0c4",
+      "06eea14756cff264",
+      "d31a8e9fc7e4cbc0",
+      "bf153fb4306a581c",
+      "300d0388000c047c",
+      "dd20e8cb0d70a38a",
+      "d3c8e27b33399743",
+      "b56be06981d991d1",
+      "09704330ee58b6bf",
+      "ebdfc37a3f9a01cd",
+      "a38d2a6fe357a17f",
+      "9a7d74b5da73ad3b",
+      "88bf54863cafea11",
+      "b746397728ce7e47",
+      "a254f4f5e5632b38",
+      "ab31d4d5bd1b5036",
+      "92a7780b2f405184",
+      "99b51011e1d441d1",
+      "b6ec01946fed4d7e",
+      "cb9753ebfb1798af",
+      "ab0fb51c45c551d2",
+      "20d80a5c67ae51dc",
+      "b0354359b03304ee",
+      "52c3f0101d3cca7e",
+      "2d1121e2e1b7900d",
+      "7c5d3a1079cb3ad2",
+      "f4489b421dcdfbd7",
+      "df7aa54bca7c08d6",
+      "493fcd9b85ef8062",
+      "e2116985e01fcbef",
+      "3d7d3dc65fbf4265",
+      "c2aa6e89df190eeb",
+      "d79375f88f9cf9d7",
+      "e4dc94f5b338a588",
+      "f0df7fd438bb50c3",
+      "1676ba586677913e",
+      "52a2af99cd1bcc46",
+      "f607612a23be8767",
+      "75026aeec56a079a",
+      "a356809317ffa8c4",
+      "ccacc2b0cd2a9b3d",
+      "30eedbb9f2d3bfa6",
+      "521bc0e45d4874b7",
+      "e3f91b770fd98eb4",
+      "a68e70190eda7275",
+      "493201556d6d3bf6",
+      "604499bfbd13dccb",
+      "0cdf1add3b7d88d0",
+      "bbd708a136d6bad9",
+      "b229b51bf72ec95c",
+      "f86021e745173467",
+      "9c29b60b92036a3c",
+      "22c30cfb0609eddf",
+      "af6bd4b6ab8cd4bb",
+      "e3b6ee835f4effd7",
+      "b8d24f27f214cbe7",
+      "a34fad74088e3809",
+      "c57c7e436b00f1a9",
+      "a991c12b82a981c8",
+      "b4cb6eb799fd1d11",
+      "421ef16ae144680e",
+      "acb558de331ebf19",
+      "27c002a396469f56",
+      "4ff008aa20207f08",
+      "a3a572ee5cd637dc",
+      "c267b2610cd13f1e",
+      "0541228844c372d0"
+    ]
+  },
+  "runs": [
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/64/physics_polynomial/metrics.json",
+        "model": "runs/tensor_grid/64/physics_polynomial/model.pkl",
+        "model_metadata": "runs/tensor_grid/64/physics_polynomial/model_metadata.json",
+        "predictions": "runs/tensor_grid/64/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/tensor_grid/64/physics_polynomial/metadata.json"
+      },
+      "budget": 64,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.01001678072955023,
+          "max_abs": 0.030091450601464002,
+          "rmse": 0.012669232756988974
+        },
+        "lambda_q_wb": {
+          "mae": 0.004215098094056045,
+          "max_abs": 0.013596207485309944,
+          "rmse": 0.005228224314294524
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.00969133087174674
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 2125360242,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "2f6178b97493d2883c10581aeb6d821d754759cab70d99a5fb75d4e289d86783"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/64/rbf_or_gp/metrics.json",
+        "model": "runs/tensor_grid/64/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/tensor_grid/64/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/tensor_grid/64/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/64/rbf_or_gp/metadata.json"
+      },
+      "budget": 64,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0031572673066256824,
+          "max_abs": 0.014781134861945794,
+          "rmse": 0.00425633170598566
+        },
+        "lambda_q_wb": {
+          "mae": 0.0020507101341575885,
+          "max_abs": 0.010486235545500627,
+          "rmse": 0.0029242566644370953
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.003651550125007431
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 2125360242,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "2f6178b97493d2883c10581aeb6d821d754759cab70d99a5fb75d4e289d86783"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/64/tree_ensemble/metrics.json",
+        "model": "runs/tensor_grid/64/tree_ensemble/model.pkl",
+        "model_metadata": "runs/tensor_grid/64/tree_ensemble/model_metadata.json",
+        "predictions": "runs/tensor_grid/64/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/tensor_grid/64/tree_ensemble/metadata.json"
+      },
+      "budget": 64,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.023170946088085488,
+          "max_abs": 0.09423702852140517,
+          "rmse": 0.030100043550664077
+        },
+        "lambda_q_wb": {
+          "mae": 0.010444313284572865,
+          "max_abs": 0.03756237737120739,
+          "rmse": 0.013555851402233135
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.023342811837815298
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 2125360242,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "2f6178b97493d2883c10581aeb6d821d754759cab70d99a5fb75d4e289d86783"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/64/compact_mlp/metrics.json",
+        "model": "runs/tensor_grid/64/compact_mlp/model.pkl",
+        "model_metadata": "runs/tensor_grid/64/compact_mlp/model_metadata.json",
+        "predictions": "runs/tensor_grid/64/compact_mlp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/64/compact_mlp/metadata.json"
+      },
+      "budget": 64,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0016032492634856404,
+          "max_abs": 0.006716784119289065,
+          "rmse": 0.002161765983353652
+        },
+        "lambda_q_wb": {
+          "mae": 0.001329122450497947,
+          "max_abs": 0.005790425190173885,
+          "rmse": 0.0017910951651728755
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0019851012641035008
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 2125360242,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "2f6178b97493d2883c10581aeb6d821d754759cab70d99a5fb75d4e289d86783"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/128/physics_polynomial/metrics.json",
+        "model": "runs/tensor_grid/128/physics_polynomial/model.pkl",
+        "model_metadata": "runs/tensor_grid/128/physics_polynomial/model_metadata.json",
+        "predictions": "runs/tensor_grid/128/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/tensor_grid/128/physics_polynomial/metadata.json"
+      },
+      "budget": 128,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.00878429060872986,
+          "max_abs": 0.02676769416656269,
+          "rmse": 0.011116591734726154
+        },
+        "lambda_q_wb": {
+          "mae": 0.003934284142330559,
+          "max_abs": 0.01349650676662132,
+          "rmse": 0.005006681084072571
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.008621063370437314
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 1541058640,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "ac78f4222d621407f47134fc02d5695d7e40c7a63f8772387eeef310eba86e79"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/128/rbf_or_gp/metrics.json",
+        "model": "runs/tensor_grid/128/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/tensor_grid/128/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/tensor_grid/128/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/128/rbf_or_gp/metadata.json"
+      },
+      "budget": 128,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0019939476688185884,
+          "max_abs": 0.01032047713464454,
+          "rmse": 0.0028247221221862472
+        },
+        "lambda_q_wb": {
+          "mae": 0.0017039514686432089,
+          "max_abs": 0.00887686525790228,
+          "rmse": 0.0023931590524073694
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.002617848860962729
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 1541058640,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "ac78f4222d621407f47134fc02d5695d7e40c7a63f8772387eeef310eba86e79"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/128/tree_ensemble/metrics.json",
+        "model": "runs/tensor_grid/128/tree_ensemble/model.pkl",
+        "model_metadata": "runs/tensor_grid/128/tree_ensemble/model_metadata.json",
+        "predictions": "runs/tensor_grid/128/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/tensor_grid/128/tree_ensemble/metadata.json"
+      },
+      "budget": 128,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.01391434316884622,
+          "max_abs": 0.05848567873010038,
+          "rmse": 0.018176502974498358
+        },
+        "lambda_q_wb": {
+          "mae": 0.010685118586636622,
+          "max_abs": 0.03851207284426723,
+          "rmse": 0.013581037285635218
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.01604415523073374
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 1541058640,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "ac78f4222d621407f47134fc02d5695d7e40c7a63f8772387eeef310eba86e79"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/128/compact_mlp/metrics.json",
+        "model": "runs/tensor_grid/128/compact_mlp/model.pkl",
+        "model_metadata": "runs/tensor_grid/128/compact_mlp/model_metadata.json",
+        "predictions": "runs/tensor_grid/128/compact_mlp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/128/compact_mlp/metadata.json"
+      },
+      "budget": 128,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0014358545233326934,
+          "max_abs": 0.005787168215985326,
+          "rmse": 0.0019337165555849323
+        },
+        "lambda_q_wb": {
+          "mae": 0.001315196295927525,
+          "max_abs": 0.005757061755904257,
+          "rmse": 0.0017588240126633682
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.001848340015373866
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 1541058640,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "ac78f4222d621407f47134fc02d5695d7e40c7a63f8772387eeef310eba86e79"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/256/physics_polynomial/metrics.json",
+        "model": "runs/tensor_grid/256/physics_polynomial/model.pkl",
+        "model_metadata": "runs/tensor_grid/256/physics_polynomial/model_metadata.json",
+        "predictions": "runs/tensor_grid/256/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/tensor_grid/256/physics_polynomial/metadata.json"
+      },
+      "budget": 256,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.008575851987754509,
+          "max_abs": 0.026942007943680096,
+          "rmse": 0.010839966705795463
+        },
+        "lambda_q_wb": {
+          "mae": 0.00365550056121906,
+          "max_abs": 0.012072376106183613,
+          "rmse": 0.004646271543722125
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.008339445948045832
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 4038257445,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "af7da3e5982ea6240d47496778af1d59ea76f383542f2d12f80917b5f1fbf90d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/256/rbf_or_gp/metrics.json",
+        "model": "runs/tensor_grid/256/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/tensor_grid/256/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/tensor_grid/256/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/256/rbf_or_gp/metadata.json"
+      },
+      "budget": 256,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0014257416188933332,
+          "max_abs": 0.005716644523973649,
+          "rmse": 0.0019273426286441938
+        },
+        "lambda_q_wb": {
+          "mae": 0.0008466140057379464,
+          "max_abs": 0.003883903433682924,
+          "rmse": 0.0011249273696644696
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0015779910004827867
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 4038257445,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "af7da3e5982ea6240d47496778af1d59ea76f383542f2d12f80917b5f1fbf90d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/256/tree_ensemble/metrics.json",
+        "model": "runs/tensor_grid/256/tree_ensemble/model.pkl",
+        "model_metadata": "runs/tensor_grid/256/tree_ensemble/model_metadata.json",
+        "predictions": "runs/tensor_grid/256/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/tensor_grid/256/tree_ensemble/metadata.json"
+      },
+      "budget": 256,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.01396243152406873,
+          "max_abs": 0.050921505494516725,
+          "rmse": 0.018456513890137794
+        },
+        "lambda_q_wb": {
+          "mae": 0.0051476470802883645,
+          "max_abs": 0.01866430832359155,
+          "rmse": 0.006520091213457104
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.013841143276634518
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 4038257445,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "af7da3e5982ea6240d47496778af1d59ea76f383542f2d12f80917b5f1fbf90d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/tensor_grid/256/compact_mlp/metrics.json",
+        "model": "runs/tensor_grid/256/compact_mlp/model.pkl",
+        "model_metadata": "runs/tensor_grid/256/compact_mlp/model_metadata.json",
+        "predictions": "runs/tensor_grid/256/compact_mlp/predictions.csv",
+        "run_metadata": "runs/tensor_grid/256/compact_mlp/metadata.json"
+      },
+      "budget": 256,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0012820676348625887,
+          "max_abs": 0.004945210506031163,
+          "rmse": 0.001714111089481356
+        },
+        "lambda_q_wb": {
+          "mae": 0.0009922697385392042,
+          "max_abs": 0.004417706694251872,
+          "rmse": 0.001291135707713523
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0015174333993318886
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 4038257445,
+      "status": "completed",
+      "strategy": "tensor_grid",
+      "training_point_ids_sha256": "af7da3e5982ea6240d47496778af1d59ea76f383542f2d12f80917b5f1fbf90d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/64/physics_polynomial/metrics.json",
+        "model": "runs/random/64/physics_polynomial/model.pkl",
+        "model_metadata": "runs/random/64/physics_polynomial/model_metadata.json",
+        "predictions": "runs/random/64/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/random/64/physics_polynomial/metadata.json"
+      },
+      "budget": 64,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006805611204486509,
+          "max_abs": 0.041728398979400394,
+          "rmse": 0.008848731666164298
+        },
+        "lambda_q_wb": {
+          "mae": 0.0032469010696283586,
+          "max_abs": 0.021211912158853617,
+          "rmse": 0.004262921725225665
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.006945234111791327
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 4118397894,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "1ea82491ce449ec5ab8995c7e7e9a51b332c9bb04095513608d847732734998d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/64/rbf_or_gp/metrics.json",
+        "model": "runs/random/64/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/random/64/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/random/64/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/random/64/rbf_or_gp/metadata.json"
+      },
+      "budget": 64,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.004050610156975974,
+          "max_abs": 0.04025949412462618,
+          "rmse": 0.006331607839069903
+        },
+        "lambda_q_wb": {
+          "mae": 0.00247421021458574,
+          "max_abs": 0.023736539621802357,
+          "rmse": 0.004028403580121168
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.005306472144094629
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 4118397894,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "1ea82491ce449ec5ab8995c7e7e9a51b332c9bb04095513608d847732734998d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/64/tree_ensemble/metrics.json",
+        "model": "runs/random/64/tree_ensemble/model.pkl",
+        "model_metadata": "runs/random/64/tree_ensemble/model_metadata.json",
+        "predictions": "runs/random/64/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/random/64/tree_ensemble/metadata.json"
+      },
+      "budget": 64,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.02142963324540171,
+          "max_abs": 0.07123422885738548,
+          "rmse": 0.02635252708153395
+        },
+        "lambda_q_wb": {
+          "mae": 0.008228493208938002,
+          "max_abs": 0.029082679182777404,
+          "rmse": 0.010291432681460957
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.020004615345215002
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 4118397894,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "1ea82491ce449ec5ab8995c7e7e9a51b332c9bb04095513608d847732734998d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/64/compact_mlp/metrics.json",
+        "model": "runs/random/64/compact_mlp/model.pkl",
+        "model_metadata": "runs/random/64/compact_mlp/model_metadata.json",
+        "predictions": "runs/random/64/compact_mlp/predictions.csv",
+        "run_metadata": "runs/random/64/compact_mlp/metadata.json"
+      },
+      "budget": 64,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0020573592941391643,
+          "max_abs": 0.011232791064963818,
+          "rmse": 0.0028301039971868167
+        },
+        "lambda_q_wb": {
+          "mae": 0.0014212231315161525,
+          "max_abs": 0.007857353611278057,
+          "rmse": 0.0020104463256725128
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0024547284028281933
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 4118397894,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "1ea82491ce449ec5ab8995c7e7e9a51b332c9bb04095513608d847732734998d"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/128/physics_polynomial/metrics.json",
+        "model": "runs/random/128/physics_polynomial/model.pkl",
+        "model_metadata": "runs/random/128/physics_polynomial/model_metadata.json",
+        "predictions": "runs/random/128/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/random/128/physics_polynomial/metadata.json"
+      },
+      "budget": 128,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006660558224289193,
+          "max_abs": 0.03797506030558559,
+          "rmse": 0.008695639217355982
+        },
+        "lambda_q_wb": {
+          "mae": 0.0035815541664023127,
+          "max_abs": 0.02039567729917633,
+          "rmse": 0.0046515259427163174
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.006973192776418212
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 2524596150,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "e77e4d8ba5d494403b21a03062352fcc48eb65fe7eb12ccb8d082f16b0241e50"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/128/rbf_or_gp/metrics.json",
+        "model": "runs/random/128/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/random/128/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/random/128/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/random/128/rbf_or_gp/metadata.json"
+      },
+      "budget": 128,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0018368388189958572,
+          "max_abs": 0.01937556670011514,
+          "rmse": 0.003308126172969303
+        },
+        "lambda_q_wb": {
+          "mae": 0.0012598196586699258,
+          "max_abs": 0.01152065090985313,
+          "rmse": 0.002053187181774889
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.002753114271120002
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 2524596150,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "e77e4d8ba5d494403b21a03062352fcc48eb65fe7eb12ccb8d082f16b0241e50"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/128/tree_ensemble/metrics.json",
+        "model": "runs/random/128/tree_ensemble/model.pkl",
+        "model_metadata": "runs/random/128/tree_ensemble/model_metadata.json",
+        "predictions": "runs/random/128/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/random/128/tree_ensemble/metadata.json"
+      },
+      "budget": 128,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.026160039856457075,
+          "max_abs": 0.10845811288715757,
+          "rmse": 0.034518849889355115
+        },
+        "lambda_q_wb": {
+          "mae": 0.006838644957020222,
+          "max_abs": 0.0317852394615789,
+          "rmse": 0.009320971379477004
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.025282716479255753
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 2524596150,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "e77e4d8ba5d494403b21a03062352fcc48eb65fe7eb12ccb8d082f16b0241e50"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/128/compact_mlp/metrics.json",
+        "model": "runs/random/128/compact_mlp/model.pkl",
+        "model_metadata": "runs/random/128/compact_mlp/model_metadata.json",
+        "predictions": "runs/random/128/compact_mlp/predictions.csv",
+        "run_metadata": "runs/random/128/compact_mlp/metadata.json"
+      },
+      "budget": 128,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0014539755147829135,
+          "max_abs": 0.005340953781071356,
+          "rmse": 0.001880919800728149
+        },
+        "lambda_q_wb": {
+          "mae": 0.0013144665438042215,
+          "max_abs": 0.004018390924223042,
+          "rmse": 0.0016363211956652833
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.001762867883897526
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 2524596150,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "e77e4d8ba5d494403b21a03062352fcc48eb65fe7eb12ccb8d082f16b0241e50"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/256/physics_polynomial/metrics.json",
+        "model": "runs/random/256/physics_polynomial/model.pkl",
+        "model_metadata": "runs/random/256/physics_polynomial/model_metadata.json",
+        "predictions": "runs/random/256/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/random/256/physics_polynomial/metadata.json"
+      },
+      "budget": 256,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006811830914158103,
+          "max_abs": 0.03837748649151235,
+          "rmse": 0.00898483761084726
+        },
+        "lambda_q_wb": {
+          "mae": 0.0032335737803715,
+          "max_abs": 0.015123474524843215,
+          "rmse": 0.004205829801497367
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.007014852500675225
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 1182745997,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "a2eae2fc0c34e69744cdd1c6a9b8219beec84d190b2835f3c7fc93f02be91142"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/256/rbf_or_gp/metrics.json",
+        "model": "runs/random/256/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/random/256/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/random/256/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/random/256/rbf_or_gp/metadata.json"
+      },
+      "budget": 256,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0008382572951086459,
+          "max_abs": 0.010252753668089587,
+          "rmse": 0.0015574613456540132
+        },
+        "lambda_q_wb": {
+          "mae": 0.0008714269537568593,
+          "max_abs": 0.008558921024196503,
+          "rmse": 0.0015556826011251502
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0015565722274680869
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 1182745997,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "a2eae2fc0c34e69744cdd1c6a9b8219beec84d190b2835f3c7fc93f02be91142"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/256/tree_ensemble/metrics.json",
+        "model": "runs/random/256/tree_ensemble/model.pkl",
+        "model_metadata": "runs/random/256/tree_ensemble/model_metadata.json",
+        "predictions": "runs/random/256/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/random/256/tree_ensemble/metadata.json"
+      },
+      "budget": 256,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.02024668157967617,
+          "max_abs": 0.10207996435506536,
+          "rmse": 0.027712155396589853
+        },
+        "lambda_q_wb": {
+          "mae": 0.004074891676691135,
+          "max_abs": 0.03173462161664741,
+          "rmse": 0.005662436246019748
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.02000033425926905
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 1182745997,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "a2eae2fc0c34e69744cdd1c6a9b8219beec84d190b2835f3c7fc93f02be91142"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/random/256/compact_mlp/metrics.json",
+        "model": "runs/random/256/compact_mlp/model.pkl",
+        "model_metadata": "runs/random/256/compact_mlp/model_metadata.json",
+        "predictions": "runs/random/256/compact_mlp/predictions.csv",
+        "run_metadata": "runs/random/256/compact_mlp/metadata.json"
+      },
+      "budget": 256,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0014447034295613937,
+          "max_abs": 0.004466142830182566,
+          "rmse": 0.0018259483388933502
+        },
+        "lambda_q_wb": {
+          "mae": 0.0010955033584293008,
+          "max_abs": 0.007436952357780999,
+          "rmse": 0.0014456251474176864
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.001646802872713336
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 1182745997,
+      "status": "completed",
+      "strategy": "random",
+      "training_point_ids_sha256": "a2eae2fc0c34e69744cdd1c6a9b8219beec84d190b2835f3c7fc93f02be91142"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/64/physics_polynomial/metrics.json",
+        "model": "runs/latin_hypercube/64/physics_polynomial/model.pkl",
+        "model_metadata": "runs/latin_hypercube/64/physics_polynomial/model_metadata.json",
+        "predictions": "runs/latin_hypercube/64/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/64/physics_polynomial/metadata.json"
+      },
+      "budget": 64,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.007492048420734964,
+          "max_abs": 0.030903698321351647,
+          "rmse": 0.010110819080736832
+        },
+        "lambda_q_wb": {
+          "mae": 0.003673693877521791,
+          "max_abs": 0.024132478615017473,
+          "rmse": 0.005169935776197786
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.008029847396227459
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 3347329515,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "e7ab5fdf5e5264bd4420e4bbb97477f98e21ea519daac1534564e49b783b0626"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/64/rbf_or_gp/metrics.json",
+        "model": "runs/latin_hypercube/64/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/64/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/64/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/64/rbf_or_gp/metadata.json"
+      },
+      "budget": 64,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006100523516281927,
+          "max_abs": 0.04946430111628952,
+          "rmse": 0.009857080432583546
+        },
+        "lambda_q_wb": {
+          "mae": 0.0035229440931703274,
+          "max_abs": 0.03074085875299003,
+          "rmse": 0.005680425649857111
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.008044540702177347
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 3347329515,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "e7ab5fdf5e5264bd4420e4bbb97477f98e21ea519daac1534564e49b783b0626"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/64/tree_ensemble/metrics.json",
+        "model": "runs/latin_hypercube/64/tree_ensemble/model.pkl",
+        "model_metadata": "runs/latin_hypercube/64/tree_ensemble/model_metadata.json",
+        "predictions": "runs/latin_hypercube/64/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/64/tree_ensemble/metadata.json"
+      },
+      "budget": 64,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.032041155908598046,
+          "max_abs": 0.10621378349011526,
+          "rmse": 0.03905070152913415
+        },
+        "lambda_q_wb": {
+          "mae": 0.0066526345138337595,
+          "max_abs": 0.030050884223116293,
+          "rmse": 0.008703643470716805
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.028290552306228237
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 3347329515,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "e7ab5fdf5e5264bd4420e4bbb97477f98e21ea519daac1534564e49b783b0626"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/64/compact_mlp/metrics.json",
+        "model": "runs/latin_hypercube/64/compact_mlp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/64/compact_mlp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/64/compact_mlp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/64/compact_mlp/metadata.json"
+      },
+      "budget": 64,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.00222578605449152,
+          "max_abs": 0.016620086056032532,
+          "rmse": 0.0031743944367998446
+        },
+        "lambda_q_wb": {
+          "mae": 0.0016360246223525064,
+          "max_abs": 0.01357184572720908,
+          "rmse": 0.0026157644055314427
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0029085222592951793
+      },
+      "model_seed": 1701,
+      "n_train": 64,
+      "sample_seed": 3347329515,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "e7ab5fdf5e5264bd4420e4bbb97477f98e21ea519daac1534564e49b783b0626"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/128/physics_polynomial/metrics.json",
+        "model": "runs/latin_hypercube/128/physics_polynomial/model.pkl",
+        "model_metadata": "runs/latin_hypercube/128/physics_polynomial/model_metadata.json",
+        "predictions": "runs/latin_hypercube/128/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/128/physics_polynomial/metadata.json"
+      },
+      "budget": 128,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006726626589009813,
+          "max_abs": 0.041801202762146744,
+          "rmse": 0.008695251233172824
+        },
+        "lambda_q_wb": {
+          "mae": 0.0032486259194846124,
+          "max_abs": 0.01456336295250018,
+          "rmse": 0.004314110909167786
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.006863634130130845
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 3673937795,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "87d64a1aa54801dac8b46c563d5485e2a2d0e56dffcc37f3e378a5e6eb55bc13"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/128/rbf_or_gp/metrics.json",
+        "model": "runs/latin_hypercube/128/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/128/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/128/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/128/rbf_or_gp/metadata.json"
+      },
+      "budget": 128,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0016338150197127606,
+          "max_abs": 0.017249860220468347,
+          "rmse": 0.002793107546187396
+        },
+        "lambda_q_wb": {
+          "mae": 0.0017150409685874764,
+          "max_abs": 0.025108594456368885,
+          "rmse": 0.003315330165190148
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0030653600007820216
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 3673937795,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "87d64a1aa54801dac8b46c563d5485e2a2d0e56dffcc37f3e378a5e6eb55bc13"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/128/tree_ensemble/metrics.json",
+        "model": "runs/latin_hypercube/128/tree_ensemble/model.pkl",
+        "model_metadata": "runs/latin_hypercube/128/tree_ensemble/model_metadata.json",
+        "predictions": "runs/latin_hypercube/128/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/128/tree_ensemble/metadata.json"
+      },
+      "budget": 128,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.020456746465067864,
+          "max_abs": 0.06646165983164555,
+          "rmse": 0.02592591319640275
+        },
+        "lambda_q_wb": {
+          "mae": 0.005615537650075575,
+          "max_abs": 0.022002753066504177,
+          "rmse": 0.0072040310564579066
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.019026968210014705
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 3673937795,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "87d64a1aa54801dac8b46c563d5485e2a2d0e56dffcc37f3e378a5e6eb55bc13"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/128/compact_mlp/metrics.json",
+        "model": "runs/latin_hypercube/128/compact_mlp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/128/compact_mlp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/128/compact_mlp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/128/compact_mlp/metadata.json"
+      },
+      "budget": 128,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0013268819405144947,
+          "max_abs": 0.005550181434609475,
+          "rmse": 0.0017280728991882714
+        },
+        "lambda_q_wb": {
+          "mae": 0.0011701280239215114,
+          "max_abs": 0.0042379520304550305,
+          "rmse": 0.001493751004329075
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.001615166865658635
+      },
+      "model_seed": 1701,
+      "n_train": 128,
+      "sample_seed": 3673937795,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "87d64a1aa54801dac8b46c563d5485e2a2d0e56dffcc37f3e378a5e6eb55bc13"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/256/physics_polynomial/metrics.json",
+        "model": "runs/latin_hypercube/256/physics_polynomial/model.pkl",
+        "model_metadata": "runs/latin_hypercube/256/physics_polynomial/model_metadata.json",
+        "predictions": "runs/latin_hypercube/256/physics_polynomial/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/256/physics_polynomial/metadata.json"
+      },
+      "budget": 256,
+      "family": "physics_polynomial",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.006204948982044696,
+          "max_abs": 0.033506278071062046,
+          "rmse": 0.0081371952340089
+        },
+        "lambda_q_wb": {
+          "mae": 0.0031810965086053254,
+          "max_abs": 0.019097617202487975,
+          "rmse": 0.004238981147429682
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0064877926694925075
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 3876850232,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "0ff937a56ea1a43e2d653ee3313cc397e2fa9d29cf385b6db86f868563c3d5d0"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/256/rbf_or_gp/metrics.json",
+        "model": "runs/latin_hypercube/256/rbf_or_gp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/256/rbf_or_gp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/256/rbf_or_gp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/256/rbf_or_gp/metadata.json"
+      },
+      "budget": 256,
+      "family": "rbf_or_gp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0006452734189662643,
+          "max_abs": 0.005217113275972296,
+          "rmse": 0.0010901649248257128
+        },
+        "lambda_q_wb": {
+          "mae": 0.0006508513463941905,
+          "max_abs": 0.008680571713155456,
+          "rmse": 0.0011671338066005595
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0011293052921664195
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 3876850232,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "0ff937a56ea1a43e2d653ee3313cc397e2fa9d29cf385b6db86f868563c3d5d0"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/256/tree_ensemble/metrics.json",
+        "model": "runs/latin_hypercube/256/tree_ensemble/model.pkl",
+        "model_metadata": "runs/latin_hypercube/256/tree_ensemble/model_metadata.json",
+        "predictions": "runs/latin_hypercube/256/tree_ensemble/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/256/tree_ensemble/metadata.json"
+      },
+      "budget": 256,
+      "family": "tree_ensemble",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.014922959175731193,
+          "max_abs": 0.06818412166307111,
+          "rmse": 0.019403327525139017
+        },
+        "lambda_q_wb": {
+          "mae": 0.004168530342816561,
+          "max_abs": 0.021150438488576277,
+          "rmse": 0.005571410970315316
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.014274623274327894
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 3876850232,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "0ff937a56ea1a43e2d653ee3313cc397e2fa9d29cf385b6db86f868563c3d5d0"
+    },
+    {
+      "artifacts": {
+        "metrics": "runs/latin_hypercube/256/compact_mlp/metrics.json",
+        "model": "runs/latin_hypercube/256/compact_mlp/model.pkl",
+        "model_metadata": "runs/latin_hypercube/256/compact_mlp/model_metadata.json",
+        "predictions": "runs/latin_hypercube/256/compact_mlp/predictions.csv",
+        "run_metadata": "runs/latin_hypercube/256/compact_mlp/metadata.json"
+      },
+      "budget": 256,
+      "family": "compact_mlp",
+      "metrics": {
+        "lambda_d_wb": {
+          "mae": 0.0015768475660805172,
+          "max_abs": 0.00758642472088801,
+          "rmse": 0.002062093699864864
+        },
+        "lambda_q_wb": {
+          "mae": 0.001014049548906645,
+          "max_abs": 0.006829754109899878,
+          "rmse": 0.0013823618012061285
+        },
+        "n_selection": 256,
+        "rmse_flux_mean": 0.0017554421916508981
+      },
+      "model_seed": 1701,
+      "n_train": 256,
+      "sample_seed": 3876850232,
+      "status": "completed",
+      "strategy": "latin_hypercube",
+      "training_point_ids_sha256": "0ff937a56ea1a43e2d653ee3313cc397e2fa9d29cf385b6db86f868563c3d5d0"
+    }
+  ],
+  "status": "completed",
+  "strategies": [
+    "tensor_grid",
+    "random",
+    "latin_hypercube"
+  ]
+}

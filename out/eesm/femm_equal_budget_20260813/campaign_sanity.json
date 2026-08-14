@@ -1,0 +1,55 @@
+{
+  "all_converged": true,
+  "backend": "femm_4.2",
+  "campaign_root": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_20260813",
+  "campaign_torque_field": "torque_identity_nm",
+  "forbidden_lambda_f_wb": false,
+  "identity_equals_campaign_torque": true,
+  "lambda_d_wb": {
+    "max": 0.14927650810452203,
+    "min": -0.21005539469404155,
+    "n": 1759
+  },
+  "lambda_q_wb": {
+    "max": 0.1353811226677466,
+    "min": -1.877307495983484e-05,
+    "n": 1759
+  },
+  "mesh_elements": [
+    73904
+  ],
+  "missing_identity": 0,
+  "nonfinite": 0,
+  "not_a_fit": true,
+  "not_a_threshold_freeze": true,
+  "points_file_rows": 1759,
+  "points_sha256": "b85ea01c84267500d3270337e60dad42f7367dd9faf0326e586ceee895adfe01",
+  "regions": {
+    "boundary": 105,
+    "field_weakening": 364,
+    "interior": 938,
+    "saturation": 352
+  },
+  "results_sha256": "c623d14b9afb294847261291b45c739517096d42669d88eea274b8838c2c05a2",
+  "roles": {
+    "scheduler_audit": 256,
+    "selection": 256,
+    "train": 1247
+  },
+  "rows": 1759,
+  "schema_failures": 0,
+  "status": "complete",
+  "torque_identity_nm": {
+    "max": 46.90780835641226,
+    "min": -28.746604131266686,
+    "n": 1759
+  },
+  "unique_point_ids": 1759,
+  "verdict": "schema_valid_live_rows",
+  "wst_residual_suspect_rows": 1413,
+  "zero_sequence_ratio": {
+    "max": 0.08315580208468057,
+    "min": 4.777682332111237e-06,
+    "n": 1759
+  }
+}

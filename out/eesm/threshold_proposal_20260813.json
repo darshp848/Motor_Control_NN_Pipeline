@@ -1,0 +1,89 @@
+{
+  "campaign_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_20260813\\femm_results.csv",
+  "competing_families_excluded": [
+    "physics_polynomial",
+    "rbf_or_gp",
+    "tree_ensemble",
+    "compact_mlp"
+  ],
+  "data_qa_campaign": 0.0,
+  "designs": [
+    "tensor_grid_64",
+    "random_64",
+    "latin_hypercube_64"
+  ],
+  "floors": {
+    "boundary": 0.001,
+    "data_qa": 0.0,
+    "feasibility": 0.02,
+    "field_weakening": 0.001,
+    "interior": 0.001,
+    "saturation": 0.001,
+    "torque": 0.5,
+    "voltage": 2.0
+  },
+  "instrument": "idw_power_2_normalized_currents",
+  "manifest_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\eesm\\configs\\eesm_experiment_manifest.json",
+  "not_a_competing_family": true,
+  "not_written_to_manifest": false,
+  "per_design": {
+    "latin_hypercube_64": {
+      "boundary": 0.05580556892824304,
+      "data_qa": 0.0,
+      "feasibility": 0.0,
+      "field_weakening": 0.05121253119353738,
+      "interior": 0.03937430873722512,
+      "saturation": 0.05890606707606628,
+      "torque": 9.65519376554659,
+      "voltage": 66.8661382422964
+    },
+    "random_64": {
+      "boundary": 0.047824752213400795,
+      "data_qa": 0.0,
+      "feasibility": 0.0,
+      "field_weakening": 0.05056944281287938,
+      "interior": 0.0334257289349126,
+      "saturation": 0.05357813441070452,
+      "torque": 7.775258296730788,
+      "voltage": 73.32389575047401
+    },
+    "tensor_grid_64": {
+      "boundary": 0.031829700026416635,
+      "data_qa": 0.0,
+      "feasibility": 0.0,
+      "field_weakening": 0.04305513314524484,
+      "interior": 0.03373384972890815,
+      "saturation": 0.04546680244433383,
+      "torque": 6.656637574980601,
+      "voltage": 61.09238135188149
+    }
+  },
+  "proposed_thresholds": {
+    "boundary": 0.05580556892824304,
+    "data_qa": 0.0,
+    "feasibility": 0.02,
+    "field_weakening": 0.05121253119353738,
+    "interior": 0.03937430873722512,
+    "saturation": 0.05890606707606628,
+    "torque": 9.65519376554659,
+    "voltage": 73.32389575047401
+  },
+  "raw_max": {
+    "boundary": 0.05580556892824304,
+    "data_qa": 0.0,
+    "feasibility": 0.0,
+    "field_weakening": 0.05121253119353738,
+    "interior": 0.03937430873722512,
+    "saturation": 0.05890606707606628,
+    "torque": 9.65519376554659,
+    "voltage": 73.32389575047401
+  },
+  "scheduler_audit_used": false,
+  "selection_used": false,
+  "speeds_rpm": [
+    3000.0,
+    9000.0
+  ],
+  "status": "proposal_not_frozen",
+  "v_max_phase_peak": 230.94010767585033
+}

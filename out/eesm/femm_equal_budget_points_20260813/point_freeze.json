@@ -1,0 +1,121 @@
+{
+  "budgets": [
+    64,
+    128,
+    256
+  ],
+  "campaign_id": "eesm_femm_equal_budget_points_20260813",
+  "designs": {
+    "latin_hypercube_128": {
+      "budget": 128,
+      "n": 128,
+      "point_ids_sha256": "55c392a39d19ea1f5bd928637ec9eabccb90dbf8fc89cc7900946df50792d23f",
+      "seed": 3673937795,
+      "strategy": "latin_hypercube"
+    },
+    "latin_hypercube_256": {
+      "budget": 256,
+      "n": 256,
+      "point_ids_sha256": "4ff17b368cffa081a1bd56710bfb21282f61e197d61ad76df69c1e0c112a0cf3",
+      "seed": 3876850232,
+      "strategy": "latin_hypercube"
+    },
+    "latin_hypercube_64": {
+      "budget": 64,
+      "n": 64,
+      "point_ids_sha256": "0ddbb90a30f8b461f1036fe9ccd08cec74a371efecbd36221ba52f354d3a1a9c",
+      "seed": 3347329515,
+      "strategy": "latin_hypercube"
+    },
+    "random_128": {
+      "budget": 128,
+      "n": 128,
+      "point_ids_sha256": "a7917a26016938f07ca2f9186f12b7560008e6ebd13d076ad4d9bc18b0dd00a3",
+      "seed": 2524596150,
+      "strategy": "random"
+    },
+    "random_256": {
+      "budget": 256,
+      "n": 256,
+      "point_ids_sha256": "04ae210073150c5340f2e0a019c46176ebc83520cb8c4310c74bb1f767abfba9",
+      "seed": 1182745997,
+      "strategy": "random"
+    },
+    "random_64": {
+      "budget": 64,
+      "n": 64,
+      "point_ids_sha256": "6f85513298cc08f9d5a943515bfcdbbc2c5726f179d6328d485d081539c9515a",
+      "seed": 4118397894,
+      "strategy": "random"
+    },
+    "tensor_grid_128": {
+      "budget": 128,
+      "n": 128,
+      "point_ids_sha256": "fdc4d56a8c819867433be1ca176e69b1f0108465bc7fdb5ea1edba77b3155b38",
+      "seed": 1541058640,
+      "strategy": "tensor_grid"
+    },
+    "tensor_grid_256": {
+      "budget": 256,
+      "n": 256,
+      "point_ids_sha256": "eb4c1613468f63f3ad3e6495d29c5e9a4dfa834dcd10fba9910bb661b164aa32",
+      "seed": 4038257445,
+      "strategy": "tensor_grid"
+    },
+    "tensor_grid_64": {
+      "budget": 64,
+      "n": 64,
+      "point_ids_sha256": "f5cce4c0c722674aeb1f3e9e6b10a0f7b2e55a4d1ce0b4ec250e7f9f54e3301d",
+      "seed": 2125360242,
+      "strategy": "tensor_grid"
+    }
+  },
+  "domain": {
+    "id_a": [
+      -120.0,
+      0.0
+    ],
+    "if_a": [
+      0.0,
+      15.0
+    ],
+    "iq_a": [
+      0.0,
+      120.0
+    ]
+  },
+  "manifest_path": "eesm/configs/eesm_experiment_manifest.json",
+  "manifest_sha256": "9098955eb2479158914d9ecc932d1fea21149ed610efc20cae585b86d603ce23",
+  "n_femm_solvable": 1759,
+  "n_identities": 1760,
+  "not_a_task9_expansion": true,
+  "not_a_threshold_freeze": true,
+  "note": "Identities for the executable equal-budget matrix. Task 9 40/12/8/4 remains a separate freeze. scheduler_audit is sealed.",
+  "origin_in_train": true,
+  "origin_point_id": "810b925b28c5c9ed",
+  "points_path": "frozen_points.csv",
+  "points_sha256": "b85ea01c84267500d3270337e60dad42f7367dd9faf0326e586ceee895adfe01",
+  "role_counts_femm": {
+    "scheduler_audit": 256,
+    "selection": 256,
+    "train": 1247
+  },
+  "role_counts_including_origin": {
+    "scheduler_audit": 256,
+    "selection": 256,
+    "train": 1248
+  },
+  "sampling_revision_policy": "frozen_before_fem_no_result_driven_revision",
+  "seeds": {
+    "model": 1701,
+    "scheduler_audit": 2909,
+    "split": 20260710
+  },
+  "selection_seed": 297616781,
+  "source_free_origin_policy": "analytic_invariant_not_sent_to_femm",
+  "strategies": [
+    "tensor_grid",
+    "random",
+    "latin_hypercube"
+  ]
+}

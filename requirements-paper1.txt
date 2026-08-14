@@ -1,0 +1,10 @@
+# Known-good environment for the equal-budget EESM paper artifact.
+# Python 3.11.9 was used for the reported run.
+numpy==2.4.6
+pandas==3.0.3
+scipy==1.17.1
+scikit-learn==1.9.0
+torch==2.11.0
+matplotlib==3.11.0
+pytest==9.1.1
+jsonschema==4.26.0

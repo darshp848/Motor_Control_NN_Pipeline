@@ -32,6 +32,10 @@ import torch
 from torch import nn
 
 from surrogates.base import FluxSurrogate
+from surrogates.torch_determinism import (
+    adam_deterministic_kwargs,
+    configure_torch_determinism,
+)
 
 #: Output channel order produced by the potential's gradient.
 CHANNELS = ("lambda_d_wb", "lambda_q_wb", "lambda_f_terminal_wb")
@@ -78,7 +82,8 @@ class EnergyGradientSurrogate(FluxSurrogate):
     # fit / predict
     # ------------------------------------------------------------------
     def _fit_normalized(self, X: np.ndarray, y: np.ndarray) -> None:
-        torch.manual_seed(self.seed)
+        threads = int(self.config.get("num_threads", 1))
+        determinism = configure_torch_determinism(self.seed, num_threads=threads)
         hidden = int(self.config.get("hidden_width", 64))
         learning_rate = float(self.config.get("learning_rate", 0.01))
         epochs = int(self.config.get("epochs", 3000))
@@ -97,6 +102,8 @@ class EnergyGradientSurrogate(FluxSurrogate):
             "loss": "mse_per_channel_normalized_flux",
             "epochs": epochs,
             "learning_rate": learning_rate,
+            "device": "cpu",
+            "determinism": determinism,
         }
         self.model_ = nn.Sequential(
             nn.Linear(3, hidden), nn.Tanh(),
@@ -110,7 +117,7 @@ class EnergyGradientSurrogate(FluxSurrogate):
         )
         y_scale = torch.as_tensor(self.y_scale_, dtype=torch.float64)
         optimizer = torch.optim.Adam(
-            self.model_.parameters(), lr=learning_rate, betas=(0.9, 0.999), eps=1e-8
+            self.model_.parameters(), **adam_deterministic_kwargs(learning_rate)
         )
         self.model_.train()
         for _ in range(epochs):

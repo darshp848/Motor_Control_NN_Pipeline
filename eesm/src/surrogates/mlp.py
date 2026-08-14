@@ -7,29 +7,32 @@ import torch
 from torch import nn
 
 from surrogates.base import FluxSurrogate
+from surrogates.torch_determinism import (
+    adam_deterministic_kwargs,
+    configure_torch_determinism,
+)
 
 
 class CompactMLPSurrogate(FluxSurrogate):
     family = "compact_mlp"
 
     def _fit_normalized(self, X: np.ndarray, y: np.ndarray) -> None:
-        torch.manual_seed(self.seed)
+        threads = int(self.config.get("num_threads", 1))
+        determinism = configure_torch_determinism(self.seed, num_threads=threads)
         hidden = int(self.config.get("hidden_width", 32))
         learning_rate = float(self.config.get("learning_rate", 0.01))
         epochs = int(self.config.get("epochs", 300))
         n_out = int(y.shape[1])
+        adam_kwargs = adam_deterministic_kwargs(learning_rate)
         self.hyperparameters_ = {
             "architecture": [3, hidden, hidden, n_out],
             "activation": "tanh",
             "dtype": "float64",
             "loss": "mean_squared_error",
-            "adam": {
-                "lr": learning_rate, "betas": [0.9, 0.999], "eps": 1e-8,
-                "weight_decay": 0, "amsgrad": False, "maximize": False,
-                "foreach": None, "capturable": False, "differentiable": False,
-                "fused": None, "decoupled_weight_decay": False,
-            },
+            "adam": adam_kwargs,
             "epochs": epochs,
+            "device": "cpu",
+            "determinism": determinism,
         }
         self.model_ = nn.Sequential(
             nn.Linear(3, hidden), nn.Tanh(),
@@ -38,14 +41,7 @@ class CompactMLPSurrogate(FluxSurrogate):
         ).to(dtype=torch.float64)
         inputs = torch.as_tensor(X, dtype=torch.float64)
         targets = torch.as_tensor(y, dtype=torch.float64)
-        optimizer = torch.optim.Adam(
-            self.model_.parameters(),
-            lr=learning_rate,
-            betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
-            amsgrad=False, maximize=False, foreach=None, capturable=False,
-            differentiable=False, fused=None,
-            decoupled_weight_decay=False,
-        )
+        optimizer = torch.optim.Adam(self.model_.parameters(), **adam_kwargs)
         for _ in range(epochs):
             optimizer.zero_grad()
             loss = nn.functional.mse_loss(self.model_(inputs), targets)

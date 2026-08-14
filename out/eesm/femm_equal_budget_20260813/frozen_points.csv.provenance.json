@@ -1,0 +1,28 @@
+{
+  "column_mapping": {
+    "id_a": "id_a",
+    "if_a": "if_a",
+    "iq_a": "iq_a",
+    "point_id": "point_id",
+    "point_name": "point_name",
+    "region": "region",
+    "role": "role"
+  },
+  "copied_at": "2026-08-13T00:16:53",
+  "dest_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_20260813\\frozen_points.csv",
+  "dest_sha256": "b85ea01c84267500d3270337e60dad42f7367dd9faf0326e586ceee895adfe01",
+  "dropped_columns": [],
+  "note": "Verbatim copy of a FEMM-dialect freeze. Identities, roles and regions are unchanged; the source file and its hash remain the authority.",
+  "rows": 1759,
+  "source_columns": [
+    "point_name",
+    "point_id",
+    "role",
+    "region",
+    "id_a",
+    "iq_a",
+    "if_a"
+  ],
+  "source_path": "C:\\Users\\darsh\\TAMU\\EMPE_Lab\\Motor_Control_NN_Pipeline\\out\\eesm\\femm_equal_budget_points_20260813\\frozen_points.csv",
+  "source_sha256": "b85ea01c84267500d3270337e60dad42f7367dd9faf0326e586ceee895adfe01"
+}

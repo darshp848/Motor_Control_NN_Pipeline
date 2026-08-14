@@ -125,7 +125,8 @@ def test_gp_metadata_records_fitted_kernel_when_optimizer_is_enabled(
         ("physics_polynomial", {"polynomial_features", "ridge"}),
         ("rbf_or_gp", {"kernel", "gaussian_process_regressor"}),
         ("tree_ensemble", {"random_forest_regressor"}),
-        ("compact_mlp", {"architecture", "activation", "dtype", "loss", "adam", "epochs"}),
+        ("compact_mlp", {"architecture", "activation", "dtype", "loss", "adam",
+                         "epochs", "device", "determinism"}),
     ],
 )
 def test_metadata_is_json_serializable_and_records_complete_effective_config(
@@ -166,9 +167,16 @@ def test_metadata_is_json_serializable_and_records_complete_effective_config(
         assert effective["random_forest_regressor"] == model.model_.get_params(deep=False)
     else:
         assert effective["architecture"] == [3, 32, 32, 2]
-        assert effective["adam"] == {
-            "lr": 0.01, "betas": [0.9, 0.999], "eps": 1e-8,
-            "weight_decay": 0, "amsgrad": False, "maximize": False,
-            "foreach": None, "capturable": False, "differentiable": False,
-            "fused": None, "decoupled_weight_decay": False,
-        }
+        adam = effective["adam"]
+        assert adam["lr"] == 0.01
+        assert adam["betas"] == [0.9, 0.999]
+        assert adam["eps"] == 1e-8
+        assert adam["weight_decay"] == 0
+        assert adam["amsgrad"] is False
+        # Determinism-critical: the fused and foreach Adam kernels are not
+        # bit-reproducible, so both must stay disabled. Asserted by field rather
+        # than by whole-dict equality because torch adds and removes incidental
+        # keys (e.g. decoupled_weight_decay) between versions, which would make
+        # this test fail for reasons unrelated to the contract it guards.
+        assert adam["foreach"] is False
+        assert adam["fused"] is False

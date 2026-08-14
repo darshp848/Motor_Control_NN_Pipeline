@@ -36,6 +36,14 @@ Personal write-ups, PDFs, notebooks, and the Obsidian vault live next door in:
 
 `../Motor_Control_Learning_Research/`
 
+## EESM equal-budget paper artifact
+
+The conference-paper artifact has a separate clean-room guide covering the
+known-good Python environment, FEMM 4.2/pyFEMM setup, machine and point
+generation, verification of the published SHA-256 bundle, reproduction of the
+36-cell comparison, and the limits of bit-for-bit solver reproduction:
+[`docs/PAPER1_REPRODUCIBILITY.md`](docs/PAPER1_REPRODUCIBILITY.md).
+
 ## Layout
 
 | Path | Purpose |

@@ -18,6 +18,6 @@ field_gauge
     If-only control that keeps the zero-shot claim honest.
 """
 
-from metrics import field_gauge, ldiff, reciprocity
+from metrics import field_gauge, ldiff, reciprocity, saren_mtpa
 
-__all__ = ["field_gauge", "ldiff", "reciprocity"]
+__all__ = ["field_gauge", "ldiff", "reciprocity", "saren_mtpa"]

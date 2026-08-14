@@ -36,6 +36,16 @@ def test_pwa_interpolates_training_vertices():
     assert pred == pytest.approx(y, abs=1e-8)
 
 
+def test_pwa_physical_space_interpolates_training_vertices():
+    X, y = _linear_data(24)
+    model = build_surrogate("pwa", 0, {"delaunay_space": "physical"})
+    model.fit(X, y)
+    pred = model.predict(X)
+    assert pred == pytest.approx(y, abs=1e-8)
+    assert model.hyperparameters_["delaunay_space"] == "physical"
+    assert model.hyperparameters_["construction"] == "as_described_reimplementation"
+
+
 def test_energy_net_fits_a_linear_map():
     X, y = _linear_data(48, seed=1)
     model = build_surrogate(

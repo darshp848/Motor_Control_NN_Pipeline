@@ -9,7 +9,8 @@
 - `energy_gradient_net` — W′(id, iq, If) MLP; `λd, λq = (2/3) ∂W′/∂(id, iq)`
   per `eesm/docs/DQ_CONVENTIONS.md`.
 - `pwa` — 3-D Delaunay + affine least squares per simplex (outside hull:
-  nearest training vertex).
+  nearest training vertex). As-described reimplementation; see
+  `eesm/docs/PWA_FIDELITY.md`.
 
 Phase 0 families stay in the v2 matrix so the comparison is
 structured vs unstructured at the same budgets.

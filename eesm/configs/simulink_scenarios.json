@@ -1,0 +1,54 @@
+{
+  "schema_version": "eesm-simulink-scenarios-1.0.0",
+  "role": "corroboration_only",
+  "not_electromagnetic_truth": true,
+  "sample_time_s": 1e-4,
+  "stop_time_s": 1.5,
+  "mechanical_inertia_kgm2": 0.02,
+  "stator_current_tau_s": 0.024,
+  "field_current_tau_s": 0.05,
+  "scenarios": [
+    {
+      "id": "rated_torque_step",
+      "description": "Step to rated torque at base speed.",
+      "rpm_mech": [ [0.0, 3000.0], [1.5, 3000.0] ],
+      "t_ref_nm": [ [0.0, 0.0], [0.05, 0.0], [0.05, 31.83], [1.5, 31.83] ]
+    },
+    {
+      "id": "low_speed_torque_sweep",
+      "description": "Ramp torque at 500 rpm.",
+      "rpm_mech": [ [0.0, 500.0], [1.5, 500.0] ],
+      "t_ref_nm": [ [0.0, 2.0], [1.2, 28.0], [1.5, 28.0] ]
+    },
+    {
+      "id": "base_speed_crossing",
+      "description": "Hold 20 N.m while speed crosses 3000 rpm.",
+      "rpm_mech": [ [0.0, 1500.0], [1.2, 4500.0], [1.5, 4500.0] ],
+      "t_ref_nm": [ [0.0, 20.0], [1.5, 20.0] ]
+    },
+    {
+      "id": "field_weakening",
+      "description": "High-speed modest torque.",
+      "rpm_mech": [ [0.0, 7500.0], [1.5, 7500.0] ],
+      "t_ref_nm": [ [0.0, 5.0], [1.5, 5.0] ]
+    },
+    {
+      "id": "voltage_saturation",
+      "description": "High speed and high torque, expected voltage-boundary status.",
+      "rpm_mech": [ [0.0, 9000.0], [1.5, 9000.0] ],
+      "t_ref_nm": [ [0.0, 25.0], [1.5, 25.0] ]
+    },
+    {
+      "id": "infeasible_command",
+      "description": "Command above the frozen table and current box; supervisor must hold last feasible or zero.",
+      "rpm_mech": [ [0.0, 9000.0], [1.5, 9000.0] ],
+      "t_ref_nm": [ [0.0, 31.83], [0.4, 31.83], [0.4, 80.0], [1.5, 80.0] ]
+    },
+    {
+      "id": "field_current_slew",
+      "description": "Torque steps that force a large field-current change.",
+      "rpm_mech": [ [0.0, 2000.0], [1.5, 2000.0] ],
+      "t_ref_nm": [ [0.0, 2.0], [0.3, 2.0], [0.3, 28.0], [0.9, 28.0], [0.9, 5.0], [1.5, 5.0] ]
+    }
+  ]
+}
