@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-"""Evaluate frozen gates, promote, then prospectively audit. No FEMM launch."""
+"""Evaluate frozen gates, promote, then prospectively audit. No FEMM launch.
+
+The 2026-08-13 close at out/eesm/phase0_close_20260813/ is write-once. A
+default rerun writes a new dated root. Passing that frozen path, or any
+directory that already holds result_bundle.json, is refused.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +13,7 @@ import csv
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -28,6 +34,50 @@ from validation.controller_metrics import evaluate_controller_metrics  # noqa: E
 from validation.gates import evaluate_gates  # noqa: E402
 from validation.promotion import promote_candidate  # noqa: E402
 from validation.threshold_method import voltage_feasible  # noqa: E402
+
+
+FROZEN_CLOSE = os.path.join(REPO_ROOT, "out", "eesm", "phase0_close_20260813")
+
+
+def default_close_out(now: datetime | None = None) -> str:
+    stamp = (now or datetime.now(timezone.utc)).strftime("%Y%m%d")
+    return os.path.join(REPO_ROOT, "out", "eesm", "phase0_close_" + stamp)
+
+
+def _same_dir(left: Path, right: Path) -> bool:
+    return os.path.normcase(os.path.abspath(str(left))) == os.path.normcase(
+        os.path.abspath(str(right))
+    )
+
+
+def refuse_existing_close(out: Path, frozen: Path) -> str | None:
+    """Return a refusal message, or None if writing to *out* is allowed."""
+    if _same_dir(out, frozen):
+        return (
+            "REFUSED: %s is the immutable Phase 0 close; "
+            "pass --out to a new dated root" % out
+        )
+    bundle = out / "result_bundle.json"
+    if bundle.exists():
+        return "REFUSED: result_bundle.json already exists at %s" % bundle
+    close = out / "phase0_close.json"
+    if close.exists():
+        return "REFUSED: phase0_close.json already exists at %s" % close
+    return None
+
+
+def protect_frozen_close(root: Path) -> list[Path]:
+    """Clear write bits on the frozen close artifacts. Missing files are skipped."""
+    marked: list[Path] = []
+    for name in ("result_bundle.json", "phase0_close.json"):
+        path = root / name
+        if not path.is_file():
+            continue
+        mode = path.stat().st_mode
+        if mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH):
+            path.chmod(mode & ~stat.S_IWUSR & ~stat.S_IWGRP & ~stat.S_IWOTH)
+            marked.append(path)
+    return marked
 
 
 def _sha256_file(path: str) -> str:
@@ -122,9 +172,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--out",
-        default=os.path.join(REPO_ROOT, "out", "eesm", "phase0_close_20260813"),
+        default=None,
+        help="output root (default: out/eesm/phase0_close_<UTC date>; "
+        "never the frozen 20260813 tree)",
     )
     args = parser.parse_args(argv)
+
+    out = Path(args.out) if args.out is not None else Path(default_close_out())
+    protect_frozen_close(Path(FROZEN_CLOSE))
+    refusal = refuse_existing_close(out, Path(FROZEN_CLOSE))
+    if refusal is not None:
+        print(refusal, file=sys.stderr)
+        return 2
 
     manifest = json.loads(Path(args.manifest).read_bytes())
     if manifest["gates"]["status"] != "frozen":
@@ -217,7 +276,6 @@ def main(argv: list[str] | None = None) -> int:
             "used_before_promotion": False,
         }
 
-    out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     close_payload = {
         "created_utc": datetime.now(timezone.utc).isoformat(),

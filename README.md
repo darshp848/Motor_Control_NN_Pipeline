@@ -5,9 +5,9 @@ Public pipeline for building a **flux-map surrogate** for an IPM motor and turni
 **Stage 0 status: offline-frozen and audit-ready** (not FEM-closed / not deployment-ready).  
 Branch `stage0/repair-freeze-ipm-pipeline` locks domain-aware validation, units, seeds, and a one-command offline path before EESM work. See [`docs/STAGE0_FREEZE.md`](docs/STAGE0_FREEZE.md) and the verification report [`docs/STAGE0_FINAL_VERIFICATION.md`](docs/STAGE0_FINAL_VERIFICATION.md).
 
-**Stage 1 (EESM):** the foundry now covers frozen roles, equal-budget surrogate studies, controller-aware gates, deterministic promotion policy, constrained scheduling, a prospective LUT-audit boundary, and a verified Maxwell qualification adapter. The 2026-07-15 seven-point energized pilot passes the Task 8 qualification report and unblocks the Task 9 software/campaign start. Promotion remains blocked until the separate baseline-derived numerical thresholds are frozen. See [`docs/EESM_PIPELINE_ARCHITECTURE.md`](docs/EESM_PIPELINE_ARCHITECTURE.md).
+**Stage 1 (EESM):** FEMM Phase 0 is frozen. Eight numerical gates live in `eesm/configs/eesm_experiment_manifest.json` (`gates.status = frozen`). The 1759-point campaign, 36-cell equal-budget fit, deterministic promotion (`latin_hypercube|256|rbf_or_gp`), and sealed current-space audit are in `out/eesm/phase0_close_20260813/`. Do not overwrite that tree. Do not start Task 10 from the abandoned Maxwell Task 9 fail. Equal-tuning and the Phase 2 design-replicate fit are complete (`out/eesm/equal_tuning_20260814/`, `out/eesm/phase2_design_replicate_fit_20260814/`, `no_promotion`). That is a close-out, not a new promotion. See [`docs/EESM_PIPELINE_ARCHITECTURE.md`](docs/EESM_PIPELINE_ARCHITECTURE.md) and [`docs/PAPER1_REPRODUCIBILITY.md`](docs/PAPER1_REPRODUCIBILITY.md).
 
-**Task 9 offline status:** all **64/64** frozen Maxwell rows converged with complete raw evidence and no adaptive non-convergence warning; the maximum measured mesh was 1,826 elements. Canonical normalization completed, but `campaign_report.json` is intentionally `fail`: 59/64 rows exceed the frozen 1.1 N.m torque-closure limit, all 13 field-weakening rows fail it, and the maximum residual is 42.474642129016004 N.m. Direct AEDT diagnostics confirmed that `Torque_FEM` and `TorqueRotor.Torque` agree, so this is not an exporter readback error. No promoted surrogate, controller-ready LUT, released map, numerical-threshold update, or Task 10 result is claimed. Raw evidence remains local under `out/eesm/task9_baseline/raw/`; earlier non-converged attempts remain preserved under `out/eesm/task9_baseline/failed_runs/`.
+**Task 9 offline status:** all **64/64** frozen Maxwell rows converged with complete raw evidence and no adaptive non-convergence warning; the maximum measured mesh was 1,826 elements. Canonical normalization completed, but `campaign_report.json` is intentionally `fail`: 59/64 rows exceed the frozen 1.1 N.m torque-closure limit, all 13 field-weakening rows fail it, and the maximum residual is 42.474642129016004 N.m. Direct AEDT diagnostics confirmed that `Torque_FEM` and `TorqueRotor.Torque` agree, so this is not an exporter readback error. Task 9 itself claims no promoted surrogate, controller-ready LUT, or Task 10 result. The numerical-threshold freeze and promotion happened later in FEMM Phase 0, not here. Raw evidence remains local under `out/eesm/task9_baseline/raw/`; earlier non-converged attempts remain preserved under `out/eesm/task9_baseline/failed_runs/`.
 
 **Corrective requalification status:** a write-once ten-point `r2` diagnostic
 freeze is preserved under `out/eesm/task9_requalification_r2/`. Its preflight
@@ -143,16 +143,16 @@ The source of truth for domains, roles, budgets, gates, seeds, schemas, and path
 .\.venv\Scripts\python eesm/run_equal_budget_study.py
 ```
 
-These runners do **not** launch AEDT. Generated artifacts land under `out/eesm/`. Task 8's seven-point qualification is complete. Task 9 collected all 64 frozen rows under the stricter adaptive-convergence contract, but its final physics report fails the frozen 1.1 N.m torque-closure gate with a 42.474642129016004 N.m maximum residual. Numerical thresholds therefore remain `baseline_required`; no controller-ready or Simulink-ready claim is made.
+These runners do **not** launch AEDT. Generated artifacts land under `out/eesm/`. Task 8's seven-point qualification is complete. Task 9 Maxwell is preserved fail-closed history: all 64 frozen rows were collected, but the physics report fails the 1.1 N.m torque-closure gate (maximum residual 42.474642129016004 N.m). That fail did **not** keep the numerical thresholds at `baseline_required`. FEMM Phase 0 later froze the eight gates and promoted `latin_hypercube|256|rbf_or_gp`. No controller-ready or Simulink-ready claim is made. EESM-004/005/006 remain blocked.
 
 Safe offline inspection (does not launch AEDT):
 
 ```pwsh
-Get-Content out/eesm/task9_baseline/campaign_freeze.json
-Get-Content out/eesm/task9_baseline/raw/campaign_status.json
+Get-Content out/eesm/phase0_close_20260813/result_bundle.json
+Get-Content out/eesm/task9_baseline/campaign_report.json
 ```
 
-Task 9 normalization and reporting have run. Inspect `out/eesm/task9_baseline/campaign_report.json`; do not promote or begin Task 10 while its `campaign_status` is `fail`.
+Inspect the Maxwell `campaign_report.json` as archived evidence only. Do not promote or begin Task 10 from that `fail`. Do not overwrite `out/eesm/phase0_close_20260813/`.
 
 ## Learning notes
 

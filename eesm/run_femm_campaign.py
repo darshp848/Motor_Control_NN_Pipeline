@@ -21,6 +21,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import replace
 from typing import Any, Dict, Optional
 
 _EESM_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +31,7 @@ if _REPO_ROOT not in sys.path:
 
 from eesm.femm import campaign, geometry, points, runtime  # noqa: E402
 from eesm.femm.campaign import CampaignPaths, CampaignRefusal  # noqa: E402
-from eesm.femm.config import DEFAULT_CONFIG  # noqa: E402
+from eesm.femm.config import DEFAULT_CONFIG, FemmConfig  # noqa: E402
 from eesm.femm.points import PointsRefusal  # noqa: E402
 
 DEFAULT_OUTPUT = os.path.join(_REPO_ROOT, "out", "eesm", "femm_campaign")
@@ -83,11 +84,21 @@ def prepare_points(paths: CampaignPaths, source: Optional[str]) -> Dict[str, Any
             "path": paths.points_csv, "provenance": payload}
 
 
-def resolve_handle(use_mock: bool) -> Any:
+def campaign_config(*, full_machine: bool = False) -> FemmConfig:
+    """Return the frozen default, or a 360-degree copy. Never mutates DEFAULT_CONFIG."""
+    if not full_machine:
+        return DEFAULT_CONFIG
+    return replace(
+        DEFAULT_CONFIG,
+        geometry=replace(DEFAULT_CONFIG.geometry, full_machine=True),
+    )
+
+
+def resolve_handle(use_mock: bool, cfg: FemmConfig = DEFAULT_CONFIG) -> Any:
     """The mock is opt-in and loudly labelled; otherwise demand a real FEMM."""
     if use_mock:
         from eesm.femm.mock_femm import MockFemm
-        return MockFemm(cfg=DEFAULT_CONFIG), "mock_femm"
+        return MockFemm(cfg=cfg), "mock_femm"
     return runtime.resolve_femm(), "femm_4.2"
 
 
@@ -95,22 +106,25 @@ def run_femm_campaign(output_dir: str = DEFAULT_OUTPUT,
                       points_source: Optional[str] = None,
                       use_mock: bool = False,
                       max_new_points: Optional[int] = None,
-                      rotor_angle_deg: float = 0.0) -> Dict[str, Any]:
+                      rotor_angle_deg: float = 0.0,
+                      full_machine: bool = False) -> Dict[str, Any]:
     """Convert points if needed, then run (or resume) the campaign."""
+    cfg = campaign_config(full_machine=full_machine)
     paths = CampaignPaths(root=os.path.abspath(output_dir))
     if os.path.isdir(paths.root):
         guard_campaign_root(paths.root)
     paths.ensure()
 
     prepared = prepare_points(paths, points_source)
-    handle, backend = resolve_handle(use_mock)
+    handle, backend = resolve_handle(use_mock, cfg)
     if not use_mock:
-        document = os.path.join(paths.root, "eesm_sector.fem")
-        geometry.open_and_build(handle, document, DEFAULT_CONFIG)
+        document_name = "eesm_360.fem" if full_machine else "eesm_sector.fem"
+        document = os.path.join(paths.root, document_name)
+        geometry.open_and_build(handle, document, cfg)
 
     try:
         status = campaign.run_campaign(
-            handle, paths, cfg=DEFAULT_CONFIG,
+            handle, paths, cfg=cfg,
             max_new_points=max_new_points,
             rotor_angle_deg=rotor_angle_deg,
             solver_backend=backend,
@@ -172,6 +186,12 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--max-new-points", type=int, default=None,
                         help="Solve at most N new points, then stop resumably")
     parser.add_argument("--rotor-angle-deg", type=float, default=0.0)
+    parser.add_argument(
+        "--full-machine",
+        action="store_true",
+        help="Build and solve the 360-degree model (no antiperiodic cuts). "
+             "Required for the Phase 2 WST set. Default is the 90-degree sector.",
+    )
     ns = parser.parse_args(argv)
 
     if ns.check:
@@ -187,6 +207,7 @@ def main(argv: Optional[list] = None) -> int:
             use_mock=ns.mock,
             max_new_points=ns.max_new_points,
             rotor_angle_deg=ns.rotor_angle_deg,
+            full_machine=ns.full_machine,
         )
     except (RunnerRefusal, CampaignRefusal, PointsRefusal) as exc:
         print("REFUSED: %s" % exc, file=sys.stderr)

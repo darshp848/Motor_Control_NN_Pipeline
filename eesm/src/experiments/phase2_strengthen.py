@@ -754,6 +754,662 @@ def run_existing_map_schedules(
     return payload
 
 
+def merge_campaign_csvs(
+    sources: Sequence[str | Path], dest: str | Path
+) -> dict[str, Any]:
+    """Concatenate finished FEMM result CSVs. Duplicate IDs must match."""
+    dest_path = Path(dest)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    by_id: dict[str, dict[str, str]] = {}
+    fieldnames: list[str] | None = None
+    collisions = 0
+    for source in sources:
+        with Path(source).open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            if reader.fieldnames is None:
+                raise ValueError(f"empty campaign CSV: {source}")
+            if fieldnames is None:
+                fieldnames = list(reader.fieldnames)
+            for row in reader:
+                point_id = row["point_id"]
+                if point_id in by_id:
+                    old = by_id[point_id]
+                    if (
+                        old.get("lambda_d_wb") != row.get("lambda_d_wb")
+                        or old.get("lambda_q_wb") != row.get("lambda_q_wb")
+                    ):
+                        raise ValueError(
+                            "conflicting FEMM truth for %s" % point_id
+                        )
+                    collisions += 1
+                    continue
+                by_id[point_id] = row
+    if fieldnames is None:
+        raise ValueError("no campaign rows to merge")
+    with dest_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        for point_id in sorted(by_id):
+            writer.writerow(by_id[point_id])
+    return {
+        "n_unique": len(by_id),
+        "n_identical_collisions": collisions,
+        "sources": [str(Path(path)) for path in sources],
+        "dest": str(dest_path),
+    }
+
+
+def load_equal_tuning_configs(study_path: str | Path) -> dict[str, dict[str, Any]]:
+    """Map 'strategy|budget|family' to the equal-tuning selected_config."""
+    payload = json.loads(Path(study_path).read_text(encoding="utf-8"))
+    configs: dict[str, dict[str, Any]] = {}
+    for row in payload.get("results", []):
+        key = "%s|%s|%s" % (row["strategy"], int(row["budget"]), row["family"])
+        configs[key] = dict(row.get("selected_config") or {})
+    if not configs:
+        raise ValueError("equal-tuning study has no selected configs")
+    return configs
+
+
+def run_design_replicate_fit(
+    manifest: Mapping[str, Any],
+    truth_provider: Any,
+    selection_ids: Sequence[str],
+    selection_X: np.ndarray,
+    output_dir: str | Path,
+    equal_tuning_configs: Mapping[str, Mapping[str, Any]],
+    families: Sequence[str] | None = None,
+    n_replicates: int = N_DESIGN_REPLICATES,
+    model_seed: int | None = None,
+) -> dict[str, Any]:
+    """Fit every Phase 2 design replicate with frozen equal-tuning configs.
+
+    Model-seed variance was already measured on replicate 0. This study
+    isolates design-replicate variance. Tensor grids have only replicate 0.
+    """
+    output_root = Path(output_dir).resolve()
+    bundle_path = output_root / "result_bundle.json"
+    if bundle_path.is_file():
+        raise RuntimeError(
+            "REFUSED: %s already exists; choose a new dated root" % bundle_path
+        )
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    strategies, budgets, default_families, seeds = equal_budget._validate_manifest(
+        manifest
+    )
+    planned = list(families) if families is not None else list(default_families)
+    domain = equal_budget._domain_from_manifest(manifest)
+    pole_pairs = int(manifest["machine"]["pole_pairs"])
+    fit_seed = int(seeds["model"] if model_seed is None else model_seed)
+    selection_truth = equal_budget._evaluate_truth(truth_provider, selection_X)
+    reserved = reserved_role_ids(manifest)
+
+    run_rows: list[dict[str, Any]] = []
+    for strategy in strategies:
+        max_rep = n_replicates if strategy in REPLICATED_STRATEGIES else 0
+        for budget in budgets:
+            for replicate in range(max_rep + 1):
+                train_seed = design_replicate_seed(
+                    seeds["split"], strategy, int(budget), replicate
+                )
+                train_samples = equal_budget._sample_training(
+                    strategy, domain, int(budget), train_seed
+                )
+                train_ids = [str(value) for value in train_samples["point_id"]]
+                equal_budget._assert_role_disjointness(
+                    train_ids, list(selection_ids), reserved["scheduler_audit"]
+                )
+                train_X = equal_budget._sample_matrix(train_samples)
+                train_y = equal_budget._evaluate_truth(truth_provider, train_X)
+                for family in planned:
+                    cfg_key = "%s|%s|%s" % (strategy, int(budget), family)
+                    if cfg_key not in equal_tuning_configs:
+                        raise KeyError(
+                            "no equal-tuning config for %s" % cfg_key
+                        )
+                    config = dict(equal_tuning_configs[cfg_key])
+                    model = build_surrogate(family, fit_seed, config)
+                    model.fit(train_X, train_y)
+                    predicted = model.predict(selection_X)
+                    torque = identity_torque_rmse(
+                        selection_X[:, 0],
+                        selection_X[:, 1],
+                        selection_truth,
+                        predicted,
+                        pole_pairs,
+                    )
+                    flux = flux_rmse_mean(selection_truth, predicted)
+                    run_dir = (
+                        output_root
+                        / "runs"
+                        / strategy
+                        / str(int(budget))
+                        / family
+                        / ("r%d" % replicate)
+                    )
+                    run_dir.mkdir(parents=True, exist_ok=True)
+                    model_metadata = model.save(str(run_dir / "model"))
+                    model_metadata_path = run_dir / "model_metadata.json"
+                    _write_json(model_metadata_path, model_metadata)
+                    artifacts = {
+                        "model": Path(model_metadata["artifact_path"])
+                        .resolve()
+                        .relative_to(output_root)
+                        .as_posix(),
+                        "model_metadata": model_metadata_path.resolve().relative_to(
+                            output_root
+                        ).as_posix(),
+                    }
+                    run_rows.append(
+                        {
+                            "strategy": strategy,
+                            "budget": int(budget),
+                            "family": family,
+                            "design_replicate": int(replicate),
+                            "sample_seed": int(train_seed),
+                            "model_seed": fit_seed,
+                            "selected_config": config,
+                            "torque_rmse_nm": torque,
+                            "flux_rmse_wb": flux,
+                            "n_train": int(train_X.shape[0]),
+                            "clears_phase0_torque": torque < 9.65519376554659,
+                            "clears_phase2_torque": torque
+                            < PHASE2_THRESHOLDS["torque"],
+                            "artifacts": artifacts,
+                        }
+                    )
+                    print(
+                        "fit %d %s|r%d torque=%.4f nm flux=%.5f Wb"
+                        % (
+                            len(run_rows),
+                            cfg_key,
+                            replicate,
+                            torque,
+                            flux,
+                        ),
+                        flush=True,
+                    )
+
+    groups: dict[str, list[float]] = defaultdict(list)
+    for row in run_rows:
+        key = "%s|%s|%s" % (row["strategy"], row["budget"], row["family"])
+        groups[key].append(row["torque_rmse_nm"])
+    group_summary = {
+        key: _summarize_group(values) for key, values in sorted(groups.items())
+    }
+
+    sampler_wins: dict[str, dict[str, int]] = {}
+    for budget in budgets:
+        counts = {strategy: 0 for strategy in strategies}
+        families_here = planned
+        n_compare = 0
+        for family in families_here:
+            # Compare strategies on each shared replicate index. Tensor only
+            # has r0, so r0 is the only all-strategy comparison; r1..r5
+            # compare random vs latin_hypercube.
+            max_shared = max(
+                (
+                    row["design_replicate"]
+                    for row in run_rows
+                    if row["budget"] == int(budget) and row["family"] == family
+                ),
+                default=-1,
+            )
+            for replicate in range(max_shared + 1):
+                cell = {
+                    row["strategy"]: row["torque_rmse_nm"]
+                    for row in run_rows
+                    if row["budget"] == int(budget)
+                    and row["family"] == family
+                    and row["design_replicate"] == replicate
+                }
+                if len(cell) < 2:
+                    continue
+                winner = min(cell, key=cell.get)
+                counts[winner] += 1
+                n_compare += 1
+        sampler_wins[str(int(budget))] = {"n_comparisons": n_compare, **counts}
+
+    summary = {
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "experiment_id": "eesm_phase2_design_replicate_fit_20260814",
+        "not_a_phase0_revision": True,
+        "protocol": (
+            "Fit every frozen Phase 2 design replicate with the equal-tuning "
+            "selected_config for that strategy|budget|family. Score on the "
+            "sealed Phase 0 selection set. One model seed (1701). Does not "
+            "promote."
+        ),
+        "selection_n": int(selection_X.shape[0]),
+        "selection_point_ids_sha256": _sha256_bytes(
+            "\n".join(selection_ids).encode("ascii")
+        ),
+        "model_seed": fit_seed,
+        "n_replicates_additional": int(n_replicates),
+        "families": list(planned),
+        "phase2_thresholds": PHASE2_THRESHOLDS,
+        "runs": run_rows,
+        "group_summary": group_summary,
+        "sampler_wins_by_budget": sampler_wins,
+        "status": "completed",
+    }
+    _write_json(output_root / "design_replicate_fit.json", summary)
+    return summary
+
+
+def write_no_promotion_bundle(
+    output_dir: str | Path,
+    summary: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    foundry_commit: str,
+    manifest_sha256: str,
+    extra_artifacts: Sequence[Mapping[str, str]] | None = None,
+    working_tree_may_be_dirty: bool = True,
+) -> Path:
+    """Write a schema-valid bundle. status is no_promotion, never not_attempted."""
+    output_root = Path(output_dir)
+    study_path = output_root / "design_replicate_fit.json"
+    artifacts = [
+        {
+            "path": "design_replicate_fit.json",
+            "sha256": _sha256_bytes(study_path.read_bytes()),
+        }
+    ]
+    if extra_artifacts:
+        artifacts.extend(list(extra_artifacts))
+    bundle = {
+        "bundle_version": "1.0.0",
+        "experiment_id": summary["experiment_id"],
+        "foundry_commit": foundry_commit,
+        "manifest_sha256": manifest_sha256,
+        "created_utc": summary["created_utc"],
+        "inputs": {
+            "study": "design_replicate_fit.json",
+        },
+        "environment": {
+            "working_tree_may_be_dirty": bool(working_tree_may_be_dirty),
+        },
+        "stages": {"design_replicate_fit": summary["status"]},
+        "decisions": {
+            "promotion": {
+                "status": "no_promotion",
+                "candidate": None,
+                "reason": "design-replicate comparison; Phase 0 stays frozen",
+            }
+        },
+        "artifacts": artifacts,
+        "gates": {
+            "threshold_status": "frozen",
+            "thresholds": manifest["gates"]["thresholds"],
+        },
+    }
+    path = output_root / "result_bundle.json"
+    _write_json(path, bundle)
+    return path
+
+
+def campaign_arrays(
+    path: str | Path,
+) -> dict[str, Any]:
+    """Load finished FEMM rows as arrays. Incomplete campaigns are allowed."""
+    rows = load_campaign_rows(path)
+    usable: list[dict[str, str]] = []
+    for row in rows:
+        try:
+            lambda_d = float(row["lambda_d_wb"])
+            lambda_q = float(row["lambda_q_wb"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not np.isfinite(lambda_d) or not np.isfinite(lambda_q):
+            continue
+        if str(row.get("converged", "True")).lower() in {"false", "0"}:
+            continue
+        usable.append(row)
+    if not usable:
+        return {
+            "path": str(Path(path)),
+            "n_rows": len(rows),
+            "n_usable": 0,
+            "point_ids": [],
+            "X": np.zeros((0, 3), dtype=np.float64),
+            "y": np.zeros((0, 2), dtype=np.float64),
+            "regions": [],
+        }
+    return {
+        "path": str(Path(path)),
+        "n_rows": len(rows),
+        "n_usable": len(usable),
+        "point_ids": [row["point_id"] for row in usable],
+        "X": np.asarray(
+            [[float(row["id_a"]), float(row["iq_a"]), float(row["if_a"])] for row in usable],
+            dtype=np.float64,
+        ),
+        "y": np.asarray(
+            [[float(row["lambda_d_wb"]), float(row["lambda_q_wb"])] for row in usable],
+            dtype=np.float64,
+        ),
+        "regions": [str(row.get("region") or "unknown") for row in usable],
+    }
+
+
+def score_model_on_arrays(
+    model: Any,
+    X: np.ndarray,
+    y: np.ndarray,
+    regions: Sequence[str],
+    pole_pairs: int,
+) -> dict[str, Any]:
+    if X.shape[0] == 0:
+        return {"n": 0, "torque_rmse_nm": None, "flux_rmse_wb": None, "by_region": {}}
+    predicted = model.predict(X)
+    by_region: dict[str, dict[str, Any]] = {}
+    for region in sorted(set(regions)):
+        mask = np.asarray([name == region for name in regions], dtype=bool)
+        by_region[region] = {
+            "n": int(mask.sum()),
+            "torque_rmse_nm": identity_torque_rmse(
+                X[mask, 0], X[mask, 1], y[mask], predicted[mask], pole_pairs
+            ),
+            "flux_rmse_wb": flux_rmse_mean(y[mask], predicted[mask]),
+        }
+    return {
+        "n": int(X.shape[0]),
+        "torque_rmse_nm": identity_torque_rmse(
+            X[:, 0], X[:, 1], y, predicted, pole_pairs
+        ),
+        "flux_rmse_wb": flux_rmse_mean(y, predicted),
+        "by_region": by_region,
+    }
+
+
+def recommend_cell(summary: Mapping[str, Any], budget: int = 256) -> str:
+    """Lowest-median torque cell at the given budget. Ties break on IQR then name."""
+    best_key = ""
+    best = (float("inf"), float("inf"), "")
+    for key, stats in summary.get("group_summary", {}).items():
+        parts = str(key).split("|")
+        if len(parts) != 3 or int(parts[1]) != int(budget):
+            continue
+        candidate = (float(stats["median"]), float(stats["iqr"]), str(key))
+        if candidate < best:
+            best = candidate
+            best_key = str(key)
+    if not best_key:
+        raise ValueError("no group_summary rows for budget %s" % budget)
+    return best_key
+
+
+def select_control_test_runs(
+    summary: Mapping[str, Any], budget: int = 256
+) -> list[dict[str, Any]]:
+    """r0 maps at `budget` plus extra replicates of the recommended family."""
+    recommended = recommend_cell(summary, budget=budget)
+    rec_strategy, rec_budget, rec_family = recommended.split("|")
+    chosen: list[dict[str, Any]] = []
+    for row in summary.get("runs", []):
+        if int(row["budget"]) != int(budget):
+            continue
+        extra_of_winner = (
+            row["strategy"] == rec_strategy
+            and row["family"] == rec_family
+            and int(row["design_replicate"]) > 0
+        )
+        if int(row["design_replicate"]) == 0 or extra_of_winner:
+            chosen.append(row)
+    return chosen
+
+
+def run_fitted_map_schedules(
+    fit_root: str | Path,
+    manifest: Mapping[str, Any],
+    output_dir: str | Path,
+    runs: Sequence[Mapping[str, Any]],
+    n_grid: int = 21,
+    n_random_refine: int = 150,
+) -> dict[str, Any]:
+    """Schedule the frozen 64 (rpm, T) commands on selected fitted maps."""
+    from scheduler.copper_loss_scheduler import CopperLossScheduler, SchedulerLimits
+    from surrogates.registry import load_surrogate
+
+    study_root = Path(fit_root)
+    commands = build_scheduler_commands()
+    domain = equal_budget._domain_from_manifest(manifest)
+    machine = manifest["machine"]
+    limits = SchedulerLimits(
+        rs_ohm=float(machine["rs_ohm"]),
+        rf_ohm=float(machine["rf_ohm"]),
+        vdc_v=float(machine["vdc_v"]),
+        i_s_max_peak_a=float(machine["i_s_max_peak_a"]),
+        i_f_min_a=float(machine["i_f_min_a"]),
+        i_f_max_a=float(machine["i_f_max_a"]),
+        pole_pairs=int(machine["pole_pairs"]),
+        torque_tolerance_nm=0.5,
+    )
+    output_root = Path(output_dir)
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    candidate_rows: list[dict[str, Any]] = []
+    unique_currents: dict[str, dict[str, float]] = {}
+    for run in runs:
+        meta_path = study_root / run["artifacts"]["model_metadata"]
+        model = load_surrogate(json.loads(meta_path.read_text(encoding="utf-8")))
+        flux_map = FittedSurrogateMap(model, domain)
+        scheduler = CopperLossScheduler(
+            flux_map,
+            limits=limits,
+            n_grid_id=n_grid,
+            n_grid_iq=n_grid,
+            n_grid_if=max(8, n_grid // 2),
+            n_random_refine=n_random_refine,
+            seed=int(manifest["seeds"]["model"]),
+        )
+        candidate_id = "%s|%s|%s|r%s" % (
+            run["strategy"],
+            run["budget"],
+            run["family"],
+            run["design_replicate"],
+        )
+        for command in commands:
+            result = scheduler.schedule(command["rpm_mech"], command["torque_nm"])
+            payload = result.to_dict()
+            payload.update(
+                {
+                    "candidate_id": candidate_id,
+                    "strategy": run["strategy"],
+                    "budget": run["budget"],
+                    "family": run["family"],
+                    "design_replicate": run["design_replicate"],
+                    "command_id": command["command_id"],
+                    "regime": command["regime"],
+                }
+            )
+            candidate_rows.append(payload)
+            if (
+                result.id_ref_a is not None
+                and result.iq_ref_a is not None
+                and result.if_ref_a is not None
+            ):
+                point_id = canonical_point_id(
+                    result.id_ref_a, result.iq_ref_a, result.if_ref_a
+                )
+                unique_currents[point_id] = {
+                    "point_id": point_id,
+                    "id_a": float(result.id_ref_a),
+                    "iq_a": float(result.iq_ref_a),
+                    "if_a": float(result.if_ref_a),
+                }
+
+    current_rows = [
+        {
+            "point_name": row["point_id"],
+            "point_id": row["point_id"],
+            "role": "reference",
+            "region": classify_region(
+                row["id_a"],
+                row["iq_a"],
+                row["if_a"],
+                _domain_dict(domain),
+            ),
+            "id_a": row["id_a"],
+            "iq_a": row["iq_a"],
+            "if_a": row["if_a"],
+        }
+        for row in unique_currents.values()
+    ]
+    current_rows.sort(key=lambda row: row["point_id"])
+    current_bytes = render_femm_points(current_rows)
+    (output_root / "scheduler_selected_currents.csv").write_bytes(current_bytes)
+    feasible = [
+        row
+        for row in candidate_rows
+        if row["status"] in {"feasible", "saturated_to_boundary"}
+    ]
+    payload = {
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "experiment_id": "eesm_phase2_model_test_20260814",
+        "n_maps": len(list(runs)),
+        "n_commands": len(commands),
+        "n_schedules": len(candidate_rows),
+        "n_feasible_or_boundary": len(feasible),
+        "n_unique_selected_currents": len(current_rows),
+        "selected_currents_sha256": _sha256_bytes(current_bytes),
+        "schedules": candidate_rows,
+        "status": "completed",
+        "not_electromagnetic_truth": True,
+    }
+    _write_json(output_root / "scheduler_commands_offline.json", payload)
+    return payload
+
+
+def missing_audit_points(
+    scheduled_csv: str | Path,
+    known_csvs: Sequence[str | Path],
+    dest: str | Path,
+) -> dict[str, Any]:
+    """Write scheduled currents that are not already in known FEMM truth."""
+    known: set[str] = set()
+    for path in known_csvs:
+        if Path(path).is_file():
+            known |= campaign_id_set(load_campaign_rows(path))
+    scheduled = load_campaign_rows(scheduled_csv)
+    missing = [row for row in scheduled if row["point_id"] not in known]
+    dest_path = Path(dest)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    payload_bytes = render_femm_points(missing)
+    dest_path.write_bytes(payload_bytes)
+    return {
+        "n_scheduled": len(scheduled),
+        "n_known": len(known),
+        "n_missing": len(missing),
+        "dest": str(dest_path),
+        "sha256": _sha256_bytes(payload_bytes),
+    }
+
+
+def run_model_tests(
+    fit_root: str | Path,
+    manifest: Mapping[str, Any],
+    output_dir: str | Path,
+    holdout_campaigns: Mapping[str, str | Path],
+    known_truth_csvs: Sequence[str | Path],
+) -> dict[str, Any]:
+    """Score saved maps on holdouts and schedule control tests. No FEMM."""
+    from surrogates.registry import load_surrogate
+
+    fit_path = Path(fit_root)
+    summary = json.loads(
+        (fit_path / "design_replicate_fit.json").read_text(encoding="utf-8")
+    )
+    output_root = Path(output_dir)
+    if (output_root / "model_test.json").is_file():
+        raise RuntimeError(
+            "REFUSED: %s already exists; choose a new dated root"
+            % (output_root / "model_test.json")
+        )
+    output_root.mkdir(parents=True, exist_ok=True)
+    pole_pairs = int(manifest["machine"]["pole_pairs"])
+    recommended = recommend_cell(summary, budget=256)
+
+    holdouts: dict[str, Any] = {}
+    for label, campaign in holdout_campaigns.items():
+        campaign_path = Path(campaign)
+        if not campaign_path.is_file():
+            holdouts[label] = {"status": "missing", "path": str(campaign_path)}
+            continue
+        arrays = campaign_arrays(campaign_path)
+        scores = []
+        for run in summary["runs"]:
+            meta_path = fit_path / run["artifacts"]["model_metadata"]
+            model = load_surrogate(json.loads(meta_path.read_text(encoding="utf-8")))
+            scored = score_model_on_arrays(
+                model, arrays["X"], arrays["y"], arrays["regions"], pole_pairs
+            )
+            scores.append(
+                {
+                    "strategy": run["strategy"],
+                    "budget": run["budget"],
+                    "family": run["family"],
+                    "design_replicate": run["design_replicate"],
+                    "selection_torque_rmse_nm": run["torque_rmse_nm"],
+                    **scored,
+                }
+            )
+        holdouts[label] = {
+            "status": "scored" if arrays["n_usable"] else "empty",
+            "path": arrays["path"],
+            "n_rows": arrays["n_rows"],
+            "n_usable": arrays["n_usable"],
+            "scores": scores,
+        }
+
+    control_runs = select_control_test_runs(summary, budget=256)
+    schedule_dir = output_root / "scheduler"
+    schedule = run_fitted_map_schedules(
+        fit_path, manifest, schedule_dir, control_runs
+    )
+    missing = missing_audit_points(
+        schedule_dir / "scheduler_selected_currents.csv",
+        known_truth_csvs,
+        output_root / "points" / "new_map_scheduler_audit.csv",
+    )
+    payload = {
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "experiment_id": "eesm_phase2_model_test_20260814",
+        "fit_root": str(fit_path),
+        "recommended_cell_budget256": recommended,
+        "n_control_maps": len(control_runs),
+        "holdouts": {
+            label: {
+                key: value
+                for key, value in info.items()
+                if key != "scores"
+            }
+            | {"n_scored_maps": len(info.get("scores") or [])}
+            for label, info in holdouts.items()
+        },
+        "holdout_scores": {
+            label: info.get("scores")
+            for label, info in holdouts.items()
+            if info.get("scores")
+        },
+        "scheduler": {
+            "n_maps": schedule["n_maps"],
+            "n_schedules": schedule["n_schedules"],
+            "n_feasible_or_boundary": schedule["n_feasible_or_boundary"],
+            "n_unique_selected_currents": schedule["n_unique_selected_currents"],
+            "selected_currents_sha256": schedule["selected_currents_sha256"],
+        },
+        "new_audit_points": missing,
+        "status": "completed",
+        "not_a_phase0_revision": True,
+        "not_electromagnetic_truth": True,
+    }
+    _write_json(output_root / "model_test.json", payload)
+    _write_json(output_root / "holdout_scores.json", payload["holdout_scores"])
+    return payload
+
+
 def write_freeze(
     output_dir: str | Path,
     manifest: Mapping[str, Any],

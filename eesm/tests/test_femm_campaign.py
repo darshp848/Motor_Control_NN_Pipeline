@@ -639,6 +639,14 @@ def test_runner_accepts_a_fresh_root(runner, tmp_path):
     runner.guard_campaign_root(str(root))  # does not raise
 
 
+def test_campaign_config_full_machine_is_opt_in(runner):
+    sector = runner.campaign_config()
+    full = runner.campaign_config(full_machine=True)
+    assert sector.geometry.full_machine is False
+    assert full.geometry.full_machine is True
+    assert runner.DEFAULT_CONFIG.geometry.full_machine is False
+
+
 def test_runner_requires_a_points_source_for_an_empty_root(runner, tmp_path):
     with pytest.raises(runner.RunnerRefusal, match="no --points source"):
         runner.run_femm_campaign(output_dir=str(tmp_path / "empty"),

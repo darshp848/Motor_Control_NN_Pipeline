@@ -1,5 +1,16 @@
 # Phase 1 science: field flux, reciprocity, and L_diff
 
+**Do not cite the dry-run energy-net point estimates in this file**
+(0.1774 N·m, 0.4494 N·m, “2.07× better than the promoted GP”,
+“8 of 9 cells improve”). Those numbers are not reproducible ranking.
+`phase1_science.json` seed 1701 for `tensor_grid|256|energy_gradient_net`
+is 0.4494 N·m, which lies outside the later 8-seed range
+[0.1302, 0.2238]. Quote 8-seed medians from
+`out/eesm/energy_seed_study_20260813/energy_seed_study.json` and
+`out/eesm/zero_shot_seed_study_20260813/zero_shot_seed_study.json`
+(seed-median field supervision worsens 2 of 9 cells). Keep this file as a
+frozen diagnostic of the 2026-08-13 dry run. Do not headline it.
+
 **Status:** implemented and dry-run verified 2026-08-13. The numbers below come
 from a dry run on the finished campaign; the authoritative run is whatever
 `eesm/run_phase1_science.py` writes into a fresh output root on a clean commit.
@@ -174,11 +185,9 @@ Selection torque RMSE, N.m:
 | `latin_hypercube \| 128` | 0.4204 | 0.7415 | 1.76 |
 | `latin_hypercube \| 256` | 0.2833 | 0.4295 | 1.52 |
 
-Eight of nine cells improve, by 1.5x to 3.6x. **The field-flux side channel was
-already being collected for free on every campaign row and then discarded;
-using it as a third output on a co-energy net makes the stator map better.**
-One cell (`random | 256`) goes the other way, so state this as eight of nine,
-not as universal.
+The dry-run table above is **not** a ranking. Seed-median field supervision
+worsens 2 of 9 cells (`random|256`, `latin_hypercube|256`). Do not cite
+“eight of nine” or 0.1774 N·m; see the banner at the top of this file.
 
 ## 6. Harness cross-check
 
@@ -188,9 +197,11 @@ decimal places. The training designs are therefore byte-identical to the frozen
 study's -- this runner reuses `experiments.equal_budget._sample_training`,
 `_derived_seed` and `_validate_manifest` rather than reimplementing them.
 
-The best cell in this study, `tensor_grid | 256 | energy_gradient_net` at
-**0.1774 N.m**, is 2.07x better than that promoted candidate. That is a
-diagnostic observation, not a promotion: see below.
+The dry-run best cell `tensor_grid | 256 | energy_gradient_net` at
+**0.1774 N.m** (2.07× the promoted GP) is a single-seed diagnostic and must
+not be cited as ranking. The same advertised seed in `phase1_science.json`
+is 0.4494 N·m. Use the 8-seed median 0.1716 N·m from
+`energy_seed_study.json`.
 
 ## 7. What this phase deliberately does not do
 
