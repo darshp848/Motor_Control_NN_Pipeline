@@ -16,6 +16,7 @@ in Phase 0 or Phase 1, and it promotes nothing.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures as _cf
 import csv
 import hashlib
 import json
@@ -106,6 +107,41 @@ def kfold_indices(n: int, k: int, seed: int) -> list[np.ndarray]:
     return [np.sort(f) for f in np.array_split(idx, k)]
 
 
+
+def _score_config(task):
+    """Inner CV score for one configuration. Module level so it is picklable.
+
+    Returns None when the family rejects the configuration -- an unfittable draw
+    is skipped, not scored, and the shortfall is visible in n_configs_effective.
+    """
+    family, model_seed, cfg, ci, X, Y, folds, pole_pairs = task
+    import numpy as _np
+
+    def _t(f, c):
+        return 1.5 * pole_pairs * (f[:, 0] * c[:, 1] - f[:, 1] * c[:, 0])
+
+    def _r(a, b):
+        return float(_np.sqrt(_np.mean((_np.asarray(a) - _np.asarray(b)) ** 2)))
+
+    scores = []
+    for f in folds:
+        mask = _np.ones(len(X), bool); mask[f] = False
+        if mask.sum() < 4 or len(f) < 2:
+            return None
+        try:
+            m = build_surrogate(family, seed=model_seed, config=dict(cfg))
+            m.fit(X[mask], Y[mask])
+            p = m.predict(X[f])
+        except Exception:
+            return None
+        scores.append((_r(_t(p, X[f]), _t(Y[f], X[f])), _r(p, Y[f])))
+    if not scores:
+        return None
+    return {"index": ci, "config": cfg,
+            "inner_torque_rmse_nm": float(_np.mean([s[0] for s in scores])),
+            "inner_flux_rmse_wb": float(_np.mean([s[1] for s in scores]))}
+
+
 # ----------------------------------------------------------------------
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -114,6 +150,10 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     ap.add_argument("--smoke", action="store_true",
                     help="reduced budget for a plumbing check; not authoritative")
+    ap.add_argument("--workers", type=int, default=1,
+                    help=("parallel worker processes for the inner CV. The 3888 "
+                          "inner fits are independent and each is seeded, so this "
+                          "changes wall time only, never a number."))
     args = ap.parse_args()
 
     out_root = Path(args.out).resolve()
@@ -167,6 +207,10 @@ def main() -> int:
     selX, selY = _sample_matrix(sel), truth(sel_ids)
     selT = torque(selY, selX)
 
+    # One pool for the whole run. Creating one per cell would pay 54 process
+    # spin-ups for no benefit.
+    pool = (_cf.ProcessPoolExecutor(max_workers=args.workers)
+            if args.workers > 1 else None)
     results: list[dict[str, Any]] = []
     for strategy in strategies:
         for budget in budgets:
@@ -195,29 +239,15 @@ def main() -> int:
                     if k not in seen:
                         seen.add(k); cfgs.append(c)
 
-                scored = []
-                for ci, cfg in enumerate(cfgs):
-                    fold_scores, ok = [], True
-                    for f in folds:
-                        mask = np.ones(len(X), bool); mask[f] = False
-                        if mask.sum() < 4 or len(f) < 2:
-                            ok = False; break
-                        try:
-                            m = build_surrogate(family, seed=int(seeds["model"]),
-                                                config=dict(cfg))
-                            m.fit(X[mask], Y[mask])
-                            p = m.predict(X[f])
-                        except Exception:            # a config the family rejects
-                            ok = False; break
-                        fold_scores.append((rmse(torque(p, X[f]), torque(Y[f], X[f])),
-                                            rmse(p, Y[f])))
-                    if not ok or not fold_scores:
-                        continue
-                    scored.append({
-                        "index": ci, "config": cfg,
-                        "inner_torque_rmse_nm": float(np.mean([s[0] for s in fold_scores])),
-                        "inner_flux_rmse_wb": float(np.mean([s[1] for s in fold_scores])),
-                    })
+                task = [(family, int(seeds["model"]), dict(cfg), ci, X, Y, folds, P)
+                        for ci, cfg in enumerate(cfgs)]
+                if pool is not None:
+                    raw = list(pool.map(_score_config, task))
+                else:
+                    raw = [_score_config(t) for t in task]
+                scored = [r for r in raw if r is not None]
+                for r in scored:
+                    r["config"] = cfgs[r["index"]]
                 if not scored:
                     raise SystemExit(f"no configuration was fittable for {family}")
                 # deterministic tie-break: torque, then flux, then draw order
@@ -255,6 +285,9 @@ def main() -> int:
                       f"[{rec['torque_rmse_q25_nm']:.4f},{rec['torque_rmse_q75_nm']:.4f}]"
                       f"{'  (SHORTFALL)' if rec['budget_shortfall'] else ''}")
 
+    if pool is not None:
+        pool.shutdown(wait=True)
+
     created = datetime.now(timezone.utc).isoformat()
     study = {
         "created_utc": created,
@@ -263,7 +296,8 @@ def main() -> int:
         "protocol": "eesm/docs/EQUAL_TUNING_PROTOCOL.md",
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "campaign": str(camp), "campaign_sha256": _sha256_file(camp),
-        "tuning": {"n_configs": n_configs, "k_inner": k_inner, "n_seeds": n_seeds},
+        "tuning": {"n_configs": n_configs, "k_inner": k_inner, "n_seeds": n_seeds,
+                   "workers": int(args.workers)},
         "frozen_thresholds": manifest["gates"]["thresholds"],
         "note": ("Thresholds are read unchanged and gate nothing here. This "
                  "experiment promotes nothing and modifies no frozen result."),

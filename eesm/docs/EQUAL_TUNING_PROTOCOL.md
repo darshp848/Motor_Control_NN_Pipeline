@@ -132,6 +132,41 @@ required — the finished 1759-point campaign supplies all truth.
 **Do not start this while the replicate-design FEMM campaign is running.** It
 would contend for the same cores and slow the campaign.
 
+`--workers N` parallelises the inner cross-validation across processes. The
+inner fits are independent and individually seeded, so this changes wall time
+only: a 2-worker smoke run reproduces the serial run's medians and selected
+configurations exactly. Use roughly (physical cores - 2) to leave headroom.
+
+### Why this runs on CPU and not on a GPU
+
+Measured, not assumed:
+
+- **Four of the six families have no GPU path at all.** `physics_polynomial`,
+  `rbf_or_gp` and `tree_ensemble` are scikit-learn; `pwa` is SciPy Delaunay plus
+  least squares. Only `compact_mlp` and `energy_gradient_net` are Torch.
+- **The models are tiny.** The largest config is 17,282 parameters on a 256x3
+  input, full batch. A step costs 526-1742 us on one CPU thread here. GPU
+  kernel-launch overhead is a large fraction of that for tensors this small, and
+  occupancy would be a few percent.
+- **The pipeline is float64.** Consumer NVIDIA parts run FP64 at roughly 1/32 to
+  1/64 of their FP32 rate, so the usual GPU advantage largely evaporates.
+  Dropping to float32 would change every number and is not acceptable in a study
+  whose subject is reproducibility.
+- **It would break the determinism pin.** `surrogates/torch_determinism.py` is
+  CPU-only by construction and reports `cuda_used: false`. CUDA numerics differ
+  from CPU, which would reintroduce exactly the cross-environment divergence
+  (up to 153% at fixed seed) that the pin was written to eliminate, and would
+  make these results incomparable with the CPU-pinned Phase 1 numbers.
+
+The available speedup is process parallelism over the 3888 independent inner
+fits, which is what `--workers` provides and which changes no number.
+
+A GPU would become worth revisiting if the workload changes shape: much larger
+networks, a far larger truth set, or batched training of many small networks at
+once via `torch.vmap`. That last one is a genuine GPU play, but it requires
+rewriting the training loop and would alter numerics, so it belongs in its own
+declared variant rather than in this comparison.
+
 ## How to run
 
 Smoke test first (reduced budget, scratch root, proves the plumbing without
@@ -148,7 +183,7 @@ Authoritative run, on a clean commit:
 ```
 python eesm/run_equal_tuning.py --manifest eesm/configs/eesm_experiment_manifest_v3_0.json \
   --campaign out/eesm/femm_equal_budget_20260813/femm_results.csv \
-  --out out/eesm/equal_tuning_YYYYMMDD
+  --out out/eesm/equal_tuning_YYYYMMDD --workers 6
 ```
 
 The runner refuses a non-empty output root, refuses any path near
